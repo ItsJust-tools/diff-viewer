@@ -20,7 +20,7 @@ const mockSetData = vi.fn();
 const mockToast = vi.fn();
 const mockHandleExport = vi.fn();
 const mockImport = vi.fn();
-const mockToolbarActions = { canUndo: true, canRedo: true, onUndo: vi.fn(), onRedo: vi.fn() };
+const mockToolbarActions = { canUndo: false, canRedo: false, onUndo: vi.fn(), onRedo: vi.fn() };
 
 vi.mock('@itsjust/core', () => ({
   ToolShell: ({ toolbar, sidebar, canvas, statusBar }: Record<string, unknown>) => (
@@ -38,7 +38,7 @@ vi.mock('@itsjust/core', () => ({
   ),
   useTool: () => ({
     state: {
-      data: { text: 'Hello' },
+      data: { original: 'Hello', modified: '' },
       setData: mockSetData,
       isDirty: false,
       lastSaved: 'just now',
@@ -54,20 +54,20 @@ vi.mock('@itsjust/core', () => ({
 
 vi.mock('@/tool', () => ({
   toolConfig: {
-    id: 'simple-notepad',
-    name: 'Notepad',
+    id: 'diff-viewer',
+    name: 'Diff Viewer',
     version: '1.0.0',
     features: { sidebar: true },
-    theme: { brand: 'Notepad' },
+    theme: { brand: 'Diff Viewer' },
   },
-  templateBaseVersion: '1.1.0',
-  notepadTool: {
+  templateBaseVersion: '1.0.0',
+  diffViewerTool: {
     serialize: (state: unknown) => JSON.stringify(state),
-    deserialize: () => ({ success: true, data: { text: 'From Shared Url' } }),
+    deserialize: () => ({ success: true, data: { original: 'From Shared Url', modified: '' } }),
   },
-  ToolCanvas: ({ text }: { text: string }) => <div>canvas:{text}</div>,
+  ToolCanvas: ({ original, modified }: { original: string; modified: string }) => <div>canvas:{original}:{modified}</div>,
   ToolToolbar: () => <div>toolbar</div>,
-  ToolSidebar: ({ text }: { text: string }) => <div>sidebar:{text}</div>,
+  ToolSidebar: ({ original, modified }: { original: string; modified: string }) => <div>sidebar:{original}:{modified}</div>,
 }));
 
 describe('app client and help page', () => {
