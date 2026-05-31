@@ -214,7 +214,8 @@ describe('DiffViewer config metadata', () => {
   });
 
   it('lists expected exporters', () => {
-    const formats = diffViewerTool.exporters.map((e) => e.format);
+    const exporters = diffViewerTool.exporters!;
+    const formats = exporters.map((e) => e.format);
     expect(formats).toContain('png');
     expect(formats).toContain('jpeg');
     expect(formats).toContain('webp');
@@ -222,7 +223,8 @@ describe('DiffViewer config metadata', () => {
   });
 
   it('each exporter has a loader function', () => {
-    for (const exporter of diffViewerTool.exporters) {
+    const exporters = diffViewerTool.exporters!;
+    for (const exporter of exporters) {
       expect(typeof exporter.loader).toBe('function');
     }
   });

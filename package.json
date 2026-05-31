@@ -70,5 +70,10 @@
   "optionalDependencies": {
     "@emnapi/runtime": "^1.10.0"
   },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ItsJust-tools/diff-viewer.git"
+  },
   "description": "View and compare text differences side-by-side. Paste two versions and see exactly what changed."
 }

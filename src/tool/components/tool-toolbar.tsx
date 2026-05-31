@@ -1,7 +1,5 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
-
 export function ToolToolbar() {
   return (
     <div className="diff-toolbar" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

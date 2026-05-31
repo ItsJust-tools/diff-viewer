@@ -1,5 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
+
+/** Props for the diff viewer sidebar panel. */
 interface ToolSidebarProps {
   original: string;
   modified: string;
@@ -29,8 +32,28 @@ export function ToolSidebar({
   const origChars = original.length;
   const modChars = modified.length;
 
-  const numAdditions = 0; // will be computed in live version
-  const numDeletions = 0;
+  // Compute diff stats using a simple line-level comparison
+  const diffStats = useMemo(() => {
+    if (!original && !modified) return { additions: 0, deletions: 0, changes: 0 };
+    const origLines = original ? original.split('\n') : [];
+    const modLines = modified ? modified.split('\n') : [];
+    const maxLen = Math.max(origLines.length, modLines.length);
+    let additions = 0;
+    let deletions = 0;
+    for (let i = 0; i < maxLen; i++) {
+      const origLine = origLines[i] ?? '';
+      const modLine = modLines[i] ?? '';
+      if (origLine !== modLine) {
+        if (i >= origLines.length) additions++;
+        else if (i >= modLines.length) deletions++;
+        else {
+          additions++;
+          deletions++;
+        }
+      }
+    }
+    return { additions, deletions, changes: additions + deletions };
+  }, [original, modified]);
 
   return (
     <div className="diff-sidebar">
@@ -52,6 +75,18 @@ export function ToolSidebar({
           <div className="stat-row">
             <dt>Modified Characters</dt>
             <dd>{modChars.toLocaleString()}</dd>
+          </div>
+          <div className="stat-row" style={{ marginTop: '0.25rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>
+            <dt style={{ color: 'var(--success)' }}>Additions</dt>
+            <dd style={{ color: 'var(--success)' }}>+{diffStats.additions.toLocaleString()}</dd>
+          </div>
+          <div className="stat-row">
+            <dt style={{ color: 'var(--error)' }}>Deletions</dt>
+            <dd style={{ color: 'var(--error)' }}>-{diffStats.deletions.toLocaleString()}</dd>
+          </div>
+          <div className="stat-row">
+            <dt>Net Changes</dt>
+            <dd>{diffStats.changes.toLocaleString()}</dd>
           </div>
         </dl>
       </div>

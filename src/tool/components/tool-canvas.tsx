@@ -1,9 +1,18 @@
 'use client';
 
-import { useMemo, useCallback, useRef, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import type { DiffLine } from '../types';
 
-// Simple LCS-based diff algorithm
+
+/**
+ * Compute a line-level diff between two texts using the Longest Common
+ * Subsequence (LCS) algorithm. Returns an array of DiffLine objects
+ * describing each line's type (added, removed, unchanged) and line numbers.
+ *
+ * When contextLines >= 0, unchanged lines far from any change are collapsed
+ * into "..." markers to show only relevant context.
+ * Pass contextLines = -1 to return the full diff without collapsing.
+ */
 function computeDiff(original: string, modified: string, contextLines: number): DiffLine[] {
   const origLines = original.split('\n');
   const modLines = modified.split('\n');
@@ -26,17 +35,38 @@ function computeDiff(original: string, modified: string, contextLines: number): 
     }));
   }
 
-  // Simple LCS
+  // Simple LCS — guard against very large inputs to avoid OOM
   const m = origLines.length;
   const n = modLines.length;
+  const LCS_MAX_CELLS = 10_000_000; // ~80 MB for number[][]
+  if (m * n > LCS_MAX_CELLS) {
+    // Fallback: line-by-line comparison without LCS for huge inputs
+    const maxLen = Math.max(m, n);
+    const result: DiffLine[] = [];
+    for (let i = 0; i < maxLen; i++) {
+      const ol = i < m ? origLines[i] : null;
+      const ml = i < n ? modLines[i] : null;
+      if (ol === null && ml !== null) {
+        result.push({ type: 'added', oldLineNumber: null, newLineNumber: i + 1, content: ml as string });
+      } else if (ol !== null && ml === null) {
+        result.push({ type: 'removed', oldLineNumber: i + 1, newLineNumber: null, content: ol as string });
+      } else if (ol !== ml) {
+        result.push({ type: 'removed', oldLineNumber: i + 1, newLineNumber: null, content: ol as string });
+        result.push({ type: 'added', oldLineNumber: null, newLineNumber: i + 1, content: ml as string });
+      } else {
+        result.push({ type: 'unchanged', oldLineNumber: i + 1, newLineNumber: i + 1, content: ol as string });
+      }
+    }
+    return result;
+  }
   const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
       if (origLines[i - 1] === modLines[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
+        dp[i]![j] = (dp[i - 1]![j - 1] as number) + 1;
       } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        dp[i]![j] = Math.max(dp[i - 1]![j] as number, dp[i]![j - 1] as number);
       }
     }
   }
@@ -48,7 +78,7 @@ function computeDiff(original: string, modified: string, contextLines: number): 
     if (i > 0 && j > 0 && origLines[i - 1] === modLines[j - 1]) {
       ops.push({ type: 'unchanged', oldIdx: i - 1, newIdx: j - 1 });
       i--; j--;
-    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+    } else if (j > 0 && (i === 0 || (dp[i]![j - 1] as number) >= (dp[i - 1]![j] as number))) {
       ops.push({ type: 'added', oldIdx: -1, newIdx: j - 1 });
       j--;
     } else if (i > 0) {
@@ -70,7 +100,7 @@ function computeDiff(original: string, modified: string, contextLines: number): 
         type: 'unchanged',
         oldLineNumber: oldNum,
         newLineNumber: newNum,
-        content: origLines[op.oldIdx],
+        content: origLines[op.oldIdx] as string,
       });
     } else if (op.type === 'added') {
       newNum++;
@@ -78,7 +108,7 @@ function computeDiff(original: string, modified: string, contextLines: number): 
         type: 'added',
         oldLineNumber: null,
         newLineNumber: newNum,
-        content: modLines[op.newIdx],
+        content: modLines[op.newIdx] as string,
       });
     } else if (op.type === 'removed') {
       oldNum++;
@@ -86,7 +116,7 @@ function computeDiff(original: string, modified: string, contextLines: number): 
         type: 'removed',
         oldLineNumber: oldNum,
         newLineNumber: null,
-        content: origLines[op.oldIdx],
+        content: origLines[op.oldIdx] as string,
       });
     }
   }
@@ -96,7 +126,7 @@ function computeDiff(original: string, modified: string, contextLines: number): 
 
   const changedIndices = new Set<number>();
   for (let idx = 0; idx < result.length; idx++) {
-    if (result[idx].type !== 'unchanged') {
+    if ((result[idx] as DiffLine).type !== 'unchanged') {
       for (let c = -contextLines; c <= contextLines; c++) {
         const ci = idx + c;
         if (ci >= 0 && ci < result.length) {
@@ -118,7 +148,7 @@ function computeDiff(original: string, modified: string, contextLines: number): 
           content: '...',
         });
       }
-      filtered.push(result[idx]);
+      filtered.push(result[idx] as DiffLine);
       lastIncluded = idx;
     }
   }
@@ -126,6 +156,7 @@ function computeDiff(original: string, modified: string, contextLines: number): 
   return filtered;
 }
 
+/** Props for the main diff viewer canvas component. */
 interface ToolCanvasProps {
   original: string;
   modified: string;
@@ -135,8 +166,10 @@ interface ToolCanvasProps {
   canvasRef?: React.RefObject<HTMLDivElement | null>;
   onOriginalChange?: (text: string) => void;
   onModifiedChange?: (text: string) => void;
+  onViewModeChange?: (mode: 'side-by-side' | 'unified' | 'split') => void;
 }
 
+/** Renders a single line in the unified/split diff view with line numbers and type indicator. */
 function DiffLineRow({
   line,
   showWhitespace,
@@ -231,6 +264,7 @@ function DiffLineRow({
   );
 }
 
+/** Main canvas component for the diff viewer. Renders side-by-side, unified, or split view. */
 export function ToolCanvas({
   original,
   modified,
@@ -240,6 +274,7 @@ export function ToolCanvas({
   canvasRef,
   onOriginalChange,
   onModifiedChange,
+  onViewModeChange,
 }: ToolCanvasProps) {
   const diffLines = useMemo(
     () => computeDiff(original, modified, viewMode === 'unified' ? contextLines : -1),
@@ -500,6 +535,7 @@ export function ToolCanvas({
             active={viewMode === mode}
             label={mode === 'side-by-side' ? 'Side-by-Side' : mode === 'unified' ? 'Unified' : 'Split'}
             shortcut={mode === 'side-by-side' ? 'Ctrl+1' : mode === 'unified' ? 'Ctrl+2' : 'Ctrl+3'}
+            onClick={() => onViewModeChange?.(mode)}
           />
         ))}
       </div>
@@ -518,10 +554,12 @@ function TabButton({
   active,
   label,
   shortcut,
+  onClick,
 }: {
   active: boolean;
   label: string;
   shortcut?: string;
+  onClick: () => void;
 }) {
   return (
     <button
@@ -529,6 +567,7 @@ function TabButton({
       className="diff-tab-button"
       role="tab"
       aria-selected={active}
+      onClick={onClick}
       style={{
         padding: '0.5rem 1rem',
         fontSize: '0.8125rem',

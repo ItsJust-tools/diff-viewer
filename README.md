@@ -1,6 +1,8 @@
 # itsjust — Diff / Patch Viewer
 
 [![Live](https://img.shields.io/badge/Live-itsjust.tools-8b5cf6?style=for-the-badge)](https://diff-viewer.itsjust.tools)
+[![CI](https://github.com/ItsJust-tools/diff-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/ItsJust-tools/diff-viewer/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 View and compare text differences side-by-side. Paste two versions of any text and see exactly what changed, added, or removed.
 
@@ -26,6 +28,30 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to start comparing.
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+1` | Switch to Side-by-Side view |
+| `Ctrl+2` | Switch to Unified view |
+| `Ctrl+3` | Switch to Split view |
+| `Ctrl+Shift+E` | Export as JSON |
+| `Ctrl+Shift+P` | Export as PNG |
+
+## Project Structure
+
+```
+diff-viewer/
+├── packages/core/          # Shared @itsjust/core component library
+├── src/
+│   ├── app/               # Next.js App Router (pages, layout, SEO)
+│   └── tool/              # Diff viewer tool implementation
+│       ├── components/    # ToolCanvas, ToolSidebar, ToolToolbar
+│       ├── exporters/     # PNG, JPEG, WebP, PDF export
+│       ├── types.ts       # DiffViewerState, DiffLine types
+│       └── tool.config.ts # Tool configuration
+```
 
 ## Tech Stack
 

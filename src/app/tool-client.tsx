@@ -188,8 +188,6 @@ export default function ToolClient() {
       onOriginalChange={handleOriginalChange}
       onModifiedChange={handleModifiedChange}
       onViewModeChange={handleViewModeChange}
-      onShowWhitespaceChange={handleShowWhitespaceChange}
-      onContextLinesChange={handleContextLinesChange}
     />
   );
 
