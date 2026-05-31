@@ -12,6 +12,8 @@ import {
   ToolSidebar,
 } from '@/tool';
 
+const MAX_TEXT_LENGTH = 500_000; // character limit per textarea to prevent OOM
+
 export default function ToolClient() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const tool = useTool(diffViewerTool, canvasRef);
@@ -32,16 +34,24 @@ export default function ToolClient() {
 
   const handleOriginalChange = useCallback(
     (text: string) => {
+      if (text.length > MAX_TEXT_LENGTH) {
+        showToast(`Text too long — max ${MAX_TEXT_LENGTH.toLocaleString()} characters`, 'error');
+        return;
+      }
       setToolData((prev) => ({ ...prev, original: text }));
     },
-    [setToolData]
+    [setToolData, showToast]
   );
 
   const handleModifiedChange = useCallback(
     (text: string) => {
+      if (text.length > MAX_TEXT_LENGTH) {
+        showToast(`Text too long — max ${MAX_TEXT_LENGTH.toLocaleString()} characters`, 'error');
+        return;
+      }
       setToolData((prev) => ({ ...prev, modified: text }));
     },
-    [setToolData]
+    [setToolData, showToast]
   );
 
   const handleViewModeChange = useCallback(
@@ -134,23 +144,50 @@ export default function ToolClient() {
     }
   }, [showToast, tool.state.data, title]);
 
-  const diffLines = useMemo(() => {
-    if (!data.original && !data.modified) return { lines: [], additions: 0, deletions: 0 };
+  const diffStats = useMemo(() => {
+    if (!data.original && !data.modified) return { additions: 0, deletions: 0 };
+    if (!data.original) {
+      const lines = data.modified.split('\n');
+      return { additions: lines.length, deletions: 0 };
+    }
+    if (!data.modified) {
+      const lines = data.original.split('\n');
+      return { additions: 0, deletions: lines.length };
+    }
+
     const origLines = data.original.split('\n');
     const modLines = data.modified.split('\n');
 
-    if (!data.original) return { lines: modLines.map((_, i) => i + 1), additions: modLines.length, deletions: 0 };
-    if (!data.modified) return { lines: origLines.map((_, i) => i + 1), additions: 0, deletions: origLines.length };
+    // Use a frequency-aware approach for accurate diff stats
+    const origFreq = new Map<string, number>();
+    for (const l of origLines) {
+      origFreq.set(l, (origFreq.get(l) ?? 0) + 1);
+    }
 
-    // Simplified stat counting
-    const additions = modLines.filter((l) => !origLines.includes(l)).length;
-    const deletions = origLines.filter((l) => !modLines.includes(l)).length;
-    return { lines: [...origLines, ...modLines], additions, deletions };
+    const modFreq = new Map<string, number>();
+    for (const l of modLines) {
+      modFreq.set(l, (modFreq.get(l) ?? 0) + 1);
+    }
+
+    let additions = 0;
+    let deletions = 0;
+
+    for (const [line, count] of modFreq) {
+      const origCount = origFreq.get(line) ?? 0;
+      additions += Math.max(0, count - origCount);
+    }
+
+    for (const [line, count] of origFreq) {
+      const modCount = modFreq.get(line) ?? 0;
+      deletions += Math.max(0, count - modCount);
+    }
+
+    return { additions, deletions };
   }, [data.original, data.modified]);
 
   const toolbarContent = (
     <>
-      <ToolToolbar />
+      <ToolToolbar original={data.original} modified={data.modified} viewMode={data.viewMode} />
       <ImportExport
         formats={tool.supportedFormats}
         onExport={tool.handleExport}
@@ -206,7 +243,7 @@ export default function ToolClient() {
         )}
       </span>
       <span className="status-slot status-slot-diff-stats">
-        +{diffLines.additions} / -{diffLines.deletions}
+        +{diffStats.additions} / -{diffStats.deletions}
       </span>
       <span className="status-slot status-slot-tool-version">Tool v{toolConfig.version}</span>
       <span className="status-slot status-slot-template-version">

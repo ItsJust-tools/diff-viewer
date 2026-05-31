@@ -75,7 +75,23 @@ export function ToolSidebar({
           <div className="stat-row">
             <dt>Modified Characters</dt>
             <dd>{modChars.toLocaleString()}</dd>
-          </div>
+          </div>{' '}
+          {origChars > 1_000_000 || modChars > 1_000_000 ? (
+            <div
+              className="stat-row"
+              style={{
+                marginTop: '0.25rem',
+                padding: '0.375rem 0.5rem',
+                background: 'var(--warning)',
+                color: '#fff',
+                borderRadius: 'var(--radius)',
+                fontSize: '0.75rem',
+                fontWeight: 500,
+              }}
+            >
+              Large input detected — diff may be slower
+            </div>
+          ) : null}
           <div className="stat-row" style={{ marginTop: '0.25rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>
             <dt style={{ color: 'var(--success)' }}>Additions</dt>
             <dd style={{ color: 'var(--success)' }}>+{diffStats.additions.toLocaleString()}</dd>
