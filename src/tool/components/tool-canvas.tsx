@@ -648,7 +648,9 @@ export function ToolCanvas({
               fontSize: '0.875rem',
             }}
           >
-            Paste text in both panels to see the diff
+            {original || modified
+              ? 'No differences — the texts are identical'
+              : 'Paste text in both panels to see the diff'}
           </div>
         ) : (
           diffLines.map((line, idx) => (
@@ -740,7 +742,9 @@ export function ToolCanvas({
                 fontSize: '0.875rem',
               }}
             >
-              Diff will appear here
+              {original || modified
+                ? 'No differences — the texts are identical'
+                : 'Diff will appear here'}
             </div>
           ) : (
             diffLines.map((line, idx) => (

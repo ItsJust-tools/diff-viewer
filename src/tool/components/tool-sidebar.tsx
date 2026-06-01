@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { computeDiff } from './tool-canvas';
 
 /** Props for the diff viewer sidebar panel. */
 interface ToolSidebarProps {
@@ -32,25 +33,16 @@ export function ToolSidebar({
   const origChars = original.length;
   const modChars = modified.length;
 
-  // Compute diff stats using a simple line-level comparison
+  // Compute diff stats using the same LCS algorithm as the diff view
   const diffStats = useMemo(() => {
     if (!original && !modified) return { additions: 0, deletions: 0, changes: 0 };
-    const origLines = original ? original.split('\n') : [];
-    const modLines = modified ? modified.split('\n') : [];
-    const maxLen = Math.max(origLines.length, modLines.length);
+    // Use -1 contextLines to get full diff without collapsing
+    const lines = computeDiff(original, modified, -1);
     let additions = 0;
     let deletions = 0;
-    for (let i = 0; i < maxLen; i++) {
-      const origLine = origLines[i] ?? '';
-      const modLine = modLines[i] ?? '';
-      if (origLine !== modLine) {
-        if (i >= origLines.length) additions++;
-        else if (i >= modLines.length) deletions++;
-        else {
-          additions++;
-          deletions++;
-        }
-      }
+    for (const line of lines) {
+      if (line.type === 'added') additions++;
+      else if (line.type === 'removed') deletions++;
     }
     return { additions, deletions, changes: additions + deletions };
   }, [original, modified]);
@@ -166,10 +158,12 @@ export function ToolSidebar({
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius)',
             background: 'var(--card)',
-            color: 'var(--foreground)',
-            cursor: 'pointer',
+            color: !original && !modified ? 'var(--muted)' : 'var(--foreground)',
+            cursor: !original && !modified ? 'not-allowed' : 'pointer',
+            opacity: !original && !modified ? 0.5 : 1,
             marginBottom: '0.5rem',
           }}
+          title={!original && !modified ? 'Paste text in a panel first' : 'Swap original ↔ modified'}
         >
           Swap Original ↔ Modified
         </button>
