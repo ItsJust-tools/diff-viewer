@@ -22,4 +22,32 @@ export interface DiffLine {
   newLineNumber: number | null;
   /** The text content of the line (without trailing newline). */
   content: string;
+  /**
+   * Word-level changes within this line, when word diff is available.
+   * Each segment represents a run of text that is added, removed, or unchanged
+   * relative to the corresponding line on the opposite side.
+   */
+  wordChanges?: WordChange[];
+}
+
+/**
+ * A single segment of a word-level diff within a changed line.
+ * For added lines, 'removed' segments don't appear; for removed lines, 'added' segments don't appear.
+ */
+export interface WordChange {
+  /** Whether this text segment was added, removed, or unchanged. */
+  type: 'added' | 'removed' | 'unchanged';
+  /** The text content of this segment. */
+  text: string;
+}
+
+/**
+ * Internal mapping from an LCS-backtracked operation index to the
+ * original and modified line indices, used to pair added/removed lines
+ * for word-level diff comparison.
+ */
+export interface DiffOp {
+  type: 'added' | 'removed' | 'unchanged';
+  oldIdx: number;
+  newIdx: number;
 }

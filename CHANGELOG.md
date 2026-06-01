@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Word-level diff highlighting**: Changed lines in unified and split views now show word-level changes with inline highlighting — added words highlighted in green, removed words highlighted in red, making it easy to see exactly what changed within a line.
+- **Improved hunk markers**: Collapsed context sections in unified view now show proper hunk headers with line range info (e.g., `@@ -3,5 +3,5 @@`) instead of plain `...` markers.
+- **Dual line number columns**: Unified and split diff views now show both old and new line numbers side-by-side for better orientation.
+- **New DiffLine types**: `WordChange` and `DiffOp` interfaces added for word-level diff support.
+- **Expanded test coverage**: Added `diff-computation.test.ts` with 15 new tests covering edge cases, context line filtering, word diff integration, and type compliance.
+
 ## [1.4.0] - 2026-05-23
 
 ### Changed
