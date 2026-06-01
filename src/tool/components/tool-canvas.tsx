@@ -131,7 +131,7 @@ function computeWordDiff(oldLine: string, newLine: string, type: 'added' | 'remo
  * For changed lines, word-level diff highlighting is computed when the
  * corresponding paired line exists.
  */
-function computeDiff(original: string, modified: string, contextLines: number): DiffLine[] {
+export function computeDiff(original: string, modified: string, contextLines: number): DiffLine[] {
   const origLines = original.split('\n');
   const modLines = modified.split('\n');
 
@@ -162,23 +162,22 @@ function computeDiff(original: string, modified: string, contextLines: number): 
     const maxLen = Math.max(m, n);
     const result: DiffLine[] = [];
     for (let i = 0; i < maxLen; i++) {
-      const ol = i < m ? origLines[i] : null;
-      const ml = i < n ? modLines[i] : null;
+      const ol = i < m ? (origLines[i] ?? null) : null;
+      const ml = i < n ? (modLines[i] ?? null) : null;
       if (ol === null && ml !== null) {
         result.push({ type: 'added', oldLineNumber: null, newLineNumber: i + 1, content: ml });
       } else if (ol !== null && ml === null) {
         result.push({ type: 'removed', oldLineNumber: i + 1, newLineNumber: null, content: ol });
-      } else if (ol !== ml) {
+      } else if (ol !== null && ml !== null && ol !== ml) {
         result.push({ type: 'removed', oldLineNumber: i + 1, newLineNumber: null, content: ol });
         const removedResultIdx = result.length - 1;
         result.push({ type: 'added', oldLineNumber: null, newLineNumber: i + 1, content: ml });
         // Compute word diff between paired lines
-        if (ol !== null && ml !== null) {
-          result[removedResultIdx]!.wordChanges = computeWordDiff(ol, ml, 'removed');
-          result[removedResultIdx + 1]!.wordChanges = computeWordDiff(ol, ml, 'added');
-        }
-      } else {
-        result.push({ type: 'unchanged', oldLineNumber: i + 1, newLineNumber: i + 1, content: ol as string });
+        result[removedResultIdx]!.wordChanges = computeWordDiff(ol, ml, 'removed');
+        result[removedResultIdx + 1]!.wordChanges = computeWordDiff(ol, ml, 'added');
+      } else if (ol !== null) {
+        // Both are null or both identical strings — unchanged
+        result.push({ type: 'unchanged', oldLineNumber: i + 1, newLineNumber: i + 1, content: ol });
       }
     }
     return result;
