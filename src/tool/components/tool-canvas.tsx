@@ -525,7 +525,7 @@ export function ToolCanvas({
   const modNumLines = modified.split('\n').length || 1;
 
   const renderSideBySide = () => (
-    <div className="diff-side-by-side" style={{ display: 'flex', gap: 0, height: '100%' }}>
+    <div className="diff-side-by-side" id="diff-panel-side-by-side" role="tabpanel" aria-labelledby="diff-tab-side-by-side" style={{ display: 'flex', gap: 0, height: '100' }}>
       {/* Original Panel */}
       <div
         className="diff-panel diff-panel-original"
@@ -615,7 +615,7 @@ export function ToolCanvas({
   );
 
   const renderUnified = () => (
-    <div className="diff-unified" style={{ height: '100%', overflowY: 'auto' }}>
+    <div className="diff-unified" id="diff-panel-unified" role="tabpanel" aria-labelledby="diff-tab-unified" style={{ height: '100%', overflowY: 'auto' }}>
       <div
         className="diff-unified-header"
         style={{
@@ -662,7 +662,7 @@ export function ToolCanvas({
   );
 
   const renderSplit = () => (
-    <div className="diff-split" style={{ display: 'flex', gap: 0, height: '100%' }}>
+    <div className="diff-split" id="diff-panel-split" role="tabpanel" aria-labelledby="diff-tab-split" style={{ display: 'flex', gap: 0, height: '100%' }}>
       {/* Left: Editor */}
       <div
         className="diff-split-editor"
@@ -767,6 +767,23 @@ export function ToolCanvas({
       {/* View Mode Tabs */}
       <div
         className="diff-mode-tabs"
+        role="tablist"
+        aria-label="Diff view mode"
+        onKeyDown={(e) => {
+          const modes = ['side-by-side', 'unified', 'split'] as const;
+          const currentIdx = modes.indexOf(viewMode);
+          let nextIdx: number | null = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            nextIdx = (currentIdx + 1) % modes.length;
+          } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            nextIdx = (currentIdx - 1 + modes.length) % modes.length;
+          }
+          if (nextIdx !== null) {
+            e.preventDefault();
+            const nextMode = modes[nextIdx];
+            if (nextMode) onViewModeChange?.(nextMode);
+          }
+        }}
         style={{
           display: 'flex',
           borderBottom: '1px solid var(--border)',
@@ -780,8 +797,15 @@ export function ToolCanvas({
             label={mode === 'side-by-side' ? 'Side-by-Side' : mode === 'unified' ? 'Unified' : 'Split'}
             shortcut={mode === 'side-by-side' ? 'Ctrl+1' : mode === 'unified' ? 'Ctrl+2' : 'Ctrl+3'}
             onClick={() => onViewModeChange?.(mode)}
+            tabId={`diff-tab-${mode}`}
+            panelId={`diff-panel-${mode}`}
           />
         ))}
+      </div>
+
+      {/* Screen reader live region for diff view mode changes */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {viewMode === 'side-by-side' ? 'Side-by-side' : viewMode === 'unified' ? 'Unified' : 'Split'} view active
       </div>
 
       {/* Diff Content */}
@@ -799,18 +823,25 @@ function TabButton({
   label,
   shortcut,
   onClick,
+  tabId,
+  panelId,
 }: {
   active: boolean;
   label: string;
   shortcut?: string;
   onClick: () => void;
+  tabId: string;
+  panelId: string;
 }) {
   return (
     <button
       type="button"
       className="diff-tab-button"
       role="tab"
+      id={tabId}
       aria-selected={active}
+      aria-controls={panelId}
+      tabIndex={active ? 0 : -1}
       onClick={onClick}
       style={{
         padding: '0.5rem 1rem',
