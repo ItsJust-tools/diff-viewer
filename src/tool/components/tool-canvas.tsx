@@ -468,15 +468,15 @@ function DiffLineRow({
     >
       <span
         className="diff-line-number-old"
-        style={{ opacity: line.oldLineNumber != null ? 1 : 0.4 }}
+        style={{ opacity: line.oldLineNumber != null ? 0.6 : 0.2 }}
       >
-        {line.oldLineNumber != null ? line.oldLineNumber : ''}
+        {line.oldLineNumber != null ? line.oldLineNumber : '·'}
       </span>
       <span
         className="diff-line-number-new"
-        style={{ opacity: line.newLineNumber != null ? 1 : 0.4 }}
+        style={{ opacity: line.newLineNumber != null ? 0.6 : 0.2 }}
       >
-        {line.newLineNumber != null ? line.newLineNumber : ''}
+        {line.newLineNumber != null ? line.newLineNumber : '·'}
       </span>
       <span
         className="diff-line-sign"
@@ -567,7 +567,7 @@ export function ToolCanvas({
             {addCount} addition{addCount !== 1 ? 's' : ''}, {delCount} deletion{delCount !== 1 ? 's' : ''}
           </span>
         </div>
-        <div className="diff-lines-container">
+        <div className="diff-lines-container" role="region" aria-label="Unified diff output">
           {diffLines.length === 0 ? (
             <div className="diff-empty-placeholder">
               {original || modified
@@ -614,7 +614,7 @@ export function ToolCanvas({
               {addCount}+, {delCount}-
             </span>
           </div>
-          <div style={{ padding: '0.25rem 0' }}>
+          <div style={{ padding: '0.25rem 0' }} role="region" aria-label="Split diff output lines">
             {diffLines.length === 0 ? (
               <div className="diff-empty-placeholder">
                 {original || modified

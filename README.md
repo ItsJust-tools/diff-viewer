@@ -57,6 +57,8 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 | `Ctrl+3` | Switch to Split view |
 | `Ctrl+Shift+E` | Export as JSON |
 | `Ctrl+Shift+P` | Export as PNG |
+| `Ctrl+Shift+S` | Swap original ↔ modified |
+| `Ctrl+Shift+Backspace` | Clear both text panels |
 
 ## Project Structure
 
