@@ -294,6 +294,41 @@ export function computeDiff(original: string, modified: string, contextLines: nu
   return filtered;
 }
 
+/**
+ * Generate a unified-diff formatted string from two texts.
+ * Uses the same LCS algorithm as the diff view for consistent output.
+ */
+export function generateUnifiedDiffString(original: string, modified: string): string {
+  if (!original && !modified) return '';
+  if (!original) {
+    return modified.split('\n').map((line) => `+${line}`).join('\n');
+  }
+  if (!modified) {
+    return original.split('\n').map((line) => `-${line}`).join('\n');
+  }
+
+  const diffLines = computeDiff(original, modified, -1);
+  const m = original.split('\n').length;
+  const n = modified.split('\n').length;
+
+  const result: string[] = [];
+  result.push(`--- original`);
+  result.push(`+++ modified`);
+  result.push(`@@ -1,${m} +1,${n} @@`);
+
+  for (const line of diffLines) {
+    if (line.type === 'added') {
+      result.push(`+${line.content}`);
+    } else if (line.type === 'removed') {
+      result.push(`-${line.content}`);
+    } else {
+      result.push(` ${line.content}`);
+    }
+  }
+
+  return result.join('\n');
+}
+
 /** Props for the main diff viewer canvas component. */
 interface ToolCanvasProps {
   original: string;
@@ -393,6 +428,8 @@ function DiffLineContent({
   return <>{displayContent || '\u00A0'}</>;
 }
 
+DiffLineContent.displayName = 'DiffLineContent';
+
 /** Renders a single line in the unified/split diff view with line numbers and type indicator. */
 function DiffLineRow({
   line,
@@ -460,6 +497,8 @@ function DiffLineRow({
     </div>
   );
 }
+
+DiffLineRow.displayName = 'DiffLineRow';
 
 /** Main canvas component for the diff viewer. Renders side-by-side, unified, or split view. */
 export function ToolCanvas({
@@ -651,6 +690,8 @@ export function ToolCanvas({
   );
 }
 
+ToolCanvas.displayName = 'ToolCanvas';
+
 function TabButton({
   active,
   label,
@@ -685,3 +726,5 @@ function TabButton({
     </button>
   );
 }
+
+TabButton.displayName = 'TabButton';

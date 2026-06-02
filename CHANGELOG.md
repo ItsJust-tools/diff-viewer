@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **displayName for all exported components**: Added explicit `displayName` to `ToolCanvas`, `ToolSidebar`, `ToolToolbar`, `DiffLineRow`, `DiffLineContent`, and `TabButton` for React DevTools.
+- **generateUnifiedDiffString utility**: Extracted LCS-based unified diff generation into a shared, exported function in `tool-canvas.tsx`, eliminating the duplicate implementation in `tool-client.tsx`.
+
+### Changed
+
+- **Refactored handleCopyDiff**: Replaced inline duplicated LCS algorithm with the shared `generateUnifiedDiffString` function from `tool-canvas.tsx`, reducing code duplication and ensuring consistent diff output.
+
 - **Word-level diff highlighting**: Changed lines in unified and split views now show word-level changes with inline highlighting — added words highlighted in green, removed words highlighted in red, making it easy to see exactly what changed within a line.
 - **Improved hunk markers**: Collapsed context sections in unified view now show proper hunk headers with line range info (e.g., `@@ -3,5 +3,5 @@`) instead of plain `...` markers.
 - **Dual line number columns**: Unified and split diff views now show both old and new line numbers side-by-side for better orientation.

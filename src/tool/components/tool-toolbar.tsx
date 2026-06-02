@@ -55,3 +55,5 @@ export function ToolToolbar({ original, modified, viewMode }: ToolToolbarProps) 
     </div>
   );
 }
+
+ToolToolbar.displayName = 'ToolToolbar';
