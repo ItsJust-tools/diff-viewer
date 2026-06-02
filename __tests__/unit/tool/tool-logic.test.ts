@@ -80,16 +80,14 @@ describe('DiffViewerState validation (deserialize)', () => {
   });
 
   it('rejects invalid viewMode string', () => {
-    // viewMode is optional and only checked as string type, not enum
-    // If we pass an arbitrary string, it'll be accepted but might not match the type
-    // This is permissive - let's verify
     const result = diffViewerTool.deserialize({
       original: '',
       modified: '',
       viewMode: 'invalid-mode',
     });
-    // Accepts it because it only checks typeof === 'string'
-    expect(result.success).toBe(true);
+    // Should reject non-enum viewMode values
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain('Invalid data');
   });
 
   it('rejects non-boolean showWhitespace', () => {

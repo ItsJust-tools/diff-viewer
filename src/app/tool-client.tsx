@@ -93,6 +93,116 @@ export default function ToolClient() {
     showToast('Cleared both panels', 'success');
   }, [setToolData, showToast]);
 
+  const handleCopyDiff = useCallback(() => {
+    const generateUnifiedDiff = (original: string, modified: string): string => {
+      const origLines = original.split('\n');
+      const modLines = modified.split('\n');
+
+      if (!original && !modified) return '';
+      if (!original) {
+        return modLines.map((line) => `+${line}`).join('\n');
+      }
+      if (!modified) {
+        return origLines.map((line) => `-${line}`).join('\n');
+      }
+
+      const m = origLines.length;
+      const n = modLines.length;
+
+      // Fallback for large input
+      if (m * n > 10_000_000) {
+        const lines: string[] = [];
+        lines.push(`--- original`);
+        lines.push(`+++ modified`);
+        lines.push(`@@ -1,${m} +1,${n} @@`);
+        const maxLen = Math.max(m, n);
+        for (let i = 0; i < maxLen; i++) {
+          const ol = i < m ? (origLines[i] ?? null) : null;
+          const ml = i < n ? (modLines[i] ?? null) : null;
+          if (ol === null && ml !== null) lines.push(`+${ml}`);
+          else if (ol !== null && ml === null) lines.push(`-${ol}`);
+          else if (ol !== null && ml !== null && ol === ml) lines.push(` ${ol}`);
+          else if (ol !== null && ml !== null) {
+            lines.push(`-${ol}`);
+            lines.push(`+${ml}`);
+          }
+        }
+        return lines.join('\n');
+      }
+
+      // LCS DP table
+      const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          if (origLines[i - 1] === modLines[j - 1]) {
+            dp[i]![j] = (dp[i - 1]![j - 1] as number) + 1;
+          } else {
+            dp[i]![j] = Math.max(dp[i - 1]![j] as number, dp[i]![j - 1] as number);
+          }
+        }
+      }
+
+      // Backtrack
+      const result: string[] = [];
+      result.push(`--- original`);
+      result.push(`+++ modified`);
+      result.push(`@@ -1,${m} +1,${n} @@`);
+
+      let i = m;
+      let j = n;
+      const stack: string[] = [];
+      while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && origLines[i - 1] === modLines[j - 1]) {
+          stack.push(` ${origLines[i - 1] as string}`);
+          i--;
+          j--;
+        } else if (j > 0 && (i === 0 || (dp[i]![j - 1] as number) >= (dp[i - 1]![j] as number))) {
+          stack.push(`+${modLines[j - 1] as string}`);
+          j--;
+        } else if (i > 0) {
+          stack.push(`-${origLines[i - 1] as string}`);
+          i--;
+        }
+      }
+
+      result.push(...stack.reverse());
+      return result.join('\n');
+    };
+
+    const diff = generateUnifiedDiff(data.original, data.modified);
+    if (!diff) {
+      showToast('Nothing to copy — paste text in both panels first', 'error');
+      return;
+    }
+    navigator.clipboard.writeText(diff).then(
+      () => showToast('Unified diff copied to clipboard', 'success'),
+      () => showToast('Failed to copy to clipboard', 'error'),
+    );
+  }, [data.original, data.modified, showToast]);
+
+  // Keyboard shortcuts for Swap and Clear
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+
+      if (e.shiftKey && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        handleSwap();
+        return;
+      }
+
+      if ((e.shiftKey && e.key === 'Backspace') || (e.shiftKey && e.key === 'Delete')) {
+        e.preventDefault();
+        handleClear();
+        return;
+      }
+    }
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleSwap, handleClear]);
+
   useEffect(() => {
     if (hasLoadedSharedState.current) return;
     hasLoadedSharedState.current = true;
@@ -211,6 +321,7 @@ export default function ToolClient() {
       onContextLinesChange={handleContextLinesChange}
       onSwap={handleSwap}
       onClear={handleClear}
+      onCopyDiff={handleCopyDiff}
     />
   );
 

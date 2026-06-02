@@ -15,6 +15,7 @@ interface ToolSidebarProps {
   onContextLinesChange?: (lines: number) => void;
   onSwap?: () => void;
   onClear?: () => void;
+  onCopyDiff?: () => void;
 }
 
 export function ToolSidebar({
@@ -27,6 +28,7 @@ export function ToolSidebar({
   onContextLinesChange,
   onSwap,
   onClear,
+  onCopyDiff,
 }: ToolSidebarProps) {
   const origLines = original ? original.split('\n').length : 0;
   const modLines = modified ? modified.split('\n').length : 0;
@@ -184,6 +186,28 @@ export function ToolSidebar({
           }}
         >
           Clear Both
+        </button>
+        <button
+          type="button"
+          className="sidebar-action-btn"
+          onClick={onCopyDiff}
+          disabled={!original && !modified}
+          style={{
+            width: '100%',
+            padding: '0.5rem',
+            fontSize: '0.8125rem',
+            fontWeight: 600,
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)',
+            background: 'var(--card)',
+            color: !original && !modified ? 'var(--muted)' : 'var(--foreground)',
+            cursor: !original && !modified ? 'not-allowed' : 'pointer',
+            opacity: !original && !modified ? 0.5 : 1,
+            marginTop: '0.5rem',
+          }}
+          title={!original && !modified ? 'Paste text first' : 'Copy unified diff to clipboard'}
+        >
+          Copy Unified Diff
         </button>
       </div>
     </div>

@@ -2,14 +2,20 @@ import type { Tool } from '@itsjust/core';
 import toolConfig from './tool.config';
 import type { DiffViewerState } from './types';
 
+/** Allowed view mode values for the diff viewer. */
+const VALID_VIEW_MODES = ['side-by-side', 'unified', 'split'] as const;
+
+function isViewMode(value: unknown): value is 'side-by-side' | 'unified' | 'split' {
+  return VALID_VIEW_MODES.includes(value as typeof VALID_VIEW_MODES[number]);
+}
+
 function isDiffViewerState(value: unknown): value is DiffViewerState {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
     typeof v.original === 'string' &&
     typeof v.modified === 'string' &&
-    (v.viewMode === undefined ||
-      typeof v.viewMode === 'string') &&
+    (v.viewMode === undefined || isViewMode(v.viewMode)) &&
     (v.showWhitespace === undefined ||
       typeof v.showWhitespace === 'boolean') &&
     (v.contextLines === undefined ||

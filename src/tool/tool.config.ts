@@ -54,6 +54,16 @@ const toolConfig = {
           label: 'Split',
           description: 'switch to split view',
         },
+        {
+          keys: 'Ctrl+Shift+S',
+          label: 'Swap',
+          description: 'swap original and modified text',
+        },
+        {
+          keys: 'Ctrl+Shift+Backspace',
+          label: 'Clear',
+          description: 'clear both text panels',
+        },
       ],
     },
   ],

@@ -525,7 +525,7 @@ export function ToolCanvas({
   const modNumLines = modified.split('\n').length || 1;
 
   const renderSideBySide = () => (
-    <div className="diff-side-by-side" id="diff-panel-side-by-side" role="tabpanel" aria-labelledby="diff-tab-side-by-side" style={{ display: 'flex', gap: 0, height: '100' }}>
+    <div className="diff-side-by-side" id="diff-panel-side-by-side" role="tabpanel" aria-labelledby="diff-tab-side-by-side" style={{ display: 'flex', gap: 0, height: '100%' }}>
       {/* Original Panel */}
       <div
         className="diff-panel diff-panel-original"
