@@ -143,38 +143,16 @@ export function ToolSidebar({
           className="sidebar-action-btn"
           onClick={onSwap}
           disabled={!original && !modified}
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            background: 'var(--card)',
-            color: !original && !modified ? 'var(--muted)' : 'var(--foreground)',
-            cursor: !original && !modified ? 'not-allowed' : 'pointer',
-            opacity: !original && !modified ? 0.5 : 1,
-            marginBottom: '0.5rem',
-          }}
           title={!original && !modified ? 'Paste text in a panel first' : 'Swap original ↔ modified'}
         >
           Swap Original ↔ Modified
         </button>
         <button
           type="button"
-          className="sidebar-action-btn"
+          className="sidebar-action-btn sidebar-action-btn-danger"
           onClick={onClear}
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            border: '1px solid var(--error)',
-            borderRadius: 'var(--radius)',
-            background: 'transparent',
-            color: 'var(--error)',
-            cursor: 'pointer',
-          }}
+          disabled={!original && !modified}
+          title={!original && !modified ? 'Nothing to clear' : 'Clear both text panels'}
         >
           Clear Both
         </button>
@@ -183,19 +161,6 @@ export function ToolSidebar({
           className="sidebar-action-btn"
           onClick={onCopyDiff}
           disabled={!original && !modified}
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            background: 'var(--card)',
-            color: !original && !modified ? 'var(--muted)' : 'var(--foreground)',
-            cursor: !original && !modified ? 'not-allowed' : 'pointer',
-            opacity: !original && !modified ? 0.5 : 1,
-            marginTop: '0.5rem',
-          }}
           title={!original && !modified ? 'Paste text first' : 'Copy unified diff to clipboard'}
         >
           Copy Unified Diff

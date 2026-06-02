@@ -1,6 +1,12 @@
 import type { Exporter } from '@itsjust/core';
 import { formatExportError, throwIfAborted } from './utils';
 
+/**
+ * Collect all CSS rules from the document's stylesheets into a single string.
+ * Cross-origin stylesheets whose rules cannot be read are silently skipped.
+ *
+ * @returns A concatenated string of all readable cssText rules
+ */
 function collectStyles(): string {
   const chunks: string[] = [];
   for (let i = 0; i < document.styleSheets.length; i++) {
@@ -20,6 +26,14 @@ function collectStyles(): string {
   return chunks.join('\n');
 }
 
+/**
+ * Create a deep clone of the tool element with textareas replaced by plain
+ * {@link HTMLDivElement} equivalents that preserve text content and computed
+ * styles, ensuring print output is readable and isn't clipped.
+ *
+ * @param element - The root tool element to clone
+ * @returns Outer HTML string of the print-optimized clone
+ */
 function createPrintClone(element: HTMLElement): string {
   const clone = element.cloneNode(true) as HTMLElement;
 
@@ -55,6 +69,12 @@ function createPrintClone(element: HTMLElement): string {
   return clone.outerHTML;
 }
 
+/**
+ * PDF exporter for the diff viewer tool.
+ * Opens the browser's native print dialog after injecting the tool's content
+ * (with full CSS) into a hidden iframe, allowing the user to "Save as PDF"
+ * via the print-to-PDF workflow.
+ */
 const pdfExporter: Exporter = {
   format: 'pdf',
   export: async (element, options) => {

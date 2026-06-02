@@ -1,6 +1,14 @@
 import type { ExportFormat, ExportOptions, ExportResult, Exporter } from '@itsjust/core';
 import { toBlob } from 'html-to-image';
 
+/**
+ * Format an export error into a user-friendly message.
+ * Detects CORS-related failures and appends remediation guidance.
+ *
+ * @param error - The thrown error (any type)
+ * @param format - Export format label for the error message (e.g. "PNG", "PDF")
+ * @returns A descriptive error string
+ */
 export function formatExportError(error: unknown, format: string): string {
   const base = error instanceof Error ? error.message : `${format} export failed`;
   const isCors = /cors|cross-origin|tainted|security/i.test(base);
@@ -10,6 +18,13 @@ export function formatExportError(error: unknown, format: string): string {
   return base;
 }
 
+/**
+ * Check whether an AbortSignal has been triggered; if so, throw immediately.
+ * Useful for cooperative cancellation in multi-step export pipelines.
+ *
+ * @param signal - Optional AbortSignal to check
+ * @throws {DOMException} with name "AbortError" if the signal has been aborted
+ */
 export function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
     throw new DOMException('Export aborted', 'AbortError');
@@ -32,6 +47,16 @@ function restoreStyles(saved: SavedStyle[]) {
   }
 }
 
+/**
+ * Render an HTMLElement to an off-screen <canvas> by moving it into a hidden
+ * container, expanding scrollable areas, and using html-to-image for pixel
+ * capture. DOM mutations are restored on completion (or on error).
+ *
+ * @param element - The root element to render
+ * @param options - Export options (scale, signal, allowSensitiveData)
+ * @returns A canvas element with the rendered content
+ * @throws If export is aborted, sensitive data is blocked, or rendering fails
+ */
 export async function renderToImage(
   element: HTMLElement,
   options: ExportOptions
@@ -141,6 +166,17 @@ export async function renderToImage(
   }
 }
 
+/**
+ * Factory that creates an {@link Exporter} for raster image formats (PNG, JPEG, WebP).
+ * Uses {@link renderToImage} under the hood to capture the element as a canvas,
+ * then converts it to a Blob of the requested format.
+ *
+ * @param format - Export format identifier (e.g. "png", "jpeg", "webp")
+ * @param mimeType - MIME type string for the image format
+ * @param defaultExt - Default file extension for the exported file
+ * @param defaultQuality - Optional default image quality (0-1) for lossy formats (JPEG, WebP)
+ * @returns An Exporter object ready to be registered with the tool
+ */
 export function createCanvasExporter(
   format: ExportFormat,
   mimeType: 'image/png' | 'image/jpeg' | 'image/webp',
