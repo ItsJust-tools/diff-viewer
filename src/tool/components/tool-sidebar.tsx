@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { computeDiff } from './tool-canvas';
+import './diff-viewer.css';
 
 /** Props for the diff viewer sidebar panel. */
 interface ToolSidebarProps {
@@ -130,16 +131,6 @@ export function ToolSidebar({
                 onContextLinesChange?.(Math.max(0, Math.min(20, Number(e.target.value))))
               }
               className="sidebar-number-input"
-              style={{
-                width: '100%',
-                padding: '0.375rem 0.5rem',
-                fontSize: '0.8125rem',
-                fontFamily: 'ui-monospace, Menlo, Monaco, monospace',
-                background: 'var(--background)',
-                color: 'var(--foreground)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius)',
-              }}
             />
           </div>
         )}

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import type { DiffLine, WordChange, DiffOp } from '../types';
+import './diff-viewer.css';
 
 /**
  * Compute the Longest Common Subsequence (LCS) between two arrays of strings.
@@ -362,24 +363,11 @@ function DiffLineContent({
           if (seg.type === 'unchanged') {
             return <span key={i}>{segText}</span>;
           }
-          // Highlight changed words with stronger color
-          const highlightBg =
-            seg.type === 'added'
-              ? 'rgba(34, 197, 94, 0.35)'
-              : 'rgba(239, 68, 68, 0.35)';
-          const highlightBorder =
-            seg.type === 'added'
-              ? '1px solid rgba(34, 197, 94, 0.5)'
-              : '1px solid rgba(239, 68, 68, 0.5)';
+          const wordClass = seg.type === 'added' ? 'diff-word-added' : 'diff-word-removed';
           return (
             <span
               key={i}
-              style={{
-                background: highlightBg,
-                borderRadius: '2px',
-                border: highlightBorder,
-                padding: '0 1px',
-              }}
+              className={wordClass}
               title={`${seg.type === 'added' ? 'Added' : 'Removed'} word`}
             >
               {segText}
@@ -428,76 +416,39 @@ function DiffLineRow({
 
   return (
     <div
-      className="diff-line"
+      className={`diff-line diff-line-${line.type}`}
+      role="row"
       style={{
-        display: 'flex',
-        fontFamily: 'ui-monospace, Menlo, Monaco, monospace',
-        fontSize: '0.8125rem',
-        lineHeight: '1.6',
         background: bgColor,
         borderLeft: `3px solid ${borderColor}`,
-        minHeight: '1.6em',
       }}
     >
       <span
         className="diff-line-number-old"
-        style={{
-          width: '48px',
-          minWidth: '48px',
-          textAlign: 'right',
-          paddingRight: '8px',
-          color: 'var(--muted)',
-          userSelect: 'none',
-          fontSize: '0.75rem',
-          borderRight: '1px solid var(--border)',
-          opacity: line.oldLineNumber != null ? 1 : 0.4,
-        }}
+        style={{ opacity: line.oldLineNumber != null ? 1 : 0.4 }}
       >
         {line.oldLineNumber != null ? line.oldLineNumber : ''}
       </span>
       <span
         className="diff-line-number-new"
-        style={{
-          width: '48px',
-          minWidth: '48px',
-          textAlign: 'right',
-          paddingRight: '8px',
-          color: 'var(--muted)',
-          userSelect: 'none',
-          fontSize: '0.75rem',
-          borderRight: '1px solid var(--border)',
-          opacity: line.newLineNumber != null ? 1 : 0.4,
-        }}
+        style={{ opacity: line.newLineNumber != null ? 1 : 0.4 }}
       >
         {line.newLineNumber != null ? line.newLineNumber : ''}
       </span>
       <span
         className="diff-line-sign"
         style={{
-          width: '20px',
-          minWidth: '20px',
-          textAlign: 'center',
           color:
             line.type === 'added'
               ? 'var(--success)'
               : line.type === 'removed'
                 ? 'var(--error)'
                 : 'var(--muted)',
-          userSelect: 'none',
         }}
       >
         {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : isHunk ? '~' : ' '}
       </span>
-      <span
-        className="diff-line-content"
-        style={{
-          flex: 1,
-          paddingLeft: '8px',
-          whiteSpace: 'pre',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
+      <span className="diff-line-content" role="cell">
         <DiffLineContent line={line} showWhitespace={showWhitespace} />
       </span>
     </div>
@@ -525,25 +476,10 @@ export function ToolCanvas({
   const modNumLines = modified.split('\n').length || 1;
 
   const renderSideBySide = () => (
-    <div className="diff-side-by-side" id="diff-panel-side-by-side" role="tabpanel" aria-labelledby="diff-tab-side-by-side" style={{ display: 'flex', gap: 0, height: '100%' }}>
+    <div className="diff-side-by-side" id="diff-panel-side-by-side" role="tabpanel" aria-labelledby="diff-tab-side-by-side">
       {/* Original Panel */}
-      <div
-        className="diff-panel diff-panel-original"
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border)' }}
-      >
-        <div
-          className="diff-panel-header"
-          style={{
-            padding: '0.5rem 0.75rem',
-            fontWeight: 600,
-            fontSize: '0.8125rem',
-            borderBottom: '1px solid var(--border)',
-            background: 'var(--card)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
+      <div className="diff-panel diff-panel-original">
+        <div className="diff-panel-header">
           <span style={{ color: 'var(--error)' }}>−</span> Original ({origNumLines} lines)
         </div>
         <textarea
@@ -552,41 +488,13 @@ export function ToolCanvas({
           onChange={(e) => onOriginalChange?.(e.target.value)}
           placeholder="Paste original text here..."
           spellCheck={false}
-          style={{
-            flex: 1,
-            width: '100%',
-            padding: '0.75rem',
-            fontFamily: 'ui-monospace, Menlo, Monaco, monospace',
-            fontSize: '0.8125rem',
-            lineHeight: '1.6',
-            border: 'none',
-            background: 'transparent',
-            color: 'var(--foreground)',
-            resize: 'none',
-            outline: 'none',
-          }}
           aria-label="Original text"
         />
       </div>
 
       {/* Modified Panel */}
-      <div
-        className="diff-panel diff-panel-modified"
-        style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
-      >
-        <div
-          className="diff-panel-header"
-          style={{
-            padding: '0.5rem 0.75rem',
-            fontWeight: 600,
-            fontSize: '0.8125rem',
-            borderBottom: '1px solid var(--border)',
-            background: 'var(--card)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
+      <div className="diff-panel diff-panel-modified">
+        <div className="diff-panel-header">
           <span style={{ color: 'var(--success)' }}>+</span> Modified ({modNumLines} lines)
         </div>
         <textarea
@@ -595,166 +503,89 @@ export function ToolCanvas({
           onChange={(e) => onModifiedChange?.(e.target.value)}
           placeholder="Paste modified text here..."
           spellCheck={false}
-          style={{
-            flex: 1,
-            width: '100%',
-            padding: '0.75rem',
-            fontFamily: 'ui-monospace, Menlo, Monaco, monospace',
-            fontSize: '0.8125rem',
-            lineHeight: '1.6',
-            border: 'none',
-            background: 'transparent',
-            color: 'var(--foreground)',
-            resize: 'none',
-            outline: 'none',
-          }}
           aria-label="Modified text"
         />
       </div>
     </div>
   );
 
-  const renderUnified = () => (
-    <div className="diff-unified" id="diff-panel-unified" role="tabpanel" aria-labelledby="diff-tab-unified" style={{ height: '100%', overflowY: 'auto' }}>
-      <div
-        className="diff-unified-header"
-        style={{
-          padding: '0.5rem 0.75rem',
-          fontWeight: 600,
-          fontSize: '0.8125rem',
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--card)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          position: 'sticky',
-          top: 0,
-          zIndex: 1,
-        }}
-      >
-        <span>Unified Diff View</span>
-        <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-          {diffLines.filter((l) => l.type === 'added').length} additions,{' '}
-          {diffLines.filter((l) => l.type === 'removed').length} deletions
-        </span>
-      </div>
-      <div className="diff-lines-container" style={{ padding: '0.25rem 0' }}>
-        {diffLines.length === 0 ? (
-          <div
-            style={{
-              padding: '2rem',
-              textAlign: 'center',
-              color: 'var(--muted)',
-              fontSize: '0.875rem',
-            }}
-          >
-            {original || modified
-              ? 'No differences — the texts are identical'
-              : 'Paste text in both panels to see the diff'}
-          </div>
-        ) : (
-          diffLines.map((line, idx) => (
-            <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} />
-          ))
-        )}
-      </div>
-    </div>
-  );
-
-  const renderSplit = () => (
-    <div className="diff-split" id="diff-panel-split" role="tabpanel" aria-labelledby="diff-tab-split" style={{ display: 'flex', gap: 0, height: '100%' }}>
-      {/* Left: Editor */}
-      <div
-        className="diff-split-editor"
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border)' }}
-      >
-        <div
-          className="diff-split-header"
-          style={{
-            padding: '0.5rem 0.75rem',
-            fontWeight: 600,
-            fontSize: '0.8125rem',
-            borderBottom: '1px solid var(--border)',
-            background: 'var(--card)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
-          <span style={{ color: 'var(--error)' }}>−</span> Original
-        </div>
-        <textarea
-          className="diff-textarea"
-          value={original}
-          onChange={(e) => onOriginalChange?.(e.target.value)}
-          placeholder="Paste original text..."
-          spellCheck={false}
-          style={{
-            flex: 1,
-            width: '100%',
-            padding: '0.75rem',
-            fontFamily: 'ui-monospace, Menlo, Monaco, monospace',
-            fontSize: '0.8125rem',
-            lineHeight: '1.6',
-            border: 'none',
-            background: 'transparent',
-            color: 'var(--foreground)',
-            resize: 'none',
-            outline: 'none',
-          }}
-          aria-label="Original text"
-        />
-      </div>
-
-      {/* Right: Diff Output */}
-      <div
-        className="diff-split-output"
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}
-      >
-        <div
-          className="diff-split-header"
-          style={{
-            padding: '0.5rem 0.75rem',
-            fontWeight: 600,
-            fontSize: '0.8125rem',
-            borderBottom: '1px solid var(--border)',
-            background: 'var(--card)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            position: 'sticky',
-            top: 0,
-          }}
-        >
-          <span>Diff Output</span>
+  const renderUnified = () => {
+    const addCount = diffLines.filter((l) => l.type === 'added').length;
+    const delCount = diffLines.filter((l) => l.type === 'removed').length;
+    return (
+      <div className="diff-unified" id="diff-panel-unified" role="tabpanel" aria-labelledby="diff-tab-unified">
+        <div className="diff-unified-header">
+          <span>Unified Diff View</span>
           <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-            {diffLines.filter((l) => l.type === 'added').length}+,{' '}
-            {diffLines.filter((l) => l.type === 'removed').length}-
+            {addCount} addition{addCount !== 1 ? 's' : ''}, {delCount} deletion{delCount !== 1 ? 's' : ''}
           </span>
         </div>
-        <div style={{ padding: '0.25rem 0' }}>
+        <div className="diff-lines-container">
           {diffLines.length === 0 ? (
-            <div
-              style={{
-                padding: '2rem',
-                textAlign: 'center',
-                color: 'var(--muted)',
-                fontSize: '0.875rem',
-              }}
-            >
+            <div className="diff-empty-placeholder">
               {original || modified
                 ? 'No differences — the texts are identical'
-                : 'Diff will appear here'}
+                : 'Paste text in both panels to see the diff'}
             </div>
           ) : (
-            diffLines.map((line, idx) => (
-              <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} />
-            ))
+            <div role="table" aria-label="Unified diff lines">
+              {diffLines.map((line, idx) => (
+                <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} />
+              ))}
+            </div>
           )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  const renderSplit = () => {
+    const addCount = diffLines.filter((l) => l.type === 'added').length;
+    const delCount = diffLines.filter((l) => l.type === 'removed').length;
+    return (
+      <div className="diff-split" id="diff-panel-split" role="tabpanel" aria-labelledby="diff-tab-split">
+        {/* Left: Editor */}
+        <div className="diff-split-editor">
+          <div className="diff-split-header">
+            <span style={{ color: 'var(--error)' }}>−</span> Original
+          </div>
+          <textarea
+            className="diff-textarea"
+            value={original}
+            onChange={(e) => onOriginalChange?.(e.target.value)}
+            placeholder="Paste original text..."
+            spellCheck={false}
+            aria-label="Original text"
+          />
+        </div>
+
+        {/* Right: Diff Output */}
+        <div className="diff-split-output">
+          <div className="diff-split-header">
+            <span>Diff Output</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+              {addCount}+, {delCount}-
+            </span>
+          </div>
+          <div style={{ padding: '0.25rem 0' }}>
+            {diffLines.length === 0 ? (
+              <div className="diff-empty-placeholder">
+                {original || modified
+                  ? 'No differences — the texts are identical'
+                  : 'Diff will appear here'}
+              </div>
+            ) : (
+              <div role="table" aria-label="Split diff output lines">
+                {diffLines.map((line, idx) => (
+                  <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -762,7 +593,6 @@ export function ToolCanvas({
       className="diff-canvas"
       role="application"
       aria-label="Diff Viewer"
-      style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
     >
       {/* View Mode Tabs */}
       <div
@@ -784,11 +614,6 @@ export function ToolCanvas({
             if (nextMode) onViewModeChange?.(nextMode);
           }
         }}
-        style={{
-          display: 'flex',
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--card)',
-        }}
       >
         {(['side-by-side', 'unified', 'split'] as const).map((mode) => (
           <TabButton
@@ -809,7 +634,7 @@ export function ToolCanvas({
       </div>
 
       {/* Diff Content */}
-      <div className="diff-content" style={{ flex: 1, overflow: 'hidden' }}>
+      <div className="diff-content">
         {viewMode === 'side-by-side' && renderSideBySide()}
         {viewMode === 'unified' && renderUnified()}
         {viewMode === 'split' && renderSplit()}
@@ -843,36 +668,11 @@ function TabButton({
       aria-controls={panelId}
       tabIndex={active ? 0 : -1}
       onClick={onClick}
-      style={{
-        padding: '0.5rem 1rem',
-        fontSize: '0.8125rem',
-        fontWeight: active ? 600 : 400,
-        border: 'none',
-        borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
-        background: active ? 'var(--accent-subtle)' : 'transparent',
-        color: active ? 'var(--accent)' : 'var(--muted)',
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-      }}
       title={shortcut ? `${label} (${shortcut})` : label}
     >
       {label}
       {shortcut && (
-        <kbd
-          style={{
-            fontSize: '0.65rem',
-            padding: '1px 4px',
-            background: 'var(--background)',
-            borderRadius: '3px',
-            border: '1px solid var(--border)',
-            opacity: 0.6,
-          }}
-        >
-          {shortcut}
-        </kbd>
+        <kbd className="tab-shortcut-hint">{shortcut}</kbd>
       )}
     </button>
   );

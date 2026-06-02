@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import './diff-viewer.css';
 
 /** Props for the diff viewer toolbar. */
 interface ToolToolbarProps {
@@ -25,8 +26,8 @@ export function ToolToolbar({ original, modified, viewMode }: ToolToolbarProps) 
     viewMode === 'side-by-side' ? 'Side-by-Side' : viewMode === 'unified' ? 'Unified' : 'Split';
 
   return (
-    <div className="diff-toolbar" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-      <span className="toolbar-brand-section" style={{ fontSize: '0.8125rem', color: 'var(--muted)' }}>
+    <div className="diff-toolbar">
+      <span style={{ fontSize: '0.8125rem', color: 'var(--muted)' }}>
         {original || modified ? (
           <>
             {stats && (
