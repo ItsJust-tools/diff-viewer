@@ -68,6 +68,20 @@ export default function ToolClient() {
     [setToolData]
   );
 
+  const handleWordDiffChange = useCallback(
+    (wordDiff: boolean) => {
+      setToolData((prev) => ({ ...prev, wordDiff }));
+    },
+    [setToolData]
+  );
+
+  const handleWrapLinesChange = useCallback(
+    (wrapLines: boolean) => {
+      setToolData((prev) => ({ ...prev, wrapLines }));
+    },
+    [setToolData]
+  );
+
   const handleContextLinesChange = useCallback(
     (contextLines: number) => {
       setToolData((prev) => ({ ...prev, contextLines }));
@@ -315,9 +329,13 @@ export default function ToolClient() {
       modified={data.modified}
       viewMode={data.viewMode}
       showWhitespace={data.showWhitespace}
+      wordDiff={data.wordDiff}
+      wrapLines={data.wrapLines}
       contextLines={data.contextLines}
       onViewModeChange={handleViewModeChange}
       onShowWhitespaceChange={handleShowWhitespaceChange}
+      onWordDiffChange={handleWordDiffChange}
+      onWrapLinesChange={handleWrapLinesChange}
       onContextLinesChange={handleContextLinesChange}
       onSwap={handleSwap}
       onClear={handleClear}
@@ -333,6 +351,8 @@ export default function ToolClient() {
       viewMode={data.viewMode}
       showWhitespace={data.showWhitespace}
       contextLines={data.contextLines}
+      wordDiff={data.wordDiff}
+      wrapLines={data.wrapLines}
       onOriginalChange={handleOriginalChange}
       onModifiedChange={handleModifiedChange}
       onViewModeChange={handleViewModeChange}

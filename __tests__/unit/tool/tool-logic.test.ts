@@ -12,6 +12,8 @@ describe('DiffViewerState validation (deserialize)', () => {
       expect(result.data.viewMode).toBe('side-by-side');
       expect(result.data.showWhitespace).toBe(true);
       expect(result.data.contextLines).toBe(3);
+      expect(result.data.wordDiff).toBe(true);
+      expect(result.data.wrapLines).toBe(false);
     }
   });
 
@@ -22,12 +24,16 @@ describe('DiffViewerState validation (deserialize)', () => {
       viewMode: 'unified',
       showWhitespace: false,
       contextLines: 5,
+      wordDiff: false,
+      wrapLines: true,
     });
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.viewMode).toBe('unified');
       expect(result.data.showWhitespace).toBe(false);
       expect(result.data.contextLines).toBe(5);
+      expect(result.data.wordDiff).toBe(false);
+      expect(result.data.wrapLines).toBe(true);
     }
   });
 
@@ -135,6 +141,44 @@ describe('DiffViewerState validation (deserialize)', () => {
     const result = diffViewerTool.deserialize({ original: 'x', modified: 'y' });
     expect(result.success).toBe(true);
   });
+
+  it('rejects non-boolean wordDiff', () => {
+    const result = diffViewerTool.deserialize({
+      original: '',
+      modified: '',
+      wordDiff: 'yes',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects non-boolean wrapLines', () => {
+    const result = diffViewerTool.deserialize({
+      original: '',
+      modified: '',
+      wrapLines: 'no',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts boolean wordDiff', () => {
+    const result = diffViewerTool.deserialize({
+      original: 'a',
+      modified: 'b',
+      wordDiff: false,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.wordDiff).toBe(false);
+  });
+
+  it('accepts boolean wrapLines', () => {
+    const result = diffViewerTool.deserialize({
+      original: 'a',
+      modified: 'b',
+      wrapLines: true,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.wrapLines).toBe(true);
+  });
 });
 
 describe('DiffViewer serialize', () => {
@@ -145,6 +189,8 @@ describe('DiffViewer serialize', () => {
       viewMode: 'unified',
       showWhitespace: false,
       contextLines: 2,
+      wordDiff: true,
+      wrapLines: false,
     };
     const json = diffViewerTool.serialize(state);
     expect(() => JSON.parse(json)).not.toThrow();
@@ -157,7 +203,7 @@ describe('DiffViewer serialize', () => {
   });
 
   it('serializes minimal state correctly', () => {
-    const json = diffViewerTool.serialize({ original: '', modified: '', viewMode: 'side-by-side', showWhitespace: true, contextLines: 3 });
+    const json = diffViewerTool.serialize({ original: '', modified: '', viewMode: 'side-by-side', showWhitespace: true, contextLines: 3, wordDiff: true, wrapLines: false });
     const parsed = JSON.parse(json);
     expect(parsed.original).toBe('');
     expect(parsed.modified).toBe('');
@@ -170,6 +216,8 @@ describe('DiffViewer serialize', () => {
       viewMode: 'side-by-side',
       showWhitespace: true,
       contextLines: 3,
+      wordDiff: true,
+      wrapLines: false,
     });
     // Should not be on a single line
     expect(json).toContain('\n  ');
@@ -184,6 +232,8 @@ describe('DiffViewer initialState', () => {
     expect(state.viewMode).toBe('side-by-side');
     expect(state.showWhitespace).toBe(true);
     expect(state.contextLines).toBe(3);
+    expect(state.wordDiff).toBe(true);
+    expect(state.wrapLines).toBe(false);
   });
 
   it('is deeply frozen or safely immutable', () => {

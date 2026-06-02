@@ -97,17 +97,19 @@ describe('app and seo', () => {
         viewMode: 'side-by-side',
         showWhitespace: true,
         contextLines: 3,
+        wordDiff: true,
+        wrapLines: false,
       },
     });
     expect(diffViewerTool.deserialize({ nope: true })).toEqual({
       success: false,
       error:
-        'Invalid data format: expected { original: string, modified: string, viewMode?: string, showWhitespace?: boolean, contextLines?: number }',
+        'Invalid data format: expected { original: string, modified: string, viewMode?: string, showWhitespace?: boolean, contextLines?: number, wordDiff?: boolean, wrapLines?: boolean }',
     });
-    expect(diffViewerTool.serialize({ original: 'x', modified: 'y', viewMode: 'side-by-side', showWhitespace: true, contextLines: 3 })).toContain('"original"');
-    expect(diffViewerTool.deserialize({ original: 'a', modified: 'b', viewMode: 'unified', showWhitespace: false, contextLines: 5 })).toEqual({
+    expect(diffViewerTool.serialize({ original: 'x', modified: 'y', viewMode: 'side-by-side', showWhitespace: true, contextLines: 3, wordDiff: true, wrapLines: false })).toContain('"original"');
+    expect(diffViewerTool.deserialize({ original: 'a', modified: 'b', viewMode: 'unified', showWhitespace: false, contextLines: 5, wordDiff: true, wrapLines: false })).toEqual({
       success: true,
-      data: { original: 'a', modified: 'b', viewMode: 'unified', showWhitespace: false, contextLines: 5 },
+      data: { original: 'a', modified: 'b', viewMode: 'unified', showWhitespace: false, contextLines: 5, wordDiff: true, wrapLines: false },
     });
     const exporters = diffViewerTool.exporters ?? [];
     expect(exporters).toHaveLength(4);

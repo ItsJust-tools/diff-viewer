@@ -10,9 +10,13 @@ interface ToolSidebarProps {
   modified: string;
   viewMode: string;
   showWhitespace: boolean;
+  wordDiff: boolean;
+  wrapLines: boolean;
   contextLines: number;
   onViewModeChange?: (mode: 'side-by-side' | 'unified' | 'split') => void;
   onShowWhitespaceChange?: (show: boolean) => void;
+  onWordDiffChange?: (enabled: boolean) => void;
+  onWrapLinesChange?: (enabled: boolean) => void;
   onContextLinesChange?: (lines: number) => void;
   onSwap?: () => void;
   onClear?: () => void;
@@ -24,8 +28,12 @@ export function ToolSidebar({
   modified,
   viewMode,
   showWhitespace,
+  wordDiff,
+  wrapLines,
   contextLines,
   onShowWhitespaceChange,
+  onWordDiffChange,
+  onWrapLinesChange,
   onContextLinesChange,
   onSwap,
   onClear,
@@ -113,6 +121,28 @@ export function ToolSidebar({
               onChange={(e) => onShowWhitespaceChange?.(e.target.checked)}
             />
             <span>Show Whitespace</span>
+          </label>
+        </div>
+
+        <div className="sidebar-option-row">
+          <label className="sidebar-checkbox-label">
+            <input
+              type="checkbox"
+              checked={wordDiff}
+              onChange={(e) => onWordDiffChange?.(e.target.checked)}
+            />
+            <span>Word Diff</span>
+          </label>
+        </div>
+
+        <div className="sidebar-option-row">
+          <label className="sidebar-checkbox-label">
+            <input
+              type="checkbox"
+              checked={wrapLines}
+              onChange={(e) => onWrapLinesChange?.(e.target.checked)}
+            />
+            <span>Wrap Lines</span>
           </label>
         </div>
 

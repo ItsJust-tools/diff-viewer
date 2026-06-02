@@ -10,6 +10,10 @@ export interface DiffViewerState {
   showWhitespace: boolean;
   /** Number of context lines to show around changes in unified view. -1 disables filtering. */
   contextLines: number;
+  /** Whether to enable word-level diff highlighting. */
+  wordDiff: boolean;
+  /** Whether to wrap long lines instead of truncating with ellipsis. */
+  wrapLines: boolean;
 }
 
 /** A single line in the computed diff output. */

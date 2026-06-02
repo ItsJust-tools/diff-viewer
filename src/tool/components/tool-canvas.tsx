@@ -301,6 +301,8 @@ interface ToolCanvasProps {
   viewMode: 'side-by-side' | 'unified' | 'split';
   showWhitespace: boolean;
   contextLines: number;
+  wordDiff: boolean;
+  wrapLines: boolean;
   canvasRef?: React.RefObject<HTMLDivElement | null>;
   onOriginalChange?: (text: string) => void;
   onModifiedChange?: (text: string) => void;
@@ -314,9 +316,11 @@ interface ToolCanvasProps {
 function DiffLineContent({
   line,
   showWhitespace,
+  wordDiff,
 }: {
   line: DiffLine;
   showWhitespace: boolean;
+  wordDiff: boolean;
 }) {
   const isHunk = line.type === 'unchanged' && line.content.startsWith('@@');
 
@@ -352,8 +356,8 @@ function DiffLineContent({
     );
   }
 
-  // Word-level diff highlighting for changed lines
-  if (line.wordChanges && line.wordChanges.length > 0 && (line.type === 'added' || line.type === 'removed')) {
+  // Word-level diff highlighting for changed lines (only when wordDiff is enabled)
+  if (wordDiff && line.wordChanges && line.wordChanges.length > 0 && (line.type === 'added' || line.type === 'removed')) {
     return (
       <>
         {line.wordChanges.map((seg, i) => {
@@ -393,9 +397,11 @@ function DiffLineContent({
 function DiffLineRow({
   line,
   showWhitespace,
+  wordDiff,
 }: {
   line: DiffLine;
   showWhitespace: boolean;
+  wordDiff: boolean;
 }) {
   const isHunk = line.type === 'unchanged' && line.content.startsWith('@@');
   const bgColor =
@@ -449,7 +455,7 @@ function DiffLineRow({
         {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : isHunk ? '~' : ' '}
       </span>
       <span className="diff-line-content" role="cell">
-        <DiffLineContent line={line} showWhitespace={showWhitespace} />
+        <DiffLineContent line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
       </span>
     </div>
   );
@@ -462,6 +468,8 @@ export function ToolCanvas({
   viewMode,
   showWhitespace,
   contextLines,
+  wordDiff,
+  wrapLines,
   canvasRef,
   onOriginalChange,
   onModifiedChange,
@@ -530,7 +538,7 @@ export function ToolCanvas({
           ) : (
             <div role="table" aria-label="Unified diff lines">
               {diffLines.map((line, idx) => (
-                <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} />
+                <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
               ))}
             </div>
           )}
@@ -577,7 +585,7 @@ export function ToolCanvas({
             ) : (
               <div role="table" aria-label="Split diff output lines">
                 {diffLines.map((line, idx) => (
-                  <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} />
+                  <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
                 ))}
               </div>
             )}
@@ -590,7 +598,7 @@ export function ToolCanvas({
   return (
     <div
       ref={canvasRef}
-      className="diff-canvas"
+      className={`diff-canvas${wrapLines ? ' diff-canvas-wrap' : ''}`}
       role="application"
       aria-label="Diff Viewer"
     >

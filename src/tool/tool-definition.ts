@@ -19,7 +19,11 @@ function isDiffViewerState(value: unknown): value is DiffViewerState {
     (v.showWhitespace === undefined ||
       typeof v.showWhitespace === 'boolean') &&
     (v.contextLines === undefined ||
-      typeof v.contextLines === 'number')
+      typeof v.contextLines === 'number') &&
+    (v.wordDiff === undefined ||
+      typeof v.wordDiff === 'boolean') &&
+    (v.wrapLines === undefined ||
+      typeof v.wrapLines === 'boolean')
   );
 }
 
@@ -34,6 +38,8 @@ export const diffViewerTool: Tool<DiffViewerState> = {
     viewMode: 'side-by-side',
     showWhitespace: true,
     contextLines: 3,
+    wordDiff: true,
+    wrapLines: false,
   },
   serialize: (state) => JSON.stringify(state, null, 2),
   deserialize: (data) => {
@@ -46,13 +52,15 @@ export const diffViewerTool: Tool<DiffViewerState> = {
           viewMode: data.viewMode ?? 'side-by-side',
           showWhitespace: data.showWhitespace ?? true,
           contextLines: data.contextLines ?? 3,
+          wordDiff: data.wordDiff ?? true,
+          wrapLines: data.wrapLines ?? false,
         },
       };
     }
     return {
       success: false,
       error:
-        'Invalid data format: expected { original: string, modified: string, viewMode?: string, showWhitespace?: boolean, contextLines?: number }',
+        'Invalid data format: expected { original: string, modified: string, viewMode?: string, showWhitespace?: boolean, contextLines?: number, wordDiff?: boolean, wrapLines?: boolean }',
     };
   },
   exporters: [
