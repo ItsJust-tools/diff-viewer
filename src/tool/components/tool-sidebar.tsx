@@ -8,7 +8,7 @@ import './diff-viewer.css';
 interface ToolSidebarProps {
   original: string;
   modified: string;
-  viewMode: string;
+  viewMode: 'side-by-side' | 'unified' | 'split';
   showWhitespace: boolean;
   wordDiff: boolean;
   wrapLines: boolean;
@@ -86,7 +86,7 @@ export function ToolSidebar({
                 marginTop: '0.25rem',
                 padding: '0.375rem 0.5rem',
                 background: 'var(--warning)',
-                color: '#fff',
+                color: 'var(--warning-text)',
                 borderRadius: 'var(--radius)',
                 fontSize: '0.75rem',
                 fontWeight: 500,

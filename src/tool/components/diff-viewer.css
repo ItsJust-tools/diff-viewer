@@ -253,34 +253,6 @@
   margin: 0 0 0.75rem;
 }
 
-.stats-list {
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.stat-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.stat-row dt {
-  font-size: 0.8125rem;
-  color: var(--muted);
-}
-
-.stat-row dd {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--foreground);
-  margin: 0;
-  font-variant-numeric: tabular-nums;
-}
-
 .sidebar-option-row {
   margin-bottom: 0.75rem;
 }

@@ -19,6 +19,7 @@
   --error: #ef4444;
   --error-hover: #dc2626;
   --warning: #f59e0b;
+  --warning-text: #ffffff;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -46,6 +47,7 @@
   --error: #ef4444;
   --error-hover: #f87171;
   --warning: #f59e0b;
+  --warning-text: #000000;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25);
@@ -66,6 +68,7 @@
   --success: #006b1f;
   --success-hover: #004f17;
   --warning: #7a4a00;
+  --warning-text: #ffffff;
   --error: #8b0000;
   --error-hover: #670000;
 }
@@ -85,6 +88,7 @@
   --success: #6cff8a;
   --success-hover: #95ffab;
   --warning: #ffd166;
+  --warning-text: #000000;
   --error: #ff8a8a;
   --error-hover: #ffb0b0;
 }

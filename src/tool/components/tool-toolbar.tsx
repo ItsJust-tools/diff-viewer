@@ -7,7 +7,7 @@ import './diff-viewer.css';
 interface ToolToolbarProps {
   original: string;
   modified: string;
-  viewMode: string;
+  viewMode: 'side-by-side' | 'unified' | 'split';
 }
 
 export function ToolToolbar({ original, modified, viewMode }: ToolToolbarProps) {
