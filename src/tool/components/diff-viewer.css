@@ -537,6 +537,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .toolbar-info-text {
@@ -669,6 +670,19 @@
 
   .sidebar-section {
     padding: 0.625rem 0.75rem;
+  }
+
+  .toolbar-info-text {
+    font-size: 0.75rem;
+  }
+
+  .toolbar-stats-group {
+    gap: 0.375rem;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-separator {
+    display: inline;
   }
 }
 

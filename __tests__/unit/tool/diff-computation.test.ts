@@ -226,4 +226,27 @@ describe('computeDiff — edge cases', () => {
     expect(dLine!.oldLineNumber).toBe(4);
     expect(dLine!.newLineNumber).toBe(4);
   });
+
+  it('skips word-level diff computation when enableWordDiff is false', () => {
+    const result = computeDiff('The quick brown fox', 'The slow brown dog', -1, false);
+    const addedLines = result.filter((l) => l.type === 'added');
+    const removedLines = result.filter((l) => l.type === 'removed');
+    expect(addedLines.length).toBeGreaterThanOrEqual(1);
+    expect(removedLines.length).toBeGreaterThanOrEqual(1);
+    // No wordChanges should be present when word diff is disabled
+    for (const line of result) {
+      expect(line.wordChanges).toBeUndefined();
+    }
+  });
+
+  it('skips word-level diff in chunked fallback when enableWordDiff is false', () => {
+    // Create large enough input to trigger chunked path
+    const origLines = Array.from({ length: 5000 }, (_, i) => `line${i}`);
+    const modLines = Array.from({ length: 5000 }, (_, i) => `line${i % 2 === 0 ? i : 'changed' + i}`);
+    const result = computeDiff(origLines.join('\n'), modLines.join('\n'), -1, false);
+    expect(result.length).toBeGreaterThan(0);
+    for (const line of result) {
+      expect(line.wordChanges).toBeUndefined();
+    }
+  });
 });

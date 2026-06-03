@@ -146,12 +146,14 @@ function computeWordDiff(
  * @param origLines - Original text split into lines
  * @param modLines - Modified text split into lines
  * @param contextLines - Context lines for filtering (-1 for no filtering)
+ * @param enableWordDiff - When true, compute word-level diff highlighting for changed lines
  * @returns Array of DiffLine objects
  */
 function computeDiffChunked(
   origLines: string[],
   modLines: string[],
-  contextLines: number
+  contextLines: number,
+  enableWordDiff = true
 ): DiffLine[] {
   const CHUNK_SIZE = 2000; // 2000×2000 = 4M cells, well under 10M limit
   const totalOrig = origLines.length;
@@ -234,23 +236,25 @@ function computeDiffChunked(
     }
   }
 
-  // Pair removed/added lines for word-level diff
-  let pendingRemovedIdx = -1;
-  let pendingOldLine = '';
-  for (let i = 0; i < result.length; i++) {
-    const line = result[i] as DiffLine;
-    if (line.type === 'removed' && pendingRemovedIdx === -1) {
-      pendingRemovedIdx = i;
-      pendingOldLine = line.content;
-    } else if (line.type === 'added' && pendingRemovedIdx !== -1) {
-      const newLine = line.content;
-      result[pendingRemovedIdx]!.wordChanges = computeWordDiff(pendingOldLine, newLine, 'removed');
-      line.wordChanges = computeWordDiff(pendingOldLine, newLine, 'added');
-      pendingRemovedIdx = -1;
-      pendingOldLine = '';
-    } else if (line.type !== 'unchanged') {
-      pendingRemovedIdx = -1;
-      pendingOldLine = '';
+  // Pair removed/added lines for word-level diff (only when enabled)
+  if (enableWordDiff) {
+    let pendingRemovedIdx = -1;
+    let pendingOldLine = '';
+    for (let i = 0; i < result.length; i++) {
+      const line = result[i] as DiffLine;
+      if (line.type === 'removed' && pendingRemovedIdx === -1) {
+        pendingRemovedIdx = i;
+        pendingOldLine = line.content;
+      } else if (line.type === 'added' && pendingRemovedIdx !== -1) {
+        const newLine = line.content;
+        result[pendingRemovedIdx]!.wordChanges = computeWordDiff(pendingOldLine, newLine, 'removed');
+        line.wordChanges = computeWordDiff(pendingOldLine, newLine, 'added');
+        pendingRemovedIdx = -1;
+        pendingOldLine = '';
+      } else if (line.type !== 'unchanged') {
+        pendingRemovedIdx = -1;
+        pendingOldLine = '';
+      }
     }
   }
 
@@ -310,10 +314,17 @@ function computeDiffChunked(
  * into "..." markers to show only relevant context.
  * Pass contextLines = -1 to return the full diff without collapsing.
  *
- * For changed lines, word-level diff highlighting is computed when the
- * corresponding paired line exists.
+ * For changed lines, word-level diff highlighting is computed (when
+ * `enableWordDiff` is true and the corresponding paired line exists).
+ * Skipping word-diff when it's not needed avoids expensive tokenization
+ * for large diffs on every keystroke.
  */
-export function computeDiff(original: string, modified: string, contextLines: number): DiffLine[] {
+export function computeDiff(
+  original: string,
+  modified: string,
+  contextLines: number,
+  enableWordDiff = true
+): DiffLine[] {
   const origLines = original.split('\n');
   const modLines = modified.split('\n');
 
@@ -340,7 +351,7 @@ export function computeDiff(original: string, modified: string, contextLines: nu
   const n = modLines.length;
   const LCS_MAX_CELLS = 10_000_000; // ~80 MB for number[][]
   if (m * n > LCS_MAX_CELLS) {
-    return computeDiffChunked(origLines, modLines, contextLines);
+    return computeDiffChunked(origLines, modLines, contextLines, enableWordDiff);
   }
 
   const dp = computeLCSTable(origLines, modLines);
@@ -380,26 +391,27 @@ export function computeDiff(original: string, modified: string, contextLines: nu
     }
   }
 
-  // Pair each removed line with the nearest subsequent added line for word-level diff.
-  // This runs as a single forward pass, tracking the most recent removed line
-  // and pairing it with the next added line.
-  let pendingRemovedIdx = -1;
-  let pendingOldLine = '';
-  for (let i = 0; i < result.length; i++) {
-    const line = result[i] as DiffLine;
-    if (line.type === 'removed' && pendingRemovedIdx === -1) {
-      pendingRemovedIdx = i;
-      pendingOldLine = line.content;
-    } else if (line.type === 'added' && pendingRemovedIdx !== -1) {
-      const newLine = line.content;
-      result[pendingRemovedIdx]!.wordChanges = computeWordDiff(pendingOldLine, newLine, 'removed');
-      line.wordChanges = computeWordDiff(pendingOldLine, newLine, 'added');
-      pendingRemovedIdx = -1;
-      pendingOldLine = '';
-    } else if (line.type !== 'unchanged') {
-      // Another removal without a match, or an added line without a prior removal
-      pendingRemovedIdx = -1;
-      pendingOldLine = '';
+  // Pair each removed line with the nearest subsequent added line for word-level diff
+  // (only when word-diff computation is enabled, since tokenization is expensive).
+  if (enableWordDiff) {
+    let pendingRemovedIdx = -1;
+    let pendingOldLine = '';
+    for (let i = 0; i < result.length; i++) {
+      const line = result[i] as DiffLine;
+      if (line.type === 'removed' && pendingRemovedIdx === -1) {
+        pendingRemovedIdx = i;
+        pendingOldLine = line.content;
+      } else if (line.type === 'added' && pendingRemovedIdx !== -1) {
+        const newLine = line.content;
+        result[pendingRemovedIdx]!.wordChanges = computeWordDiff(pendingOldLine, newLine, 'removed');
+        line.wordChanges = computeWordDiff(pendingOldLine, newLine, 'added');
+        pendingRemovedIdx = -1;
+        pendingOldLine = '';
+      } else if (line.type !== 'unchanged') {
+        // Another removal without a match, or an added line without a prior removal
+        pendingRemovedIdx = -1;
+        pendingOldLine = '';
+      }
     }
   }
 
@@ -470,7 +482,7 @@ export function generateUnifiedDiffString(original: string, modified: string): s
       .join('\n');
   }
 
-  const diffLines = computeDiff(original, modified, -1);
+  const diffLines = computeDiff(original, modified, -1, false);
   const m = original.split('\n').length;
   const n = modified.split('\n').length;
 
@@ -661,9 +673,9 @@ export function ToolCanvas({
   const filteredDiffLines = useMemo(
     () =>
       viewMode === 'unified'
-        ? computeDiff(original, modified, contextLines)
+        ? computeDiff(original, modified, contextLines, wordDiff)
         : diffLines,
-    [original, modified, viewMode, contextLines, diffLines]
+    [original, modified, viewMode, contextLines, diffLines, wordDiff]
   );
 
   const origNumLines = original.split('\n').length || 1;

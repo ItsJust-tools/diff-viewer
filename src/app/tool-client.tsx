@@ -201,9 +201,9 @@ export default function ToolClient() {
   const fullDiffLines: DiffLine[] = useMemo(
     () =>
       data.original || data.modified
-        ? computeDiff(data.original, data.modified, -1)
+        ? computeDiff(data.original, data.modified, -1, data.wordDiff)
         : [],
-    [data.original, data.modified]
+    [data.original, data.modified, data.wordDiff]
   );
 
   const diffStats = useMemo(() => {
