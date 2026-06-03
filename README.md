@@ -15,6 +15,8 @@ View and compare text differences side-by-side. Paste two versions of any text a
 
 - **Three View Modes:** Side-by-side editor, unified diff output, and split (editor + diff) view
 - **Real-time Diff:** See changes as you type with color-coded additions and removals
+- **Word-level Diff Highlighting:** Within each changed line, added/removed words are highlighted separately for precise comparison
+- **Line Wrapping:** Toggle wrapping for long lines — avoids horizontal scrolling
 - **Whitespace Visibility:** Toggle display of spaces (·) and tabs (→)
 - **Context Control:** Adjust how many surrounding lines to show in unified view (0–20)
 - **Swap & Clear:** One-click swap original ↔ modified or clear both panels
@@ -58,7 +60,7 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 | `Ctrl+Shift+E`         | Export as JSON              |
 | `Ctrl+Shift+P`         | Export as PNG               |
 | `Ctrl+Shift+S`         | Swap original ↔ modified    |
-| `Ctrl+Shift+Backspace` | Clear both text panels      |
+| `Ctrl+Shift+Backspace`<br>`Ctrl+Shift+Delete` | Clear both text panels      |
 
 ## Project Structure
 

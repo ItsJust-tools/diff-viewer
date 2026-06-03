@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { ToolShell, useTool, ImportExport } from '@itsjust/core';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
+import type { DiffLine } from '@/tool';
 import {
   toolConfig,
   templateBaseVersion,
@@ -13,6 +14,7 @@ import {
   computeDiff,
   generateUnifiedDiffString,
 } from '@/tool';
+import '../tool/components/diff-viewer.css';
 
 const MAX_TEXT_LENGTH = 500_000; // character limit per textarea to prevent OOM
 
@@ -195,18 +197,25 @@ export default function ToolClient() {
     }
   }, [showToast, tool.state.data, title]);
 
+  // Compute full diff once — shared across canvas, sidebar, and stats
+  const fullDiffLines: DiffLine[] = useMemo(
+    () =>
+      data.original || data.modified
+        ? computeDiff(data.original, data.modified, -1)
+        : [],
+    [data.original, data.modified]
+  );
+
   const diffStats = useMemo(() => {
-    if (!data.original && !data.modified) return { additions: 0, deletions: 0 };
-    // Use the same LCS-based algorithm as the diff view for accurate stats
-    const lines = computeDiff(data.original, data.modified, -1);
+    if (fullDiffLines.length === 0) return { additions: 0, deletions: 0 };
     let additions = 0;
     let deletions = 0;
-    for (const line of lines) {
+    for (const line of fullDiffLines) {
       if (line.type === 'added') additions++;
       else if (line.type === 'removed') deletions++;
     }
     return { additions, deletions };
-  }, [data.original, data.modified]);
+  }, [fullDiffLines]);
 
   const toolbarContent = (
     <>
@@ -231,7 +240,7 @@ export default function ToolClient() {
       wordDiff={data.wordDiff}
       wrapLines={data.wrapLines}
       contextLines={data.contextLines}
-      onViewModeChange={handleViewModeChange}
+      diffLines={fullDiffLines}
       onShowWhitespaceChange={handleShowWhitespaceChange}
       onWordDiffChange={handleWordDiffChange}
       onWrapLinesChange={handleWrapLinesChange}
@@ -252,6 +261,7 @@ export default function ToolClient() {
       contextLines={data.contextLines}
       wordDiff={data.wordDiff}
       wrapLines={data.wrapLines}
+      diffLines={fullDiffLines}
       onOriginalChange={handleOriginalChange}
       onModifiedChange={handleModifiedChange}
       onViewModeChange={handleViewModeChange}

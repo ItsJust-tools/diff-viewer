@@ -2,11 +2,17 @@
 
 import { useMemo } from 'react';
 import type { DiffLine, WordChange, DiffOp } from '../types';
-import './diff-viewer.css';
 
 /**
- * Compute the Longest Common Subsequence (LCS) between two arrays of strings.
- * Returns the DP table for backtracking.
+ * Compute the Longest Common Subsequence (LCS) between two arrays of strings
+ * using dynamic programming.
+ *
+ * Returns a DP table of size (m+1) × (n+1) for backtracking.
+ * dp[i][j] holds the LCS length for a[0..i-1] and b[0..j-1].
+ * The first row/column are zero-filled to simplify the recurrence.
+ *
+ * Time: O(m×n) | Space: O(m×n)
+ * A soft guard of 10M cells (~80 MB) prevents OOM on huge inputs.
  */
 function computeLCSTable(a: string[], b: string[]): number[][] {
   const m = a.length;
@@ -351,6 +357,8 @@ interface ToolCanvasProps {
   contextLines: number;
   wordDiff: boolean;
   wrapLines: boolean;
+  /** Pre-computed full diff lines (without context filtering). */
+  diffLines: DiffLine[];
   canvasRef?: React.RefObject<HTMLDivElement | null>;
   onOriginalChange?: (text: string) => void;
   onModifiedChange?: (text: string) => void;
@@ -500,14 +508,18 @@ export function ToolCanvas({
   contextLines,
   wordDiff,
   wrapLines,
+  diffLines,
   canvasRef,
   onOriginalChange,
   onModifiedChange,
   onViewModeChange,
 }: ToolCanvasProps) {
-  const diffLines = useMemo(
-    () => computeDiff(original, modified, viewMode === 'unified' ? contextLines : -1),
-    [original, modified, viewMode, contextLines]
+  const filteredDiffLines = useMemo(
+    () =>
+      viewMode === 'unified'
+        ? computeDiff(original, modified, contextLines)
+        : diffLines,
+    [original, modified, viewMode, contextLines, diffLines]
   );
 
   const origNumLines = original.split('\n').length || 1;
@@ -553,8 +565,8 @@ export function ToolCanvas({
   );
 
   const renderUnified = () => {
-    const addCount = diffLines.filter((l) => l.type === 'added').length;
-    const delCount = diffLines.filter((l) => l.type === 'removed').length;
+    const addCount = filteredDiffLines.filter((l) => l.type === 'added').length;
+    const delCount = filteredDiffLines.filter((l) => l.type === 'removed').length;
     return (
       <div
         className="diff-unified"
@@ -570,7 +582,7 @@ export function ToolCanvas({
           </span>
         </div>
         <div className="diff-lines-container" role="region" aria-label="Unified diff output">
-          {diffLines.length === 0 ? (
+          {filteredDiffLines.length === 0 ? (
             <div className="diff-empty-placeholder">
               {original || modified
                 ? 'No differences — the texts are identical'
@@ -579,7 +591,7 @@ export function ToolCanvas({
           ) : (
             <>
               <div role="table" aria-label="Unified diff lines">
-                {diffLines.map((line, idx) => (
+                {filteredDiffLines.map((line, idx) => (
                   <DiffLineRow
                     key={idx}
                     line={line}
@@ -601,8 +613,8 @@ export function ToolCanvas({
   };
 
   const renderSplit = () => {
-    const addCount = diffLines.filter((l) => l.type === 'added').length;
-    const delCount = diffLines.filter((l) => l.type === 'removed').length;
+    const addCount = filteredDiffLines.filter((l) => l.type === 'added').length;
+    const delCount = filteredDiffLines.filter((l) => l.type === 'removed').length;
     return (
       <div
         className="diff-split"
@@ -634,7 +646,7 @@ export function ToolCanvas({
             </span>
           </div>
           <div className="diff-lines-container" role="region" aria-label="Split diff output lines">
-            {diffLines.length === 0 ? (
+            {filteredDiffLines.length === 0 ? (
               <div className="diff-empty-placeholder">
                 {original || modified
                   ? 'No differences — the texts are identical'
@@ -643,7 +655,7 @@ export function ToolCanvas({
             ) : (
               <>
                 <div role="table" aria-label="Split diff output lines">
-                  {diffLines.map((line, idx) => (
+                  {filteredDiffLines.map((line, idx) => (
                     <DiffLineRow
                       key={idx}
                       line={line}

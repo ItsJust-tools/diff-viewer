@@ -1,8 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { computeDiff } from './tool-canvas';
-import './diff-viewer.css';
+import type { DiffLine } from '../types';
 
 /** Props for the diff viewer sidebar panel. */
 interface ToolSidebarProps {
@@ -13,7 +12,8 @@ interface ToolSidebarProps {
   wordDiff: boolean;
   wrapLines: boolean;
   contextLines: number;
-  onViewModeChange?: (mode: 'side-by-side' | 'unified' | 'split') => void;
+  /** Pre-computed full diff lines (without context filtering). */
+  diffLines: DiffLine[];
   onShowWhitespaceChange?: (show: boolean) => void;
   onWordDiffChange?: (enabled: boolean) => void;
   onWrapLinesChange?: (enabled: boolean) => void;
@@ -31,6 +31,7 @@ export function ToolSidebar({
   wordDiff,
   wrapLines,
   contextLines,
+  diffLines,
   onShowWhitespaceChange,
   onWordDiffChange,
   onWrapLinesChange,
@@ -44,19 +45,17 @@ export function ToolSidebar({
   const origChars = original.length;
   const modChars = modified.length;
 
-  // Compute diff stats using the same LCS algorithm as the diff view
+  // Compute diff stats from pre-computed diff lines
   const diffStats = useMemo(() => {
     if (!original && !modified) return { additions: 0, deletions: 0, changes: 0 };
-    // Use -1 contextLines to get full diff without collapsing
-    const lines = computeDiff(original, modified, -1);
     let additions = 0;
     let deletions = 0;
-    for (const line of lines) {
+    for (const line of diffLines) {
       if (line.type === 'added') additions++;
       else if (line.type === 'removed') deletions++;
     }
     return { additions, deletions, changes: additions + deletions };
-  }, [original, modified]);
+  }, [original, modified, diffLines]);
 
   return (
     <div className="diff-sidebar">

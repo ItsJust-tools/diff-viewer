@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import './diff-viewer.css';
 
 /** Props for the diff viewer toolbar. */
 interface ToolToolbarProps {

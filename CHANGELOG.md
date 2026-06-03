@@ -14,13 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Refactored handleCopyDiff**: Replaced inline duplicated LCS algorithm with the shared `generateUnifiedDiffString` function from `tool-canvas.tsx`, reducing code duplication and ensuring consistent diff output.
+- **Single-diff computation**: Moved LCS diff computation up to `tool-client.tsx` and pass the pre-computed full diff lines as a prop to both `ToolCanvas` and `ToolSidebar`, eliminating duplicate O(m×n) computation on every text change.
+- **Consolidated CSS import**: Moved `diff-viewer.css` import from 3 component files (`tool-canvas.tsx`, `tool-sidebar.tsx`, `tool-toolbar.tsx`) to a single import in `tool-client.tsx`, reducing bundle size and redundant style injection.
+- **Removed unused `onViewModeChange` prop**: Cleaned up the `ToolSidebarProps` interface by removing the `onViewModeChange` handler which was never used by the sidebar.
 
 - **Word-level diff highlighting**: Changed lines in unified and split views now show word-level changes with inline highlighting — added words highlighted in green, removed words highlighted in red, making it easy to see exactly what changed within a line.
 - **Improved hunk markers**: Collapsed context sections in unified view now show proper hunk headers with line range info (e.g., `@@ -3,5 +3,5 @@`) instead of plain `...` markers.
 - **Dual line number columns**: Unified and split diff views now show both old and new line numbers side-by-side for better orientation.
 - **New DiffLine types**: `WordChange` and `DiffOp` interfaces added for word-level diff support.
 - **Expanded test coverage**: Added `diff-computation.test.ts` with 15 new tests covering edge cases, context line filtering, word diff integration, and type compliance.
+- **Refactored handleCopyDiff**: Replaced inline duplicated LCS algorithm with the shared `generateUnifiedDiffString` function from `tool-canvas.tsx`, reducing code duplication and ensuring consistent diff output.
+
+### Documentation
+
+- **README.md**: Added `Ctrl+Shift+Delete` as an alternative shortcut for clearing both panels, reflecting the handling in `tool-client.tsx`.
 
 ## [1.4.0] - 2026-05-23
 
