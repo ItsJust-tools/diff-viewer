@@ -168,6 +168,7 @@ export function ToolSidebar({
 
       <div className="sidebar-section">
         <h3>Actions</h3>
+        <div role="group" aria-label="Diff viewer actions">
         <button
           type="button"
           className="sidebar-action-btn"
@@ -195,6 +196,7 @@ export function ToolSidebar({
         >
           Copy Unified Diff
         </button>
+        </div>
       </div>
     </div>
   );

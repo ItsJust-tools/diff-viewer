@@ -190,7 +190,6 @@ export function computeDiff(original: string, modified: string, contextLines: nu
   // Build output with line numbers
   let oldNum = 0, newNum = 0;
   const result: DiffLine[] = [];
-  const changePairs: { removedIdx: number; oldLine: string; newLine: string }[] = [];
 
   for (const op of ops) {
     if (op.type === 'unchanged') {
@@ -212,37 +211,35 @@ export function computeDiff(original: string, modified: string, contextLines: nu
       });
     } else if (op.type === 'removed') {
       oldNum++;
-      const removedIdx = result.length;
       result.push({
         type: 'removed',
         oldLineNumber: oldNum,
         newLineNumber: null,
         content: origLines[op.oldIdx] as string,
       });
-      // Track for pairing: look ahead for the next added line
-      changePairs.push({ removedIdx, oldLine: origLines[op.oldIdx] as string, newLine: '' });
     }
   }
 
-  // Pair removed lines with subsequent added lines for word-level diff
-  let pairIdx = 0;
+  // Pair each removed line with the nearest subsequent added line for word-level diff.
+  // This runs as a single forward pass, tracking the most recent removed line
+  // and pairing it with the next added line.
+  let pendingRemovedIdx = -1;
+  let pendingOldLine = '';
   for (let i = 0; i < result.length; i++) {
     const line = result[i] as DiffLine;
-    if (line.type === 'removed' && pairIdx < changePairs.length) {
-      const pair = changePairs[pairIdx]!;
-      // Look for the next added line
-      let j = i + 1;
-      while (j < result.length && (result[j] as DiffLine).type === 'unchanged') {
-        j++;
-      }
-      if (j < result.length && (result[j] as DiffLine).type === 'added') {
-        pair.newLine = (result[j] as DiffLine).content;
-      }
-      if (pair.newLine) {
-        line.wordChanges = computeWordDiff(pair.oldLine, pair.newLine, 'removed');
-        (result[j] as DiffLine).wordChanges = computeWordDiff(pair.oldLine, pair.newLine, 'added');
-      }
-      pairIdx++;
+    if (line.type === 'removed' && pendingRemovedIdx === -1) {
+      pendingRemovedIdx = i;
+      pendingOldLine = line.content;
+    } else if (line.type === 'added' && pendingRemovedIdx !== -1) {
+      const newLine = line.content;
+      result[pendingRemovedIdx]!.wordChanges = computeWordDiff(pendingOldLine, newLine, 'removed');
+      line.wordChanges = computeWordDiff(pendingOldLine, newLine, 'added');
+      pendingRemovedIdx = -1;
+      pendingOldLine = '';
+    } else if (line.type !== 'unchanged') {
+      // Another removal without a match, or an added line without a prior removal
+      pendingRemovedIdx = -1;
+      pendingOldLine = '';
     }
   }
 
@@ -469,12 +466,14 @@ function DiffLineRow({
       <span
         className="diff-line-number-old"
         style={{ opacity: line.oldLineNumber != null ? 0.6 : 0.2 }}
+        aria-hidden={line.oldLineNumber == null}
       >
         {line.oldLineNumber != null ? line.oldLineNumber : '·'}
       </span>
       <span
         className="diff-line-number-new"
         style={{ opacity: line.newLineNumber != null ? 0.6 : 0.2 }}
+        aria-hidden={line.newLineNumber == null}
       >
         {line.newLineNumber != null ? line.newLineNumber : '·'}
       </span>
@@ -488,6 +487,7 @@ function DiffLineRow({
                 ? 'var(--error)'
                 : 'var(--muted)',
         }}
+        aria-hidden
       >
         {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : isHunk ? '~' : ' '}
       </span>
@@ -575,11 +575,18 @@ export function ToolCanvas({
                 : 'Paste text in both panels to see the diff'}
             </div>
           ) : (
-            <div role="table" aria-label="Unified diff lines">
-              {diffLines.map((line, idx) => (
-                <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
-              ))}
-            </div>
+            <>
+              <div role="table" aria-label="Unified diff lines">
+                {diffLines.map((line, idx) => (
+                  <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
+                ))}
+              </div>
+              {addCount === 0 && delCount === 0 && original && modified && (
+                <div className="diff-identical-banner" role="status">
+                  ✓ Texts are identical — no changes detected
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -622,11 +629,18 @@ export function ToolCanvas({
                   : 'Diff will appear here'}
               </div>
             ) : (
-              <div role="table" aria-label="Split diff output lines">
-                {diffLines.map((line, idx) => (
-                  <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
-                ))}
-              </div>
+              <>
+                <div role="table" aria-label="Split diff output lines">
+                  {diffLines.map((line, idx) => (
+                    <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
+                  ))}
+                </div>
+                {addCount === 0 && delCount === 0 && original && modified && (
+                  <div className="diff-identical-banner" role="status">
+                    ✓ Texts are identical — no changes detected
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
