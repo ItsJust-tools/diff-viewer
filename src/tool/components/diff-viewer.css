@@ -10,7 +10,7 @@
   overflow: hidden;
 }
 
-/* Scrollbar styling for diff panels */
+/* Scrollbar styling for diff panels — WebKit (Chrome, Safari, Edge) */
 .diff-canvas ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -27,6 +27,12 @@
 
 .diff-canvas ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
+}
+
+/* Scrollbar styling for Firefox */
+.diff-canvas * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 /* --- View Mode Tabs --- */
@@ -283,6 +289,35 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+/* Stats list in sidebar */
+.stats-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.125rem 0;
+}
+
+.stat-row dt {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.stat-row dd {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  color: var(--foreground);
 }
 
 .sidebar-section {

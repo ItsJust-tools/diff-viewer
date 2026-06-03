@@ -95,7 +95,8 @@ describe('computeDiff — word-level diff integration', () => {
     expect(addedLines.length).toBeGreaterThanOrEqual(1);
     // At least one of the changed lines should have wordChanges
     const hasWordChanges = result.some(
-      (l) => (l.type === 'added' || l.type === 'removed') && l.wordChanges && l.wordChanges.length > 0
+      (l) =>
+        (l.type === 'added' || l.type === 'removed') && l.wordChanges && l.wordChanges.length > 0
     );
     expect(hasWordChanges).toBe(true);
   });
@@ -196,7 +197,10 @@ describe('computeDiff — edge cases', () => {
 
   it('handles very large inputs with fallback (no OOM)', () => {
     const origLines = Array.from({ length: 5000 }, (_, i) => `line${i}`);
-    const modLines = Array.from({ length: 5000 }, (_, i) => `line${i % 2 === 0 ? i : 'changed' + i}`);
+    const modLines = Array.from(
+      { length: 5000 },
+      (_, i) => `line${i % 2 === 0 ? i : 'changed' + i}`
+    );
     const result = computeDiff(origLines.join('\n'), modLines.join('\n'), -1);
     // Should have produced output without crashing
     expect(result.length).toBeGreaterThan(0);

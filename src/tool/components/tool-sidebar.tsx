@@ -95,7 +95,14 @@ export function ToolSidebar({
               Large input detected — diff may be slower
             </div>
           ) : null}
-          <div className="stat-row" style={{ marginTop: '0.25rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>
+          <div
+            className="stat-row"
+            style={{
+              marginTop: '0.25rem',
+              paddingTop: '0.5rem',
+              borderTop: '1px solid var(--border)',
+            }}
+          >
             <dt style={{ color: 'var(--success)' }}>Additions</dt>
             <dd style={{ color: 'var(--success)' }}>+{diffStats.additions.toLocaleString()}</dd>
           </div>
@@ -169,33 +176,35 @@ export function ToolSidebar({
       <div className="sidebar-section">
         <h3>Actions</h3>
         <div role="group" aria-label="Diff viewer actions">
-        <button
-          type="button"
-          className="sidebar-action-btn"
-          onClick={onSwap}
-          disabled={!original && !modified}
-          title={!original && !modified ? 'Paste text in a panel first' : 'Swap original ↔ modified'}
-        >
-          Swap Original ↔ Modified
-        </button>
-        <button
-          type="button"
-          className="sidebar-action-btn sidebar-action-btn-danger"
-          onClick={onClear}
-          disabled={!original && !modified}
-          title={!original && !modified ? 'Nothing to clear' : 'Clear both text panels'}
-        >
-          Clear Both
-        </button>
-        <button
-          type="button"
-          className="sidebar-action-btn"
-          onClick={onCopyDiff}
-          disabled={!original && !modified}
-          title={!original && !modified ? 'Paste text first' : 'Copy unified diff to clipboard'}
-        >
-          Copy Unified Diff
-        </button>
+          <button
+            type="button"
+            className="sidebar-action-btn"
+            onClick={onSwap}
+            disabled={!original && !modified}
+            title={
+              !original && !modified ? 'Paste text in a panel first' : 'Swap original ↔ modified'
+            }
+          >
+            Swap Original ↔ Modified
+          </button>
+          <button
+            type="button"
+            className="sidebar-action-btn sidebar-action-btn-danger"
+            onClick={onClear}
+            disabled={!original && !modified}
+            title={!original && !modified ? 'Nothing to clear' : 'Clear both text panels'}
+          >
+            Clear Both
+          </button>
+          <button
+            type="button"
+            className="sidebar-action-btn"
+            onClick={onCopyDiff}
+            disabled={!original && !modified}
+            title={!original && !modified ? 'Paste text first' : 'Copy unified diff to clipboard'}
+          >
+            Copy Unified Diff
+          </button>
         </div>
       </div>
     </div>

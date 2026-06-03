@@ -6,7 +6,7 @@ import type { DiffViewerState } from './types';
 const VALID_VIEW_MODES = ['side-by-side', 'unified', 'split'] as const;
 
 function isViewMode(value: unknown): value is 'side-by-side' | 'unified' | 'split' {
-  return VALID_VIEW_MODES.includes(value as typeof VALID_VIEW_MODES[number]);
+  return VALID_VIEW_MODES.includes(value as (typeof VALID_VIEW_MODES)[number]);
 }
 
 function isDiffViewerState(value: unknown): value is DiffViewerState {
@@ -16,14 +16,10 @@ function isDiffViewerState(value: unknown): value is DiffViewerState {
     typeof v.original === 'string' &&
     typeof v.modified === 'string' &&
     (v.viewMode === undefined || isViewMode(v.viewMode)) &&
-    (v.showWhitespace === undefined ||
-      typeof v.showWhitespace === 'boolean') &&
-    (v.contextLines === undefined ||
-      typeof v.contextLines === 'number') &&
-    (v.wordDiff === undefined ||
-      typeof v.wordDiff === 'boolean') &&
-    (v.wrapLines === undefined ||
-      typeof v.wrapLines === 'boolean')
+    (v.showWhitespace === undefined || typeof v.showWhitespace === 'boolean') &&
+    (v.contextLines === undefined || typeof v.contextLines === 'number') &&
+    (v.wordDiff === undefined || typeof v.wordDiff === 'boolean') &&
+    (v.wrapLines === undefined || typeof v.wrapLines === 'boolean')
   );
 }
 

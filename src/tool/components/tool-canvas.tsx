@@ -62,7 +62,11 @@ function tokenize(text: string): string[] {
  * Compute a word-level diff between two single-line strings.
  * Returns an array of segments with their type (added/removed/unchanged).
  */
-function computeWordDiff(oldLine: string, newLine: string, type: 'added' | 'removed'): WordChange[] {
+function computeWordDiff(
+  oldLine: string,
+  newLine: string,
+  type: 'added' | 'removed'
+): WordChange[] {
   if (oldLine === newLine) {
     return [{ type: 'unchanged', text: oldLine }];
   }
@@ -102,11 +106,16 @@ function computeWordDiff(oldLine: string, newLine: string, type: 'added' | 'remo
     // version that are missing.
     // Normalize: for added lines, only emit 'added' and 'unchanged';
     // for removed lines, only emit 'removed' and 'unchanged'.
-    const mappedType = type === 'added' && op.type === 'removed' ? 'removed' as const
-      : type === 'removed' && op.type === 'added' ? 'added' as const
-      : op.type === 'added' ? 'added' as const
-      : op.type === 'removed' ? 'removed' as const
-      : 'unchanged' as const;
+    const mappedType =
+      type === 'added' && op.type === 'removed'
+        ? ('removed' as const)
+        : type === 'removed' && op.type === 'added'
+          ? ('added' as const)
+          : op.type === 'added'
+            ? ('added' as const)
+            : op.type === 'removed'
+              ? ('removed' as const)
+              : ('unchanged' as const);
 
     // Merge consecutive segments of the same type
     const last = result[result.length - 1];
@@ -188,7 +197,8 @@ export function computeDiff(original: string, modified: string, contextLines: nu
   const ops = backtrackDiff(origLines, modLines, dp);
 
   // Build output with line numbers
-  let oldNum = 0, newNum = 0;
+  let oldNum = 0,
+    newNum = 0;
   const result: DiffLine[] = [];
 
   for (const op of ops) {
@@ -298,10 +308,16 @@ export function computeDiff(original: string, modified: string, contextLines: nu
 export function generateUnifiedDiffString(original: string, modified: string): string {
   if (!original && !modified) return '';
   if (!original) {
-    return modified.split('\n').map((line) => `+${line}`).join('\n');
+    return modified
+      .split('\n')
+      .map((line) => `+${line}`)
+      .join('\n');
   }
   if (!modified) {
-    return original.split('\n').map((line) => `-${line}`).join('\n');
+    return original
+      .split('\n')
+      .map((line) => `-${line}`)
+      .join('\n');
   }
 
   const diffLines = computeDiff(original, modified, -1);
@@ -389,7 +405,12 @@ function DiffLineContent({
   }
 
   // Word-level diff highlighting for changed lines (only when wordDiff is enabled)
-  if (wordDiff && line.wordChanges && line.wordChanges.length > 0 && (line.type === 'added' || line.type === 'removed')) {
+  if (
+    wordDiff &&
+    line.wordChanges &&
+    line.wordChanges.length > 0 &&
+    (line.type === 'added' || line.type === 'removed')
+  ) {
     return (
       <>
         {line.wordChanges.map((seg, i) => {
@@ -417,9 +438,7 @@ function DiffLineContent({
 
   // Default rendering for unchanged lines or lines without word diff
   const displayContent = showWhitespace
-    ? line.content
-        .replace(/ /g, '\u00B7')
-        .replace(/\t/g, '\u2192   ')
+    ? line.content.replace(/ /g, '\u00B7').replace(/\t/g, '\u2192   ')
     : line.content;
 
   return <>{displayContent || '\u00A0'}</>;
@@ -516,14 +535,19 @@ export function ToolCanvas({
 }: ToolCanvasProps) {
   const diffLines = useMemo(
     () => computeDiff(original, modified, viewMode === 'unified' ? contextLines : -1),
-    [original, modified, viewMode, contextLines],
+    [original, modified, viewMode, contextLines]
   );
 
   const origNumLines = original.split('\n').length || 1;
   const modNumLines = modified.split('\n').length || 1;
 
   const renderSideBySide = () => (
-    <div className="diff-side-by-side" id="diff-panel-side-by-side" role="tabpanel" aria-labelledby="diff-tab-side-by-side">
+    <div
+      className="diff-side-by-side"
+      id="diff-panel-side-by-side"
+      role="tabpanel"
+      aria-labelledby="diff-tab-side-by-side"
+    >
       {/* Original Panel */}
       <div className="diff-panel diff-panel-original">
         <div className="diff-panel-header">
@@ -560,11 +584,17 @@ export function ToolCanvas({
     const addCount = diffLines.filter((l) => l.type === 'added').length;
     const delCount = diffLines.filter((l) => l.type === 'removed').length;
     return (
-      <div className="diff-unified" id="diff-panel-unified" role="tabpanel" aria-labelledby="diff-tab-unified">
+      <div
+        className="diff-unified"
+        id="diff-panel-unified"
+        role="tabpanel"
+        aria-labelledby="diff-tab-unified"
+      >
         <div className="diff-unified-header">
           <span>Unified Diff View</span>
           <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-            {addCount} addition{addCount !== 1 ? 's' : ''}, {delCount} deletion{delCount !== 1 ? 's' : ''}
+            {addCount} addition{addCount !== 1 ? 's' : ''}, {delCount} deletion
+            {delCount !== 1 ? 's' : ''}
           </span>
         </div>
         <div className="diff-lines-container" role="region" aria-label="Unified diff output">
@@ -578,7 +608,12 @@ export function ToolCanvas({
             <>
               <div role="table" aria-label="Unified diff lines">
                 {diffLines.map((line, idx) => (
-                  <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
+                  <DiffLineRow
+                    key={idx}
+                    line={line}
+                    showWhitespace={showWhitespace}
+                    wordDiff={wordDiff}
+                  />
                 ))}
               </div>
               {addCount === 0 && delCount === 0 && original && modified && (
@@ -597,7 +632,12 @@ export function ToolCanvas({
     const addCount = diffLines.filter((l) => l.type === 'added').length;
     const delCount = diffLines.filter((l) => l.type === 'removed').length;
     return (
-      <div className="diff-split" id="diff-panel-split" role="tabpanel" aria-labelledby="diff-tab-split">
+      <div
+        className="diff-split"
+        id="diff-panel-split"
+        role="tabpanel"
+        aria-labelledby="diff-tab-split"
+      >
         {/* Left: Editor */}
         <div className="diff-split-editor">
           <div className="diff-split-header">
@@ -632,7 +672,12 @@ export function ToolCanvas({
               <>
                 <div role="table" aria-label="Split diff output lines">
                   {diffLines.map((line, idx) => (
-                    <DiffLineRow key={idx} line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
+                    <DiffLineRow
+                      key={idx}
+                      line={line}
+                      showWhitespace={showWhitespace}
+                      wordDiff={wordDiff}
+                    />
                   ))}
                 </div>
                 {addCount === 0 && delCount === 0 && original && modified && (
@@ -680,7 +725,9 @@ export function ToolCanvas({
           <TabButton
             key={mode}
             active={viewMode === mode}
-            label={mode === 'side-by-side' ? 'Side-by-Side' : mode === 'unified' ? 'Unified' : 'Split'}
+            label={
+              mode === 'side-by-side' ? 'Side-by-Side' : mode === 'unified' ? 'Unified' : 'Split'
+            }
             shortcut={mode === 'side-by-side' ? 'Ctrl+1' : mode === 'unified' ? 'Ctrl+2' : 'Ctrl+3'}
             onClick={() => onViewModeChange?.(mode)}
             tabId={`diff-tab-${mode}`}
@@ -691,7 +738,12 @@ export function ToolCanvas({
 
       {/* Screen reader live region for diff view mode changes */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {viewMode === 'side-by-side' ? 'Side-by-side' : viewMode === 'unified' ? 'Unified' : 'Split'} view active
+        {viewMode === 'side-by-side'
+          ? 'Side-by-side'
+          : viewMode === 'unified'
+            ? 'Unified'
+            : 'Split'}{' '}
+        view active
       </div>
 
       {/* Diff Content */}
@@ -734,9 +786,7 @@ function TabButton({
       title={shortcut ? `${label} (${shortcut})` : label}
     >
       {label}
-      {shortcut && (
-        <kbd className="tab-shortcut-hint">{shortcut}</kbd>
-      )}
+      {shortcut && <kbd className="tab-shortcut-hint">{shortcut}</kbd>}
     </button>
   );
 }

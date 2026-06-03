@@ -33,13 +33,13 @@ export function ToolToolbar({ original, modified, viewMode }: ToolToolbarProps) 
             {stats && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span title="Original lines / characters">
-                  <span style={{ color: 'var(--error)' }}>−</span>{' '}
-                  {stats.origLines}L / {stats.origChars.toLocaleString()}C
+                  <span style={{ color: 'var(--error)' }}>−</span> {stats.origLines}L /{' '}
+                  {stats.origChars.toLocaleString()}C
                 </span>
                 <span style={{ color: 'var(--border)' }}>|</span>
                 <span title="Modified lines / characters">
-                  <span style={{ color: 'var(--success)' }}>+</span>{' '}
-                  {stats.modLines}L / {stats.modChars.toLocaleString()}C
+                  <span style={{ color: 'var(--success)' }}>+</span> {stats.modLines}L /{' '}
+                  {stats.modChars.toLocaleString()}C
                 </span>
                 <span style={{ color: 'var(--border)' }}>|</span>
                 <span title="Current view mode" style={{ fontStyle: 'italic', opacity: 0.7 }}>

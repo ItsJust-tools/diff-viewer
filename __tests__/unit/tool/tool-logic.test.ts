@@ -203,7 +203,15 @@ describe('DiffViewer serialize', () => {
   });
 
   it('serializes minimal state correctly', () => {
-    const json = diffViewerTool.serialize({ original: '', modified: '', viewMode: 'side-by-side', showWhitespace: true, contextLines: 3, wordDiff: true, wrapLines: false });
+    const json = diffViewerTool.serialize({
+      original: '',
+      modified: '',
+      viewMode: 'side-by-side',
+      showWhitespace: true,
+      contextLines: 3,
+      wordDiff: true,
+      wrapLines: false,
+    });
     const parsed = JSON.parse(json);
     expect(parsed.original).toBe('');
     expect(parsed.modified).toBe('');

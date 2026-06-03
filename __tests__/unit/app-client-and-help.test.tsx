@@ -65,9 +65,19 @@ vi.mock('@/tool', () => ({
     serialize: (state: unknown) => JSON.stringify(state),
     deserialize: () => ({ success: true, data: { original: 'From Shared Url', modified: '' } }),
   },
-  ToolCanvas: ({ original, modified }: { original: string; modified: string }) => <div>canvas:{original}:{modified}</div>,
+  ToolCanvas: ({ original, modified }: { original: string; modified: string }) => (
+    <div>
+      canvas:{original}:{modified}
+    </div>
+  ),
   ToolToolbar: () => <div>toolbar</div>,
-  ToolSidebar: ({ original, modified }: { original: string; modified: string }) => <div>sidebar:{original}:{modified}</div>,
+  ToolSidebar: ({ original, modified }: { original: string; modified: string }) => (
+    <div>
+      sidebar:{original}:{modified}
+    </div>
+  ),
+  computeDiff: () => [],
+  generateUnifiedDiffString: () => '',
 }));
 
 describe('app client and help page', () => {

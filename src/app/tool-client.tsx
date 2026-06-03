@@ -10,6 +10,7 @@ import {
   ToolCanvas,
   ToolToolbar,
   ToolSidebar,
+  computeDiff,
   generateUnifiedDiffString,
 } from '@/tool';
 
@@ -116,7 +117,7 @@ export default function ToolClient() {
     }
     navigator.clipboard.writeText(diff).then(
       () => showToast('Unified diff copied to clipboard', 'success'),
-      () => showToast('Failed to copy to clipboard', 'error'),
+      () => showToast('Failed to copy to clipboard', 'error')
     );
   }, [data.original, data.modified, showToast]);
 
@@ -196,42 +197,14 @@ export default function ToolClient() {
 
   const diffStats = useMemo(() => {
     if (!data.original && !data.modified) return { additions: 0, deletions: 0 };
-    if (!data.original) {
-      const lines = data.modified.split('\n');
-      return { additions: lines.length, deletions: 0 };
-    }
-    if (!data.modified) {
-      const lines = data.original.split('\n');
-      return { additions: 0, deletions: lines.length };
-    }
-
-    const origLines = data.original.split('\n');
-    const modLines = data.modified.split('\n');
-
-    // Use a frequency-aware approach for accurate diff stats
-    const origFreq = new Map<string, number>();
-    for (const l of origLines) {
-      origFreq.set(l, (origFreq.get(l) ?? 0) + 1);
-    }
-
-    const modFreq = new Map<string, number>();
-    for (const l of modLines) {
-      modFreq.set(l, (modFreq.get(l) ?? 0) + 1);
-    }
-
+    // Use the same LCS-based algorithm as the diff view for accurate stats
+    const lines = computeDiff(data.original, data.modified, -1);
     let additions = 0;
     let deletions = 0;
-
-    for (const [line, count] of modFreq) {
-      const origCount = origFreq.get(line) ?? 0;
-      additions += Math.max(0, count - origCount);
+    for (const line of lines) {
+      if (line.type === 'added') additions++;
+      else if (line.type === 'removed') deletions++;
     }
-
-    for (const [line, count] of origFreq) {
-      const modCount = modFreq.get(line) ?? 0;
-      deletions += Math.max(0, count - modCount);
-    }
-
     return { additions, deletions };
   }, [data.original, data.modified]);
 
@@ -287,7 +260,9 @@ export default function ToolClient() {
 
   const statusBarContent = (
     <>
-      <span className={`status-slot status-slot-state ${tool.state.isDirty ? 'status-unsaved' : 'status-saved'}`}>
+      <span
+        className={`status-slot status-slot-state ${tool.state.isDirty ? 'status-unsaved' : 'status-saved'}`}
+      >
         {tool.state.isDirty ? (
           <>
             <span className="status-saving-dot" />

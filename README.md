@@ -34,31 +34,31 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 
 ## Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server with Turbopack |
-| `npm run build` | Build `@itsjust/core` then build Next.js |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Format all files with Prettier |
-| `npm run format:check` | Check formatting without writing |
-| `npm run test` | Run unit tests (Vitest) |
-| `npm run test:watch` | Run unit tests in watch mode |
-| `npm run test:e2e` | Run end-to-end tests (Playwright) |
-| `npm run test:e2e:dev` | Run E2E tests with Playwright UI |
-| `npm run deps:check` | Check for unused/missing dependencies |
+| Script                 | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `npm run dev`          | Start development server with Turbopack  |
+| `npm run build`        | Build `@itsjust/core` then build Next.js |
+| `npm run start`        | Start production server                  |
+| `npm run lint`         | Run ESLint                               |
+| `npm run format`       | Format all files with Prettier           |
+| `npm run format:check` | Check formatting without writing         |
+| `npm run test`         | Run unit tests (Vitest)                  |
+| `npm run test:watch`   | Run unit tests in watch mode             |
+| `npm run test:e2e`     | Run end-to-end tests (Playwright)        |
+| `npm run test:e2e:dev` | Run E2E tests with Playwright UI         |
+| `npm run deps:check`   | Check for unused/missing dependencies    |
 
 ## Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+1` | Switch to Side-by-Side view |
-| `Ctrl+2` | Switch to Unified view |
-| `Ctrl+3` | Switch to Split view |
-| `Ctrl+Shift+E` | Export as JSON |
-| `Ctrl+Shift+P` | Export as PNG |
-| `Ctrl+Shift+S` | Swap original ↔ modified |
-| `Ctrl+Shift+Backspace` | Clear both text panels |
+| Shortcut               | Action                      |
+| ---------------------- | --------------------------- |
+| `Ctrl+1`               | Switch to Side-by-Side view |
+| `Ctrl+2`               | Switch to Unified view      |
+| `Ctrl+3`               | Switch to Split view        |
+| `Ctrl+Shift+E`         | Export as JSON              |
+| `Ctrl+Shift+P`         | Export as PNG               |
+| `Ctrl+Shift+S`         | Swap original ↔ modified    |
+| `Ctrl+Shift+Backspace` | Clear both text panels      |
 
 ## Project Structure
 
