@@ -559,6 +559,12 @@
   opacity: 0.7;
 }
 
+.toolbar-large-warning {
+  color: var(--warning);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
 /* --- Status bar --- */
 .status-slot {
   display: inline-flex;

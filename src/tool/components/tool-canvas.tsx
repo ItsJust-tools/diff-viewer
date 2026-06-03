@@ -136,6 +136,172 @@ function computeWordDiff(
 }
 
 /**
+ * Chunked LCS diff for very large inputs where the full DP table would exceed
+ * memory limits (~80 MB). Splits the input into chunks, computes LCS within
+ * each chunk, and stitches the results together.
+ *
+ * This produces substantially better diffs than a naive positional fallback
+ * when lines have shifted, while still avoiding OOM.
+ *
+ * @param origLines - Original text split into lines
+ * @param modLines - Modified text split into lines
+ * @param contextLines - Context lines for filtering (-1 for no filtering)
+ * @returns Array of DiffLine objects
+ */
+function computeDiffChunked(
+  origLines: string[],
+  modLines: string[],
+  contextLines: number
+): DiffLine[] {
+  const CHUNK_SIZE = 2000; // 2000×2000 = 4M cells, well under 10M limit
+  const totalOrig = origLines.length;
+  const totalMod = modLines.length;
+
+  const allOps: DiffOp[] = [];
+  let origOffset = 0;
+  let modOffset = 0;
+
+  while (origOffset < totalOrig || modOffset < totalMod) {
+    const origEnd = Math.min(origOffset + CHUNK_SIZE, totalOrig);
+    const modEnd = Math.min(modOffset + CHUNK_SIZE, totalMod);
+    const chunkOrig = origLines.slice(origOffset, origEnd);
+    const chunkMod = modLines.slice(modOffset, modEnd);
+
+    if (chunkOrig.length === 0 && chunkMod.length === 0) break;
+
+    // If only one side has remaining lines, they're all adds/removes
+    if (chunkOrig.length === 0) {
+      for (let i = 0; i < chunkMod.length; i++) {
+        allOps.push({ type: 'added', oldIdx: -1, newIdx: modOffset + i });
+      }
+      modOffset = modEnd;
+      continue;
+    }
+    if (chunkMod.length === 0) {
+      for (let i = 0; i < chunkOrig.length; i++) {
+        allOps.push({ type: 'removed', oldIdx: origOffset + i, newIdx: -1 });
+      }
+      origOffset = origEnd;
+      continue;
+    }
+
+    const dp = computeLCSTable(chunkOrig, chunkMod);
+    const chunkOps = backtrackDiff(chunkOrig, chunkMod, dp);
+
+    for (const op of chunkOps) {
+      allOps.push({
+        type: op.type,
+        oldIdx: op.oldIdx >= 0 ? origOffset + op.oldIdx : -1,
+        newIdx: op.newIdx >= 0 ? modOffset + op.newIdx : -1,
+      });
+    }
+
+    origOffset = origEnd;
+    modOffset = modEnd;
+  }
+
+  // Build output from ops with line numbers
+  let oldNum = 0,
+    newNum = 0;
+  const result: DiffLine[] = [];
+
+  for (const op of allOps) {
+    if (op.type === 'unchanged') {
+      oldNum++;
+      newNum++;
+      result.push({
+        type: 'unchanged',
+        oldLineNumber: oldNum,
+        newLineNumber: newNum,
+        content: origLines[op.oldIdx] ?? '',
+      });
+    } else if (op.type === 'added') {
+      newNum++;
+      result.push({
+        type: 'added',
+        oldLineNumber: null,
+        newLineNumber: newNum,
+        content: modLines[op.newIdx] ?? '',
+      });
+    } else if (op.type === 'removed') {
+      oldNum++;
+      result.push({
+        type: 'removed',
+        oldLineNumber: oldNum,
+        newLineNumber: null,
+        content: origLines[op.oldIdx] ?? '',
+      });
+    }
+  }
+
+  // Pair removed/added lines for word-level diff
+  let pendingRemovedIdx = -1;
+  let pendingOldLine = '';
+  for (let i = 0; i < result.length; i++) {
+    const line = result[i] as DiffLine;
+    if (line.type === 'removed' && pendingRemovedIdx === -1) {
+      pendingRemovedIdx = i;
+      pendingOldLine = line.content;
+    } else if (line.type === 'added' && pendingRemovedIdx !== -1) {
+      const newLine = line.content;
+      result[pendingRemovedIdx]!.wordChanges = computeWordDiff(pendingOldLine, newLine, 'removed');
+      line.wordChanges = computeWordDiff(pendingOldLine, newLine, 'added');
+      pendingRemovedIdx = -1;
+      pendingOldLine = '';
+    } else if (line.type !== 'unchanged') {
+      pendingRemovedIdx = -1;
+      pendingOldLine = '';
+    }
+  }
+
+  // Apply context lines filtering
+  if (contextLines < 0) return result;
+
+  const changedIndices = new Set<number>();
+  for (let idx = 0; idx < result.length; idx++) {
+    if ((result[idx] as DiffLine).type !== 'unchanged') {
+      for (let c = -contextLines; c <= contextLines; c++) {
+        const ci = idx + c;
+        if (ci >= 0 && ci < result.length) {
+          changedIndices.add(ci);
+        }
+      }
+    }
+  }
+
+  const filtered: DiffLine[] = [];
+  let lastIncluded = -1;
+  for (let idx = 0; idx < result.length; idx++) {
+    if (changedIndices.has(idx)) {
+      if (lastIncluded >= 0 && idx - lastIncluded > 1) {
+        const prevLine = result[lastIncluded] as DiffLine;
+        const nextLine = result[idx] as DiffLine;
+        const startOld = prevLine.oldLineNumber != null ? prevLine.oldLineNumber + 1 : null;
+        const startNew = prevLine.newLineNumber != null ? prevLine.newLineNumber + 1 : null;
+        const endOld = nextLine.oldLineNumber != null ? nextLine.oldLineNumber - 1 : null;
+        const endNew = nextLine.newLineNumber != null ? nextLine.newLineNumber - 1 : null;
+
+        let hunkLabel = '...';
+        if (startOld != null && endOld != null && startNew != null && endNew != null) {
+          hunkLabel = `@@ -${startOld},${endOld - startOld + 1} +${startNew},${endNew - startNew + 1} @@`;
+        }
+
+        filtered.push({
+          type: 'unchanged',
+          oldLineNumber: startOld,
+          newLineNumber: startNew,
+          content: hunkLabel,
+        });
+      }
+      filtered.push(result[idx] as DiffLine);
+      lastIncluded = idx;
+    }
+  }
+
+  return filtered;
+}
+
+/**
  * Compute a line-level diff between two texts using the Longest Common
  * Subsequence (LCS) algorithm. Returns an array of DiffLine objects
  * describing each line's type (added, removed, unchanged) and line numbers.
@@ -174,29 +340,7 @@ export function computeDiff(original: string, modified: string, contextLines: nu
   const n = modLines.length;
   const LCS_MAX_CELLS = 10_000_000; // ~80 MB for number[][]
   if (m * n > LCS_MAX_CELLS) {
-    // Fallback: line-by-line comparison without LCS for huge inputs
-    const maxLen = Math.max(m, n);
-    const result: DiffLine[] = [];
-    for (let i = 0; i < maxLen; i++) {
-      const ol = i < m ? (origLines[i] ?? null) : null;
-      const ml = i < n ? (modLines[i] ?? null) : null;
-      if (ol === null && ml !== null) {
-        result.push({ type: 'added', oldLineNumber: null, newLineNumber: i + 1, content: ml });
-      } else if (ol !== null && ml === null) {
-        result.push({ type: 'removed', oldLineNumber: i + 1, newLineNumber: null, content: ol });
-      } else if (ol !== null && ml !== null && ol !== ml) {
-        result.push({ type: 'removed', oldLineNumber: i + 1, newLineNumber: null, content: ol });
-        const removedResultIdx = result.length - 1;
-        result.push({ type: 'added', oldLineNumber: null, newLineNumber: i + 1, content: ml });
-        // Compute word diff between paired lines
-        result[removedResultIdx]!.wordChanges = computeWordDiff(ol, ml, 'removed');
-        result[removedResultIdx + 1]!.wordChanges = computeWordDiff(ol, ml, 'added');
-      } else if (ol !== null) {
-        // Both are null or both identical strings — unchanged
-        result.push({ type: 'unchanged', oldLineNumber: i + 1, newLineNumber: i + 1, content: ol });
-      }
-    }
-    return result;
+    return computeDiffChunked(origLines, modLines, contextLines);
   }
 
   const dp = computeLCSTable(origLines, modLines);

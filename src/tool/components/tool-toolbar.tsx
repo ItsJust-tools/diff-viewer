@@ -24,6 +24,11 @@ export function ToolToolbar({ original, modified, viewMode }: ToolToolbarProps) 
   const viewModeLabel =
     viewMode === 'side-by-side' ? 'Side-by-Side' : viewMode === 'unified' ? 'Unified' : 'Split';
 
+  const LARGE_INPUT_THRESHOLD = 500_000;
+  const isVeryLargeInput =
+    stats &&
+    (stats.origChars > LARGE_INPUT_THRESHOLD || stats.modChars > LARGE_INPUT_THRESHOLD);
+
   return (
     <div className="diff-toolbar">
       <span className="toolbar-info-text">
@@ -44,6 +49,14 @@ export function ToolToolbar({ original, modified, viewMode }: ToolToolbarProps) 
                 <span title="Current view mode" className="toolbar-view-mode">
                   {viewModeLabel}
                 </span>
+                {isVeryLargeInput && (
+                  <>
+                    <span className="toolbar-separator">|</span>
+                    <span className="toolbar-large-warning" role="alert">
+                      Large input — diff may be slower
+                    </span>
+                  </>
+                )}
               </span>
             )}
           </>
