@@ -163,19 +163,21 @@ export function ToolSidebar({
             onClick={onSwap}
             disabled={!original && !modified}
             title={
-              !original && !modified ? 'Paste text in a panel first' : 'Swap original ↔ modified'
+              !original && !modified ? 'Paste text in a panel first' : 'Swap original ↔ modified (Ctrl+Shift+S)'
             }
           >
             Swap Original ↔ Modified
+            <kbd className="tab-shortcut-hint">Ctrl+Shift+S</kbd>
           </button>
           <button
             type="button"
             className="sidebar-action-btn sidebar-action-btn-danger"
             onClick={onClear}
             disabled={!original && !modified}
-            title={!original && !modified ? 'Nothing to clear' : 'Clear both text panels'}
+            title={!original && !modified ? 'Nothing to clear' : 'Clear both text panels (Ctrl+Shift+Backspace)'}
           >
             Clear Both
+            <kbd className="tab-shortcut-hint">Ctrl+Shift+⌫</kbd>
           </button>
           <button
             type="button"

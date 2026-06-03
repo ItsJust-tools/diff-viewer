@@ -33,33 +33,29 @@ export function ToolToolbar({ original, modified, viewMode }: ToolToolbarProps) 
     <div className="diff-toolbar">
       <span className="toolbar-info-text">
         {original || modified ? (
-          <>
-            {stats && (
-              <span className="toolbar-stats-group">
-                <span title="Original lines / characters">
-                  <span className="diff-stat-deletions">−</span> {stats.origLines}L /{' '}
-                  {stats.origChars.toLocaleString()}C
-                </span>
+          <span className="toolbar-stats-group">
+            <span title="Original lines / characters">
+              <span className="diff-stat-deletions">−</span> {stats!.origLines}L /{' '}
+              {stats!.origChars.toLocaleString()}C
+            </span>
+            <span className="toolbar-separator">|</span>
+            <span title="Modified lines / characters">
+              <span className="diff-stat-additions">+</span> {stats!.modLines}L /{' '}
+              {stats!.modChars.toLocaleString()}C
+            </span>
+            <span className="toolbar-separator">|</span>
+            <span title="Current view mode" className="toolbar-view-mode">
+              {viewModeLabel}
+            </span>
+            {isVeryLargeInput && (
+              <>
                 <span className="toolbar-separator">|</span>
-                <span title="Modified lines / characters">
-                  <span className="diff-stat-additions">+</span> {stats.modLines}L /{' '}
-                  {stats.modChars.toLocaleString()}C
+                <span className="toolbar-large-warning" role="alert">
+                  Large input — diff may be slower
                 </span>
-                <span className="toolbar-separator">|</span>
-                <span title="Current view mode" className="toolbar-view-mode">
-                  {viewModeLabel}
-                </span>
-                {isVeryLargeInput && (
-                  <>
-                    <span className="toolbar-separator">|</span>
-                    <span className="toolbar-large-warning" role="alert">
-                      Large input — diff may be slower
-                    </span>
-                  </>
-                )}
-              </span>
+              </>
             )}
-          </>
+          </span>
         ) : (
           'Paste text in both panels to compare'
         )}

@@ -123,11 +123,17 @@ export default function ToolClient() {
     );
   }, [data.original, data.modified, showToast]);
 
-  // Keyboard shortcuts for Swap and Clear
+  // Keyboard shortcuts for Swap, Clear, and Export JSON
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       const mod = e.metaKey || e.ctrlKey;
       if (!mod) return;
+
+      if (e.shiftKey && (e.key === 'e' || e.key === 'E')) {
+        e.preventDefault();
+        tool.handleExport('json');
+        return;
+      }
 
       if (e.shiftKey && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
@@ -144,7 +150,7 @@ export default function ToolClient() {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleSwap, handleClear]);
+  }, [handleSwap, handleClear, tool]);
 
   useEffect(() => {
     if (hasLoadedSharedState.current) return;
