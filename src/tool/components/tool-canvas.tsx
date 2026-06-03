@@ -377,31 +377,12 @@ function DiffLineContent({
     const displayContent = showWhitespace
       ? line.content.replace(/ /g, '\u00B7').replace(/\t/g, '\u2192   ')
       : line.content;
-    return (
-      <span
-        style={{
-          color: 'var(--muted)',
-          fontStyle: 'italic',
-          fontSize: '0.75rem',
-        }}
-      >
-        {displayContent}
-      </span>
-    );
+    return <span className="diff-hunk-header">{displayContent}</span>;
   }
 
   // For the plain '...' hunk marker
   if (line.content === '...') {
-    return (
-      <span
-        style={{
-          color: 'var(--muted)',
-          fontStyle: 'italic',
-        }}
-      >
-        ...
-      </span>
-    );
+    return <span className="diff-hunk-ellipsis">...</span>;
   }
 
   // Word-level diff highlighting for changed lines (only when wordDiff is enabled)
@@ -457,58 +438,49 @@ function DiffLineRow({
   wordDiff: boolean;
 }) {
   const isHunk = line.type === 'unchanged' && line.content.startsWith('@@');
-  const bgColor =
-    line.type === 'added'
-      ? 'rgba(34, 197, 94, 0.1)'
-      : line.type === 'removed'
-        ? 'rgba(239, 68, 68, 0.1)'
-        : isHunk
-          ? 'var(--card)'
-          : 'transparent';
 
-  const borderColor =
+  const rowClass =
     line.type === 'added'
-      ? 'rgba(34, 197, 94, 0.3)'
+      ? 'diff-line-row-added'
       : line.type === 'removed'
-        ? 'rgba(239, 68, 68, 0.3)'
-        : 'transparent';
+        ? 'diff-line-row-removed'
+        : isHunk
+          ? 'diff-line-row-hunk'
+          : '';
+
+  const oldNumClass =
+    line.oldLineNumber != null ? 'line-num-present' : 'line-num-missing';
+  const newNumClass =
+    line.newLineNumber != null ? 'line-num-present' : 'line-num-missing';
+
+  const signClass =
+    line.type === 'added'
+      ? 'diff-line-sign-added'
+      : line.type === 'removed'
+        ? 'diff-line-sign-removed'
+        : 'diff-line-sign-hunk';
+
+  const sign = line.type === 'added' ? '+' : line.type === 'removed' ? '-' : isHunk ? '~' : ' ';
 
   return (
     <div
-      className={`diff-line diff-line-${line.type}`}
+      className={`diff-line diff-line-${line.type}${rowClass ? ' ' + rowClass : ''}`}
       role="row"
-      style={{
-        background: bgColor,
-        borderLeft: `3px solid ${borderColor}`,
-      }}
     >
       <span
-        className="diff-line-number-old"
-        style={{ opacity: line.oldLineNumber != null ? 0.6 : 0.2 }}
+        className={`diff-line-number-old ${oldNumClass}`}
         aria-hidden={line.oldLineNumber == null}
       >
-        {line.oldLineNumber != null ? line.oldLineNumber : '·'}
+        {line.oldLineNumber != null ? line.oldLineNumber : '\u00B7'}
       </span>
       <span
-        className="diff-line-number-new"
-        style={{ opacity: line.newLineNumber != null ? 0.6 : 0.2 }}
+        className={`diff-line-number-new ${newNumClass}`}
         aria-hidden={line.newLineNumber == null}
       >
-        {line.newLineNumber != null ? line.newLineNumber : '·'}
+        {line.newLineNumber != null ? line.newLineNumber : '\u00B7'}
       </span>
-      <span
-        className="diff-line-sign"
-        style={{
-          color:
-            line.type === 'added'
-              ? 'var(--success)'
-              : line.type === 'removed'
-                ? 'var(--error)'
-                : 'var(--muted)',
-        }}
-        aria-hidden
-      >
-        {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : isHunk ? '~' : ' '}
+      <span className={`diff-line-sign ${signClass}`} aria-hidden>
+        {sign}
       </span>
       <span className="diff-line-content" role="cell">
         <DiffLineContent line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
@@ -551,7 +523,7 @@ export function ToolCanvas({
       {/* Original Panel */}
       <div className="diff-panel diff-panel-original">
         <div className="diff-panel-header">
-          <span style={{ color: 'var(--error)' }}>−</span> Original ({origNumLines} lines)
+          <span className="diff-header-original-icon">−</span> Original ({origNumLines} lines)
         </div>
         <textarea
           className="diff-textarea"
@@ -566,7 +538,7 @@ export function ToolCanvas({
       {/* Modified Panel */}
       <div className="diff-panel diff-panel-modified">
         <div className="diff-panel-header">
-          <span style={{ color: 'var(--success)' }}>+</span> Modified ({modNumLines} lines)
+          <span className="diff-header-modified-icon">+</span> Modified ({modNumLines} lines)
         </div>
         <textarea
           className="diff-textarea"
@@ -592,7 +564,7 @@ export function ToolCanvas({
       >
         <div className="diff-unified-header">
           <span>Unified Diff View</span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+          <span className="diff-header-diff-stats">
             {addCount} addition{addCount !== 1 ? 's' : ''}, {delCount} deletion
             {delCount !== 1 ? 's' : ''}
           </span>
@@ -641,7 +613,7 @@ export function ToolCanvas({
         {/* Left: Editor */}
         <div className="diff-split-editor">
           <div className="diff-split-header">
-            <span style={{ color: 'var(--error)' }}>−</span> Original
+            <span className="diff-header-original-icon">−</span> Original
           </div>
           <textarea
             className="diff-textarea"
@@ -657,11 +629,11 @@ export function ToolCanvas({
         <div className="diff-split-output">
           <div className="diff-split-header">
             <span>Diff Output</span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+            <span className="diff-header-diff-stats">
               {addCount}+, {delCount}-
             </span>
           </div>
-          <div style={{ padding: '0.25rem 0' }} role="region" aria-label="Split diff output lines">
+          <div className="diff-lines-container" role="region" aria-label="Split diff output lines">
             {diffLines.length === 0 ? (
               <div className="diff-empty-placeholder">
                 {original || modified

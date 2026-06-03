@@ -80,35 +80,17 @@ export function ToolSidebar({
             <dd>{modChars.toLocaleString()}</dd>
           </div>{' '}
           {origChars > 1_000_000 || modChars > 1_000_000 ? (
-            <div
-              className="stat-row"
-              style={{
-                marginTop: '0.25rem',
-                padding: '0.375rem 0.5rem',
-                background: 'var(--warning)',
-                color: 'var(--warning-text)',
-                borderRadius: 'var(--radius)',
-                fontSize: '0.75rem',
-                fontWeight: 500,
-              }}
-            >
+            <div className="stat-row large-input-warning">
               Large input detected — diff may be slower
             </div>
           ) : null}
-          <div
-            className="stat-row"
-            style={{
-              marginTop: '0.25rem',
-              paddingTop: '0.5rem',
-              borderTop: '1px solid var(--border)',
-            }}
-          >
-            <dt style={{ color: 'var(--success)' }}>Additions</dt>
-            <dd style={{ color: 'var(--success)' }}>+{diffStats.additions.toLocaleString()}</dd>
+          <div className="stat-row stat-separator">
+            <dt className="diff-stat-additions">Additions</dt>
+            <dd className="diff-stat-additions">+{diffStats.additions.toLocaleString()}</dd>
           </div>
           <div className="stat-row">
-            <dt style={{ color: 'var(--error)' }}>Deletions</dt>
-            <dd style={{ color: 'var(--error)' }}>-{diffStats.deletions.toLocaleString()}</dd>
+            <dt className="diff-stat-deletions">Deletions</dt>
+            <dd className="diff-stat-deletions">-{diffStats.deletions.toLocaleString()}</dd>
           </div>
           <div className="stat-row">
             <dt>Net Changes</dt>

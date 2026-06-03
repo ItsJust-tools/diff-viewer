@@ -27,22 +27,22 @@ export function ToolToolbar({ original, modified, viewMode }: ToolToolbarProps) 
 
   return (
     <div className="diff-toolbar">
-      <span style={{ fontSize: '0.8125rem', color: 'var(--muted)' }}>
+      <span className="toolbar-info-text">
         {original || modified ? (
           <>
             {stats && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span className="toolbar-stats-group">
                 <span title="Original lines / characters">
-                  <span style={{ color: 'var(--error)' }}>−</span> {stats.origLines}L /{' '}
+                  <span className="diff-stat-deletions">−</span> {stats.origLines}L /{' '}
                   {stats.origChars.toLocaleString()}C
                 </span>
-                <span style={{ color: 'var(--border)' }}>|</span>
+                <span className="toolbar-separator">|</span>
                 <span title="Modified lines / characters">
-                  <span style={{ color: 'var(--success)' }}>+</span> {stats.modLines}L /{' '}
+                  <span className="diff-stat-additions">+</span> {stats.modLines}L /{' '}
                   {stats.modChars.toLocaleString()}C
                 </span>
-                <span style={{ color: 'var(--border)' }}>|</span>
-                <span title="Current view mode" style={{ fontStyle: 'italic', opacity: 0.7 }}>
+                <span className="toolbar-separator">|</span>
+                <span title="Current view mode" className="toolbar-view-mode">
                   {viewModeLabel}
                 </span>
               </span>
