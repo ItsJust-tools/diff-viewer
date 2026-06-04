@@ -20,7 +20,8 @@ View and compare text differences side-by-side. Paste two versions of any text a
 - **Whitespace Visibility:** Toggle display of spaces (·) and tabs (→)
 - **Context Control:** Adjust how many surrounding lines to show in unified view (0–20)
 - **Swap & Clear:** One-click swap original ↔ modified or clear both panels
-- **Shareable URLs:** Share your diff via compressed state in the URL
+- **Copy Unified Diff:** Copy the complete unified diff to clipboard for sharing in code reviews or patches
+- **Shareable URLs:** Share your diff via compressed state in the URL — share a link that restores both texts and view settings on open
 - **Export:** Export as JSON, PNG, JPEG, WebP, or PDF
 
 ## Quick Start

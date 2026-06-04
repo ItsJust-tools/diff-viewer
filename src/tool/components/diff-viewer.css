@@ -297,12 +297,10 @@
   opacity: 0.6;
 }
 
+/* Accessible focus ring for textareas — uses inset box-shadow to avoid layout shift */
 .diff-textarea:focus-visible {
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.diff-textarea:focus-visible::selection {
-  background: var(--accent-subtle);
+  box-shadow: inset 0 0 0 2px var(--accent);
+  border-radius: 2px;
 }
 
 /* --- Unified View --- */
@@ -689,7 +687,8 @@
 /* --- Reduced motion for transitions --- */
 @media (prefers-reduced-motion: reduce) {
   .diff-tab-button,
-  .sidebar-action-btn {
+  .sidebar-action-btn,
+  .sidebar-number-input {
     transition: none;
   }
 
