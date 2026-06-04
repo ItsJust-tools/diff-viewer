@@ -135,6 +135,130 @@ function computeWordDiff(
   return result;
 }
 
+// ---- Shared Helpers (used by both canonical and chunked diff paths) ----
+
+/**
+ * Convert an array of DiffOps into an array of DiffLine objects with
+ * sequential line numbers, resolving each op against the original line
+ * arrays.
+ */
+function buildDiffLinesFromOps(
+  ops: DiffOp[],
+  origLines: string[],
+  modLines: string[]
+): DiffLine[] {
+  let oldNum = 0,
+    newNum = 0;
+  const result: DiffLine[] = [];
+  for (const op of ops) {
+    if (op.type === 'unchanged') {
+      oldNum++;
+      newNum++;
+      result.push({
+        type: 'unchanged',
+        oldLineNumber: oldNum,
+        newLineNumber: newNum,
+        content: origLines[op.oldIdx] ?? '',
+      });
+    } else if (op.type === 'added') {
+      newNum++;
+      result.push({
+        type: 'added',
+        oldLineNumber: null,
+        newLineNumber: newNum,
+        content: modLines[op.newIdx] ?? '',
+      });
+    } else if (op.type === 'removed') {
+      oldNum++;
+      result.push({
+        type: 'removed',
+        oldLineNumber: oldNum,
+        newLineNumber: null,
+        content: origLines[op.oldIdx] ?? '',
+      });
+    }
+  }
+  return result;
+}
+
+/**
+ * Walk through DiffLine array and pair each removed line with the nearest
+ * subsequent added line to compute word-level diff highlighting.
+ * Mutates the passed array in-place by attaching {@link DiffLine.wordChanges}.
+ */
+function applyWordDiffPairing(result: DiffLine[]): void {
+  let pendingRemovedIdx = -1;
+  let pendingOldLine = '';
+  for (let i = 0; i < result.length; i++) {
+    const line = result[i] as DiffLine;
+    if (line.type === 'removed' && pendingRemovedIdx === -1) {
+      pendingRemovedIdx = i;
+      pendingOldLine = line.content;
+    } else if (line.type === 'added' && pendingRemovedIdx !== -1) {
+      const newLine = line.content;
+      result[pendingRemovedIdx]!.wordChanges = computeWordDiff(pendingOldLine, newLine, 'removed');
+      line.wordChanges = computeWordDiff(pendingOldLine, newLine, 'added');
+      pendingRemovedIdx = -1;
+      pendingOldLine = '';
+    } else if (line.type !== 'unchanged') {
+      pendingRemovedIdx = -1;
+      pendingOldLine = '';
+    }
+  }
+}
+
+/**
+ * Filter a full diff result to only keep lines within `contextLines` of any
+ * change. Inserts hunk-marker lines (`@@ -... +... @@` or `...`) as
+ * separators between collapsed unchanged regions.
+ */
+function filterContextLines(result: DiffLine[], contextLines: number): DiffLine[] {
+  if (contextLines < 0) return result;
+
+  const changedIndices = new Set<number>();
+  for (let idx = 0; idx < result.length; idx++) {
+    if ((result[idx] as DiffLine).type !== 'unchanged') {
+      for (let c = -contextLines; c <= contextLines; c++) {
+        const ci = idx + c;
+        if (ci >= 0 && ci < result.length) {
+          changedIndices.add(ci);
+        }
+      }
+    }
+  }
+
+  const filtered: DiffLine[] = [];
+  let lastIncluded = -1;
+  for (let idx = 0; idx < result.length; idx++) {
+    if (changedIndices.has(idx)) {
+      if (lastIncluded >= 0 && idx - lastIncluded > 1) {
+        const prevLine = result[lastIncluded] as DiffLine;
+        const nextLine = result[idx] as DiffLine;
+        const startOld = prevLine.oldLineNumber != null ? prevLine.oldLineNumber + 1 : null;
+        const startNew = prevLine.newLineNumber != null ? prevLine.newLineNumber + 1 : null;
+        const endOld = nextLine.oldLineNumber != null ? nextLine.oldLineNumber - 1 : null;
+        const endNew = nextLine.newLineNumber != null ? nextLine.newLineNumber - 1 : null;
+
+        let hunkLabel = '...';
+        if (startOld != null && endOld != null && startNew != null && endNew != null) {
+          hunkLabel = `@@ -${startOld},${endOld - startOld + 1} +${startNew},${endNew - startNew + 1} @@`;
+        }
+
+        filtered.push({
+          type: 'unchanged',
+          oldLineNumber: startOld,
+          newLineNumber: startNew,
+          content: hunkLabel,
+        });
+      }
+      filtered.push(result[idx] as DiffLine);
+      lastIncluded = idx;
+    }
+  }
+
+  return filtered;
+}
+
 /**
  * Chunked LCS diff for very large inputs where the full DP table would exceed
  * memory limits (~80 MB). Splits the input into chunks, computes LCS within
@@ -202,107 +326,13 @@ function computeDiffChunked(
     modOffset = modEnd;
   }
 
-  // Build output from ops with line numbers
-  let oldNum = 0,
-    newNum = 0;
-  const result: DiffLine[] = [];
+  const result = buildDiffLinesFromOps(allOps, origLines, modLines);
 
-  for (const op of allOps) {
-    if (op.type === 'unchanged') {
-      oldNum++;
-      newNum++;
-      result.push({
-        type: 'unchanged',
-        oldLineNumber: oldNum,
-        newLineNumber: newNum,
-        content: origLines[op.oldIdx] ?? '',
-      });
-    } else if (op.type === 'added') {
-      newNum++;
-      result.push({
-        type: 'added',
-        oldLineNumber: null,
-        newLineNumber: newNum,
-        content: modLines[op.newIdx] ?? '',
-      });
-    } else if (op.type === 'removed') {
-      oldNum++;
-      result.push({
-        type: 'removed',
-        oldLineNumber: oldNum,
-        newLineNumber: null,
-        content: origLines[op.oldIdx] ?? '',
-      });
-    }
-  }
-
-  // Pair removed/added lines for word-level diff (only when enabled)
   if (enableWordDiff) {
-    let pendingRemovedIdx = -1;
-    let pendingOldLine = '';
-    for (let i = 0; i < result.length; i++) {
-      const line = result[i] as DiffLine;
-      if (line.type === 'removed' && pendingRemovedIdx === -1) {
-        pendingRemovedIdx = i;
-        pendingOldLine = line.content;
-      } else if (line.type === 'added' && pendingRemovedIdx !== -1) {
-        const newLine = line.content;
-        result[pendingRemovedIdx]!.wordChanges = computeWordDiff(pendingOldLine, newLine, 'removed');
-        line.wordChanges = computeWordDiff(pendingOldLine, newLine, 'added');
-        pendingRemovedIdx = -1;
-        pendingOldLine = '';
-      } else if (line.type !== 'unchanged') {
-        pendingRemovedIdx = -1;
-        pendingOldLine = '';
-      }
-    }
+    applyWordDiffPairing(result);
   }
 
-  // Apply context lines filtering
-  if (contextLines < 0) return result;
-
-  const changedIndices = new Set<number>();
-  for (let idx = 0; idx < result.length; idx++) {
-    if ((result[idx] as DiffLine).type !== 'unchanged') {
-      for (let c = -contextLines; c <= contextLines; c++) {
-        const ci = idx + c;
-        if (ci >= 0 && ci < result.length) {
-          changedIndices.add(ci);
-        }
-      }
-    }
-  }
-
-  const filtered: DiffLine[] = [];
-  let lastIncluded = -1;
-  for (let idx = 0; idx < result.length; idx++) {
-    if (changedIndices.has(idx)) {
-      if (lastIncluded >= 0 && idx - lastIncluded > 1) {
-        const prevLine = result[lastIncluded] as DiffLine;
-        const nextLine = result[idx] as DiffLine;
-        const startOld = prevLine.oldLineNumber != null ? prevLine.oldLineNumber + 1 : null;
-        const startNew = prevLine.newLineNumber != null ? prevLine.newLineNumber + 1 : null;
-        const endOld = nextLine.oldLineNumber != null ? nextLine.oldLineNumber - 1 : null;
-        const endNew = nextLine.newLineNumber != null ? nextLine.newLineNumber - 1 : null;
-
-        let hunkLabel = '...';
-        if (startOld != null && endOld != null && startNew != null && endNew != null) {
-          hunkLabel = `@@ -${startOld},${endOld - startOld + 1} +${startNew},${endNew - startNew + 1} @@`;
-        }
-
-        filtered.push({
-          type: 'unchanged',
-          oldLineNumber: startOld,
-          newLineNumber: startNew,
-          content: hunkLabel,
-        });
-      }
-      filtered.push(result[idx] as DiffLine);
-      lastIncluded = idx;
-    }
-  }
-
-  return filtered;
+  return filterContextLines(result, contextLines);
 }
 
 /**
@@ -375,110 +405,13 @@ export function computeDiff(
   const dp = computeLCSTable(origLines, modLines);
   const ops = backtrackDiff(origLines, modLines, dp);
 
-  // Build output with line numbers
-  let oldNum = 0,
-    newNum = 0;
-  const result: DiffLine[] = [];
+  const result = buildDiffLinesFromOps(ops, origLines, modLines);
 
-  for (const op of ops) {
-    if (op.type === 'unchanged') {
-      oldNum++;
-      newNum++;
-      result.push({
-        type: 'unchanged',
-        oldLineNumber: oldNum,
-        newLineNumber: newNum,
-        content: origLines[op.oldIdx] as string,
-      });
-    } else if (op.type === 'added') {
-      newNum++;
-      result.push({
-        type: 'added',
-        oldLineNumber: null,
-        newLineNumber: newNum,
-        content: modLines[op.newIdx] as string,
-      });
-    } else if (op.type === 'removed') {
-      oldNum++;
-      result.push({
-        type: 'removed',
-        oldLineNumber: oldNum,
-        newLineNumber: null,
-        content: origLines[op.oldIdx] as string,
-      });
-    }
-  }
-
-  // Pair each removed line with the nearest subsequent added line for word-level diff
-  // (only when word-diff computation is enabled, since tokenization is expensive).
   if (enableWordDiff) {
-    let pendingRemovedIdx = -1;
-    let pendingOldLine = '';
-    for (let i = 0; i < result.length; i++) {
-      const line = result[i] as DiffLine;
-      if (line.type === 'removed' && pendingRemovedIdx === -1) {
-        pendingRemovedIdx = i;
-        pendingOldLine = line.content;
-      } else if (line.type === 'added' && pendingRemovedIdx !== -1) {
-        const newLine = line.content;
-        result[pendingRemovedIdx]!.wordChanges = computeWordDiff(pendingOldLine, newLine, 'removed');
-        line.wordChanges = computeWordDiff(pendingOldLine, newLine, 'added');
-        pendingRemovedIdx = -1;
-        pendingOldLine = '';
-      } else if (line.type !== 'unchanged') {
-        // Another removal without a match, or an added line without a prior removal
-        pendingRemovedIdx = -1;
-        pendingOldLine = '';
-      }
-    }
+    applyWordDiffPairing(result);
   }
 
-  // Apply context lines filtering
-  if (contextLines < 0) return result;
-
-  const changedIndices = new Set<number>();
-  for (let idx = 0; idx < result.length; idx++) {
-    if ((result[idx] as DiffLine).type !== 'unchanged') {
-      for (let c = -contextLines; c <= contextLines; c++) {
-        const ci = idx + c;
-        if (ci >= 0 && ci < result.length) {
-          changedIndices.add(ci);
-        }
-      }
-    }
-  }
-
-  const filtered: DiffLine[] = [];
-  let lastIncluded = -1;
-  for (let idx = 0; idx < result.length; idx++) {
-    if (changedIndices.has(idx)) {
-      if (lastIncluded >= 0 && idx - lastIncluded > 1) {
-        // Show the range of excluded line numbers in the hunk marker
-        const prevLine = result[lastIncluded] as DiffLine;
-        const nextLine = result[idx] as DiffLine;
-        const startOld = prevLine.oldLineNumber != null ? prevLine.oldLineNumber + 1 : null;
-        const startNew = prevLine.newLineNumber != null ? prevLine.newLineNumber + 1 : null;
-        const endOld = nextLine.oldLineNumber != null ? nextLine.oldLineNumber - 1 : null;
-        const endNew = nextLine.newLineNumber != null ? nextLine.newLineNumber - 1 : null;
-
-        let hunkLabel = '...';
-        if (startOld != null && endOld != null && startNew != null && endNew != null) {
-          hunkLabel = `@@ -${startOld},${endOld - startOld + 1} +${startNew},${endNew - startNew + 1} @@`;
-        }
-
-        filtered.push({
-          type: 'unchanged',
-          oldLineNumber: startOld,
-          newLineNumber: startNew,
-          content: hunkLabel,
-        });
-      }
-      filtered.push(result[idx] as DiffLine);
-      lastIncluded = idx;
-    }
-  }
-
-  return filtered;
+  return filterContextLines(result, contextLines);
 }
 
 /**
