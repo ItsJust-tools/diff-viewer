@@ -466,8 +466,15 @@ export function computeDiff(
 /**
  * Generate a unified-diff formatted string from two texts.
  * Uses the same LCS algorithm as the diff view for consistent output.
+ *
+ * When `diffLines` is provided (pre-computed full diff), it avoids
+ * re-computing the LCS, which is a significant optimization for large inputs.
  */
-export function generateUnifiedDiffString(original: string, modified: string): string {
+export function generateUnifiedDiffString(
+  original: string,
+  modified: string,
+  diffLines?: DiffLine[]
+): string {
   if (!original && !modified) return '';
   if (!original) {
     return modified
@@ -482,7 +489,8 @@ export function generateUnifiedDiffString(original: string, modified: string): s
       .join('\n');
   }
 
-  const diffLines = computeDiff(original, modified, -1, false);
+  // Use pre-computed diff lines when available to avoid re-computing LCS
+  const diffLines_ = diffLines ?? computeDiff(original, modified, -1, false);
   const m = original.split('\n').length;
   const n = modified.split('\n').length;
 
@@ -491,7 +499,7 @@ export function generateUnifiedDiffString(original: string, modified: string): s
   result.push(`+++ modified`);
   result.push(`@@ -1,${m} +1,${n} @@`);
 
-  for (const line of diffLines) {
+  for (const line of diffLines_) {
     if (line.type === 'added') {
       result.push(`+${line.content}`);
     } else if (line.type === 'removed') {

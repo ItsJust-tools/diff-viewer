@@ -111,8 +111,28 @@ export default function ToolClient() {
     showToast('Cleared both panels', 'success');
   }, [setToolData, showToast]);
 
+  // Compute full diff once — shared across canvas, sidebar, and stats
+  const fullDiffLines: DiffLine[] = useMemo(
+    () =>
+      data.original || data.modified
+        ? computeDiff(data.original, data.modified, -1, data.wordDiff)
+        : [],
+    [data.original, data.modified, data.wordDiff]
+  );
+
+  const diffStats = useMemo(() => {
+    if (fullDiffLines.length === 0) return { additions: 0, deletions: 0 };
+    let additions = 0;
+    let deletions = 0;
+    for (const line of fullDiffLines) {
+      if (line.type === 'added') additions++;
+      else if (line.type === 'removed') deletions++;
+    }
+    return { additions, deletions };
+  }, [fullDiffLines]);
+
   const handleCopyDiff = useCallback(() => {
-    const diff = generateUnifiedDiffString(data.original, data.modified);
+    const diff = generateUnifiedDiffString(data.original, data.modified, fullDiffLines);
     if (!diff) {
       showToast('Nothing to copy — paste text in both panels first', 'error');
       return;
@@ -121,7 +141,7 @@ export default function ToolClient() {
       () => showToast('Unified diff copied to clipboard', 'success'),
       () => showToast('Failed to copy to clipboard', 'error')
     );
-  }, [data.original, data.modified, showToast]);
+  }, [data.original, data.modified, fullDiffLines, showToast]);
 
   // Keyboard shortcuts for Swap, Clear, and Export JSON
   useEffect(() => {
@@ -203,26 +223,6 @@ export default function ToolClient() {
     }
   }, [showToast, tool.state.data, title]);
 
-  // Compute full diff once — shared across canvas, sidebar, and stats
-  const fullDiffLines: DiffLine[] = useMemo(
-    () =>
-      data.original || data.modified
-        ? computeDiff(data.original, data.modified, -1, data.wordDiff)
-        : [],
-    [data.original, data.modified, data.wordDiff]
-  );
-
-  const diffStats = useMemo(() => {
-    if (fullDiffLines.length === 0) return { additions: 0, deletions: 0 };
-    let additions = 0;
-    let deletions = 0;
-    for (const line of fullDiffLines) {
-      if (line.type === 'added') additions++;
-      else if (line.type === 'removed') deletions++;
-    }
-    return { additions, deletions };
-  }, [fullDiffLines]);
-
   const toolbarContent = (
     <>
       <ToolToolbar original={data.original} modified={data.modified} viewMode={data.viewMode} />
@@ -247,6 +247,7 @@ export default function ToolClient() {
       wrapLines={data.wrapLines}
       contextLines={data.contextLines}
       diffLines={fullDiffLines}
+      diffStats={diffStats}
       onShowWhitespaceChange={handleShowWhitespaceChange}
       onWordDiffChange={handleWordDiffChange}
       onWrapLinesChange={handleWrapLinesChange}

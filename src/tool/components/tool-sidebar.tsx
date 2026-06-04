@@ -14,6 +14,8 @@ interface ToolSidebarProps {
   contextLines: number;
   /** Pre-computed full diff lines (without context filtering). */
   diffLines: DiffLine[];
+  /** Optional pre-computed diff stats to avoid re-computing from diffLines. */
+  diffStats?: { additions: number; deletions: number };
   onShowWhitespaceChange?: (show: boolean) => void;
   onWordDiffChange?: (enabled: boolean) => void;
   onWrapLinesChange?: (enabled: boolean) => void;
@@ -32,6 +34,7 @@ export function ToolSidebar({
   wrapLines,
   contextLines,
   diffLines,
+  diffStats: precomputedStats,
   onShowWhitespaceChange,
   onWordDiffChange,
   onWrapLinesChange,
@@ -45,8 +48,11 @@ export function ToolSidebar({
   const origChars = original.length;
   const modChars = modified.length;
 
-  // Compute diff stats from pre-computed diff lines
+  // Compute diff stats from pre-computed diff lines (or use forwarded stats)
   const diffStats = useMemo(() => {
+    if (precomputedStats) {
+      return { additions: precomputedStats.additions, deletions: precomputedStats.deletions, changes: precomputedStats.additions + precomputedStats.deletions };
+    }
     if (!original && !modified) return { additions: 0, deletions: 0, changes: 0 };
     let additions = 0;
     let deletions = 0;
@@ -55,7 +61,7 @@ export function ToolSidebar({
       else if (line.type === 'removed') deletions++;
     }
     return { additions, deletions, changes: additions + deletions };
-  }, [original, modified, diffLines]);
+  }, [original, modified, diffLines, precomputedStats]);
 
   return (
     <div className="diff-sidebar">
