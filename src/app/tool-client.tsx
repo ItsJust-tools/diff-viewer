@@ -38,7 +38,8 @@ export default function ToolClient() {
   const isLargeInput = data.original.length > 50_000 || data.modified.length > 50_000;
   const deferredOriginal = useDeferredValue(isLargeInput ? data.original : data.original);
   const deferredModified = useDeferredValue(isLargeInput ? data.modified : data.modified);
-  const isDiffStale = isLargeInput && (deferredOriginal !== data.original || deferredModified !== data.modified);
+  const isDiffStale =
+    isLargeInput && (deferredOriginal !== data.original || deferredModified !== data.modified);
 
   // Use deferred values for diff computation when input is large
   const diffOriginal = isLargeInput ? deferredOriginal : data.original;
@@ -127,9 +128,7 @@ export default function ToolClient() {
   // Using computeRawDiff avoids redundant LCS computation when deriving filtered views
   const rawDiffLines: DiffLine[] = useMemo(
     () =>
-      diffOriginal || diffModified
-        ? computeRawDiff(diffOriginal, diffModified, data.wordDiff)
-        : [],
+      diffOriginal || diffModified ? computeRawDiff(diffOriginal, diffModified, data.wordDiff) : [],
     [diffOriginal, diffModified, data.wordDiff]
   );
 
@@ -192,7 +191,7 @@ export default function ToolClient() {
     );
   }, [data, showToast]);
 
-  // Keyboard shortcuts for Swap, Clear, and Export JSON
+  // Keyboard shortcuts for Swap, Clear, Copy Diff, and Export JSON
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       const mod = e.metaKey || e.ctrlKey;
@@ -210,6 +209,12 @@ export default function ToolClient() {
         return;
       }
 
+      if (e.shiftKey && (e.key === 'c' || e.key === 'C')) {
+        e.preventDefault();
+        handleCopyDiff();
+        return;
+      }
+
       if ((e.shiftKey && e.key === 'Backspace') || (e.shiftKey && e.key === 'Delete')) {
         e.preventDefault();
         handleClear();
@@ -219,7 +224,7 @@ export default function ToolClient() {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleSwap, handleClear, tool]);
+  }, [handleSwap, handleClear, handleCopyDiff, tool]);
 
   useEffect(() => {
     if (hasLoadedSharedState.current) return;

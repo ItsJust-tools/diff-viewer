@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Ctrl+Shift+C shortcut**: New keyboard shortcut to copy unified diff to clipboard.
+- **Optimized LCS memory**: Replaced `number[][]` DP table with a single `Uint16Array` flat buffer (~8× memory reduction per cell), allowing the O(m×n) guard to double to 20M cells before falling back to chunked diff.
+
+### Changed
+
+- **Bumped version to 1.6.0** for the above improvements.
+
+### Added
+
 - **displayName for all exported components**: Added explicit `displayName` to `ToolCanvas`, `ToolSidebar`, `ToolToolbar`, `DiffLineRow`, `DiffLineContent`, and `TabButton` for React DevTools.
 - **generateUnifiedDiffString utility**: Extracted LCS-based unified diff generation into a shared, exported function in `tool-canvas.tsx`, eliminating the duplicate implementation in `tool-client.tsx`.
 

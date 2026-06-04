@@ -5,25 +5,34 @@ import type { DiffLine, WordChange, DiffOp } from '../types';
 
 /**
  * Compute the Longest Common Subsequence (LCS) between two arrays of strings
- * using dynamic programming.
+ * using dynamic programming with a compact flat-buffer representation.
  *
- * Returns a DP table of size (m+1) × (n+1) for backtracking.
- * dp[i][j] holds the LCS length for a[0..i-1] and b[0..j-1].
- * The first row/column are zero-filled to simplify the recurrence.
+ * Returns a flat Uint16Array of size (m+1) × (n+1) for backtracking.
+ * The cell at index i*(n+1)+j holds the LCS length for a[0..i-1] and b[0..j-1].
  *
- * Time: O(m×n) | Space: O(m×n)
- * A soft guard of 10M cells (~80 MB) prevents OOM on huge inputs.
+ * Time: O(m×n) | Space: O(m×n) in a single Uint16Array (~2 bytes per cell).
+ * This is ~8× more memory-efficient than a number[][] and avoids allocation
+ * of m+1 separate arrays.
+ *
+ * A soft guard prevents OOM on huge inputs.
  */
-function computeLCSTable(a: string[], b: string[]): number[][] {
+function computeLCSTable(a: string[], b: string[]): Uint16Array {
   const m = a.length;
   const n = b.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  const stride = n + 1;
+  const size = (m + 1) * stride;
+  const dp = new Uint16Array(size);
   for (let i = 1; i <= m; i++) {
+    const base = i * stride;
+    const prevBase = base - stride;
+    const aVal = a[i - 1] as string;
     for (let j = 1; j <= n; j++) {
-      if (a[i - 1] === b[j - 1]) {
-        dp[i]![j] = (dp[i - 1]![j - 1] as number) + 1;
+      if (aVal === b[j - 1]) {
+        dp[base + j] = (dp[prevBase + j - 1] as number) + 1;
       } else {
-        dp[i]![j] = Math.max(dp[i - 1]![j] as number, dp[i]![j - 1] as number);
+        const up = dp[prevBase + j] as number;
+        const left = dp[base + j - 1] as number;
+        dp[base + j] = up > left ? up : left;
       }
     }
   }
@@ -34,7 +43,9 @@ function computeLCSTable(a: string[], b: string[]): number[][] {
  * Backtrack through an LCS DP table to produce a sequence of DiffOps
  * (added, removed, unchanged) that transform string `a` into string `b`.
  */
-function backtrackDiff(a: string[], b: string[], dp: number[][]): DiffOp[] {
+function backtrackDiff(a: string[], b: string[], dp: Uint16Array): DiffOp[] {
+  const n = b.length;
+  const stride = n + 1;
   const ops: DiffOp[] = [];
   let i = a.length;
   let j = b.length;
@@ -43,7 +54,10 @@ function backtrackDiff(a: string[], b: string[], dp: number[][]): DiffOp[] {
       ops.push({ type: 'unchanged', oldIdx: i - 1, newIdx: j - 1 });
       i--;
       j--;
-    } else if (j > 0 && (i === 0 || (dp[i]![j - 1] as number) >= (dp[i - 1]![j] as number))) {
+    } else if (
+      j > 0 &&
+      (i === 0 || (dp[i * stride + j - 1] as number) >= (dp[(i - 1) * stride + j] as number))
+    ) {
       ops.push({ type: 'added', oldIdx: -1, newIdx: j - 1 });
       j--;
     } else if (i > 0) {
@@ -142,11 +156,7 @@ function computeWordDiff(
  * sequential line numbers, resolving each op against the original line
  * arrays.
  */
-function buildDiffLinesFromOps(
-  ops: DiffOp[],
-  origLines: string[],
-  modLines: string[]
-): DiffLine[] {
+function buildDiffLinesFromOps(ops: DiffOp[], origLines: string[], modLines: string[]): DiffLine[] {
   let oldNum = 0,
     newNum = 0;
   const result: DiffLine[] = [];
@@ -408,7 +418,8 @@ export function computeRawDiff(
   // Simple LCS — guard against very large inputs to avoid OOM
   const m = origLines.length;
   const n = modLines.length;
-  const LCS_MAX_CELLS = 10_000_000; // ~80 MB for number[][]
+  // ~40 MB for Uint16Array (~2 bytes per cell) at 20M cells
+  const LCS_MAX_CELLS = 20_000_000;
   if (m * n > LCS_MAX_CELLS) {
     // Chunked path always produces the full unfiltered diff
     return computeDiffChunked(origLines, modLines, -1, enableWordDiff);
@@ -620,10 +631,8 @@ function DiffLineRow({
           ? 'diff-line-row-hunk'
           : '';
 
-  const oldNumClass =
-    line.oldLineNumber != null ? 'line-num-present' : 'line-num-missing';
-  const newNumClass =
-    line.newLineNumber != null ? 'line-num-present' : 'line-num-missing';
+  const oldNumClass = line.oldLineNumber != null ? 'line-num-present' : 'line-num-missing';
+  const newNumClass = line.newLineNumber != null ? 'line-num-present' : 'line-num-missing';
 
   const signClass =
     line.type === 'added'
@@ -635,10 +644,7 @@ function DiffLineRow({
   const sign = line.type === 'added' ? '+' : line.type === 'removed' ? '-' : isHunk ? '~' : ' ';
 
   return (
-    <div
-      className={`diff-line diff-line-${line.type}${rowClass ? ' ' + rowClass : ''}`}
-      role="row"
-    >
+    <div className={`diff-line diff-line-${line.type}${rowClass ? ' ' + rowClass : ''}`} role="row">
       <span
         className={`diff-line-number-old ${oldNumClass}`}
         aria-hidden={line.oldLineNumber == null}
