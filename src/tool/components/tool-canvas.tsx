@@ -586,16 +586,11 @@ function DiffLineContent({
           }
           const wordClass = seg.type === 'added' ? 'diff-word-added' : 'diff-word-removed';
           return (
-            <span
-              key={i}
-              className={wordClass}
-              title={`${seg.type === 'added' ? 'Added' : 'Removed'} word`}
-            >
-              {segText}
+            <span key={i} className={wordClass}>
+              {segText || '\u00A0'}
             </span>
           );
         })}
-        {line.content === '' && <>{'\u00A0'}</>}
       </>
     );
   }

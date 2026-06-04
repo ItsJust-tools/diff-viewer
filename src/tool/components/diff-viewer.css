@@ -613,6 +613,13 @@
   text-overflow: clip;
 }
 
+/* Also wrap textareas when line wrapping is enabled */
+.diff-canvas-wrap .diff-textarea {
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-x: hidden;
+}
+
 /* --- Responsive: collapse side-by-side to stacked on narrow screens --- */
 @media (max-width: 768px) {
   .diff-side-by-side {
