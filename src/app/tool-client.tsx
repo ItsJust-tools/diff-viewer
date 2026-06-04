@@ -11,7 +11,8 @@ import {
   ToolCanvas,
   ToolToolbar,
   ToolSidebar,
-  computeDiff,
+  computeRawDiff,
+  filterDiffLines,
   generateUnifiedDiffString,
 } from '@/tool';
 import '../tool/components/diff-viewer.css';
@@ -122,22 +123,30 @@ export default function ToolClient() {
     showToast('Cleared both panels', 'success');
   }, [setToolData, showToast]);
 
-  // Compute full diff once — shared across canvas, sidebar, and stats
-  const fullDiffLines: DiffLine[] = useMemo(
+  // Compute raw (unfiltered) diff once — shared across canvas, sidebar, and stats
+  // Using computeRawDiff avoids redundant LCS computation when deriving filtered views
+  const rawDiffLines: DiffLine[] = useMemo(
     () =>
       diffOriginal || diffModified
-        ? computeDiff(diffOriginal, diffModified, -1, data.wordDiff)
+        ? computeRawDiff(diffOriginal, diffModified, data.wordDiff)
         : [],
     [diffOriginal, diffModified, data.wordDiff]
+  );
+
+  // Derive the full (unfiltered) lines for side-by-side and split views
+  // When contextLines is -1, filterDiffLines returns the raw diff as-is
+  const fullDiffLines: DiffLine[] = useMemo(
+    () => filterDiffLines(rawDiffLines, -1),
+    [rawDiffLines]
   );
 
   // Pre-compute filtered diff lines for unified view to avoid redundant LCS in ToolCanvas
   const filteredDiffLines: DiffLine[] = useMemo(
     () =>
-      data.viewMode === 'unified' && (diffOriginal || diffModified)
-        ? computeDiff(diffOriginal, diffModified, data.contextLines, data.wordDiff)
+      data.viewMode === 'unified' && rawDiffLines.length > 0
+        ? filterDiffLines(rawDiffLines, data.contextLines)
         : [],
-    [diffOriginal, diffModified, data.viewMode, data.contextLines, data.wordDiff]
+    [rawDiffLines, data.viewMode, data.contextLines]
   );
 
   const diffStats = useMemo(() => {

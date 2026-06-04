@@ -336,23 +336,39 @@ function computeDiffChunked(
 }
 
 /**
- * Compute a line-level diff between two texts using the Longest Common
- * Subsequence (LCS) algorithm. Returns an array of DiffLine objects
- * describing each line's type (added, removed, unchanged) and line numbers.
+ * Filter a pre-computed diff (produced by {@link computeRawDiff}) with the
+ * given context lines. This is a lightweight operation compared to re-running
+ * the full LCS — ideal when you need multiple filtered views of the same diff.
  *
  * When contextLines >= 0, unchanged lines far from any change are collapsed
  * into "..." markers to show only relevant context.
  * Pass contextLines = -1 to return the full diff without collapsing.
+ */
+export function filterDiffLines(diffLines: DiffLine[], contextLines: number): DiffLine[] {
+  if (contextLines < 0) return diffLines;
+  // If there are no changed lines, the filtered result is always empty
+  if (!diffLines.some((l) => l.type !== 'unchanged')) return [];
+  return filterContextLines(diffLines, contextLines);
+}
+
+/**
+ * Compute a full (unfiltered) line-level diff between two texts using the
+ * Longest Common Subsequence (LCS) algorithm. Returns an array of DiffLine
+ * objects describing each line's type (added, removed, unchanged) and line
+ * numbers, without collapsing unchanged regions.
  *
  * For changed lines, word-level diff highlighting is computed (when
  * `enableWordDiff` is true and the corresponding paired line exists).
  * Skipping word-diff when it's not needed avoids expensive tokenization
  * for large diffs on every keystroke.
+ *
+ * To get a context-filtered view, pass the result through {@link filterDiffLines}
+ * instead of calling this function again with different contextLines.
+ * This avoids redundant LCS computation.
  */
-export function computeDiff(
+export function computeRawDiff(
   original: string,
   modified: string,
-  contextLines: number,
   enableWordDiff = true
 ): DiffLine[] {
   // Fast path: if the strings are identical, skip LCS entirely.
@@ -360,17 +376,12 @@ export function computeDiff(
   // haven't changed the other yet, or when they paste the same text twice.
   if (original === modified) {
     const origLines = original.split('\n');
-    if (contextLines < 0) {
-      return origLines.map((line, i) => ({
-        type: 'unchanged' as const,
-        oldLineNumber: i + 1,
-        newLineNumber: i + 1,
-        content: line,
-      }));
-    }
-    // When texts are identical and contextLines >= 0, there are no changes,
-    // so the filtered result is empty (no changed regions to show context around).
-    return [];
+    return origLines.map((line, i) => ({
+      type: 'unchanged' as const,
+      oldLineNumber: i + 1,
+      newLineNumber: i + 1,
+      content: line,
+    }));
   }
 
   const origLines = original.split('\n');
@@ -399,7 +410,8 @@ export function computeDiff(
   const n = modLines.length;
   const LCS_MAX_CELLS = 10_000_000; // ~80 MB for number[][]
   if (m * n > LCS_MAX_CELLS) {
-    return computeDiffChunked(origLines, modLines, contextLines, enableWordDiff);
+    // Chunked path always produces the full unfiltered diff
+    return computeDiffChunked(origLines, modLines, -1, enableWordDiff);
   }
 
   const dp = computeLCSTable(origLines, modLines);
@@ -411,7 +423,35 @@ export function computeDiff(
     applyWordDiffPairing(result);
   }
 
-  return filterContextLines(result, contextLines);
+  return result;
+}
+
+/**
+ * Compute a line-level diff between two texts using the Longest Common
+ * Subsequence (LCS) algorithm. Returns an array of DiffLine objects
+ * describing each line's type (added, removed, unchanged) and line numbers.
+ *
+ * When contextLines >= 0, unchanged lines far from any change are collapsed
+ * into "..." markers to show only relevant context.
+ * Pass contextLines = -1 to return the full diff without collapsing.
+ *
+ * For changed lines, word-level diff highlighting is computed (when
+ * `enableWordDiff` is true and the corresponding paired line exists).
+ * Skipping word-diff when it's not needed avoids expensive tokenization
+ * for large diffs on every keystroke.
+ *
+ * This is a convenience wrapper around {@link computeRawDiff} + {@link filterDiffLines}.
+ * For performance-sensitive callers that need both the full and filtered diff,
+ * call computeRawDiff once and call filterDiffLines for each filtered view.
+ */
+export function computeDiff(
+  original: string,
+  modified: string,
+  contextLines: number,
+  enableWordDiff = true
+): DiffLine[] {
+  const raw = computeRawDiff(original, modified, enableWordDiff);
+  return filterDiffLines(raw, contextLines);
 }
 
 /**
@@ -463,6 +503,13 @@ export function generateUnifiedDiffString(
   return result.join('\n');
 }
 
+/**
+ * Generate a unified-diff formatted string from two texts.
+ * Uses the same LCS algorithm as the diff view for consistent output.
+ *
+ * When `diffLines` is provided (pre-computed full diff), it avoids
+ * re-computing the LCS, which is a significant optimization for large inputs.
+ */
 /** Props for the main diff viewer canvas component. */
 interface ToolCanvasProps {
   original: string;

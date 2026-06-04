@@ -77,6 +77,8 @@ vi.mock('@/tool', () => ({
     </div>
   ),
   computeDiff: () => [],
+  computeRawDiff: () => [],
+  filterDiffLines: (lines) => lines,
   generateUnifiedDiffString: () => '',
 }));
 
