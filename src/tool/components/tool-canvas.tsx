@@ -474,6 +474,8 @@ interface ToolCanvasProps {
   wrapLines: boolean;
   /** Pre-computed full diff lines (without context filtering). */
   diffLines: DiffLine[];
+  /** Pre-filtered diff lines for unified view (avoids redundant LCS computation). */
+  filteredDiffLines?: DiffLine[];
   canvasRef?: React.RefObject<HTMLDivElement | null>;
   onOriginalChange?: (text: string) => void;
   onModifiedChange?: (text: string) => void;
@@ -624,6 +626,7 @@ export function ToolCanvas({
   wordDiff,
   wrapLines,
   diffLines,
+  filteredDiffLines: externalFilteredDiffLines,
   canvasRef,
   onOriginalChange,
   onModifiedChange,
@@ -632,9 +635,9 @@ export function ToolCanvas({
   const filteredDiffLines = useMemo(
     () =>
       viewMode === 'unified'
-        ? computeDiff(original, modified, contextLines, wordDiff)
+        ? (externalFilteredDiffLines ?? computeDiff(original, modified, contextLines, wordDiff))
         : diffLines,
-    [original, modified, viewMode, contextLines, diffLines, wordDiff]
+    [original, modified, viewMode, contextLines, diffLines, wordDiff, externalFilteredDiffLines]
   );
 
   const origNumLines = original.split('\n').length || 1;
@@ -698,10 +701,14 @@ export function ToolCanvas({
         </div>
         <div className="diff-lines-container" role="region" aria-label="Unified diff output">
           {filteredDiffLines.length === 0 ? (
-            <div className="diff-empty-placeholder">
-              {original || modified
-                ? 'No differences — the texts are identical'
-                : 'Paste text in both panels to see the diff'}
+            <div className="diff-empty-placeholder" role="status">
+              {original && modified
+                ? '✓ No differences — the texts are identical'
+                : original
+                  ? 'Paste modified text to see the diff'
+                  : modified
+                    ? 'Paste original text to see the diff'
+                    : 'Paste text in both panels to compare'}
             </div>
           ) : (
             <>
@@ -762,10 +769,14 @@ export function ToolCanvas({
           </div>
           <div className="diff-lines-container" role="region" aria-label="Split diff output lines">
             {filteredDiffLines.length === 0 ? (
-              <div className="diff-empty-placeholder">
-                {original || modified
-                  ? 'No differences — the texts are identical'
-                  : 'Diff will appear here'}
+              <div className="diff-empty-placeholder" role="status">
+                {original && modified
+                  ? '✓ No differences — the texts are identical'
+                  : original
+                    ? 'Paste modified text to see the diff'
+                    : modified
+                      ? 'Paste original text to see the diff'
+                      : 'Diff will appear here after pasting text in both panels'}
               </div>
             ) : (
               <>

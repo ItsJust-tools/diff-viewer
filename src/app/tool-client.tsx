@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect, useDeferredValue } from 'react';
 import { ToolShell, useTool, ImportExport } from '@itsjust/core';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import type { DiffLine } from '@/tool';
@@ -31,6 +31,17 @@ export default function ToolClient() {
   );
 
   const title = toolConfig.name;
+
+  // Use deferred values for large inputs to keep the UI responsive
+  // while diff computation catches up
+  const isLargeInput = data.original.length > 50_000 || data.modified.length > 50_000;
+  const deferredOriginal = useDeferredValue(isLargeInput ? data.original : data.original);
+  const deferredModified = useDeferredValue(isLargeInput ? data.modified : data.modified);
+  const isDiffStale = isLargeInput && (deferredOriginal !== data.original || deferredModified !== data.modified);
+
+  // Use deferred values for diff computation when input is large
+  const diffOriginal = isLargeInput ? deferredOriginal : data.original;
+  const diffModified = isLargeInput ? deferredModified : data.modified;
 
   useEffect(() => {
     document.title = title;
@@ -114,10 +125,19 @@ export default function ToolClient() {
   // Compute full diff once — shared across canvas, sidebar, and stats
   const fullDiffLines: DiffLine[] = useMemo(
     () =>
-      data.original || data.modified
-        ? computeDiff(data.original, data.modified, -1, data.wordDiff)
+      diffOriginal || diffModified
+        ? computeDiff(diffOriginal, diffModified, -1, data.wordDiff)
         : [],
-    [data.original, data.modified, data.wordDiff]
+    [diffOriginal, diffModified, data.wordDiff]
+  );
+
+  // Pre-compute filtered diff lines for unified view to avoid redundant LCS in ToolCanvas
+  const filteredDiffLines: DiffLine[] = useMemo(
+    () =>
+      data.viewMode === 'unified' && (diffOriginal || diffModified)
+        ? computeDiff(diffOriginal, diffModified, data.contextLines, data.wordDiff)
+        : [],
+    [diffOriginal, diffModified, data.viewMode, data.contextLines, data.wordDiff]
   );
 
   const diffStats = useMemo(() => {
@@ -142,6 +162,26 @@ export default function ToolClient() {
       () => showToast('Failed to copy to clipboard', 'error')
     );
   }, [data.original, data.modified, fullDiffLines, showToast]);
+
+  const handleCopyJson = useCallback(() => {
+    const json = JSON.stringify(
+      {
+        original: data.original,
+        modified: data.modified,
+        viewMode: data.viewMode,
+        showWhitespace: data.showWhitespace,
+        contextLines: data.contextLines,
+        wordDiff: data.wordDiff,
+        wrapLines: data.wrapLines,
+      },
+      null,
+      2
+    );
+    navigator.clipboard.writeText(json).then(
+      () => showToast('State copied as JSON to clipboard', 'success'),
+      () => showToast('Failed to copy to clipboard', 'error')
+    );
+  }, [data, showToast]);
 
   // Keyboard shortcuts for Swap, Clear, and Export JSON
   useEffect(() => {
@@ -226,6 +266,11 @@ export default function ToolClient() {
   const toolbarContent = (
     <>
       <ToolToolbar original={data.original} modified={data.modified} viewMode={data.viewMode} />
+      {isDiffStale && (
+        <span className="toolbar-large-warning" role="alert">
+          Computing diff…
+        </span>
+      )}
       <ImportExport
         formats={tool.supportedFormats}
         onExport={tool.handleExport}
@@ -255,6 +300,7 @@ export default function ToolClient() {
       onSwap={handleSwap}
       onClear={handleClear}
       onCopyDiff={handleCopyDiff}
+      onCopyJson={handleCopyJson}
     />
   );
 
@@ -269,6 +315,7 @@ export default function ToolClient() {
       wordDiff={data.wordDiff}
       wrapLines={data.wrapLines}
       diffLines={fullDiffLines}
+      filteredDiffLines={filteredDiffLines}
       onOriginalChange={handleOriginalChange}
       onModifiedChange={handleModifiedChange}
       onViewModeChange={handleViewModeChange}

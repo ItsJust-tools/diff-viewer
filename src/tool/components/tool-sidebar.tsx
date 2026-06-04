@@ -23,6 +23,7 @@ interface ToolSidebarProps {
   onSwap?: () => void;
   onClear?: () => void;
   onCopyDiff?: () => void;
+  onCopyJson?: () => void;
 }
 
 export function ToolSidebar({
@@ -42,6 +43,7 @@ export function ToolSidebar({
   onSwap,
   onClear,
   onCopyDiff,
+  onCopyJson,
 }: ToolSidebarProps) {
   const origLines = original ? original.split('\n').length : 0;
   const modLines = modified ? modified.split('\n').length : 0;
@@ -193,6 +195,15 @@ export function ToolSidebar({
             title={!original && !modified ? 'Paste text first' : 'Copy unified diff to clipboard'}
           >
             Copy Unified Diff
+          </button>
+          <button
+            type="button"
+            className="sidebar-action-btn"
+            onClick={onCopyJson}
+            disabled={!original && !modified}
+            title={!original && !modified ? 'Paste text first' : 'Copy state as JSON to clipboard'}
+          >
+            Copy as JSON
           </button>
         </div>
       </div>
