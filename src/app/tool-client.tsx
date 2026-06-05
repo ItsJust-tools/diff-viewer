@@ -215,6 +215,12 @@ export default function ToolClient() {
         return;
       }
 
+      if (e.shiftKey && (e.key === 'j' || e.key === 'J')) {
+        e.preventDefault();
+        handleCopyJson();
+        return;
+      }
+
       if ((e.shiftKey && e.key === 'Backspace') || (e.shiftKey && e.key === 'Delete')) {
         e.preventDefault();
         handleClear();
@@ -239,7 +245,7 @@ export default function ToolClient() {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleSwap, handleClear, handleCopyDiff, handleViewModeChange, tool, data.viewMode]);
+  }, [handleSwap, handleClear, handleCopyDiff, handleCopyJson, handleViewModeChange, tool, data.viewMode]);
 
   useEffect(() => {
     if (hasLoadedSharedState.current) return;

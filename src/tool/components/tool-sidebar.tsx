@@ -228,13 +228,18 @@ export function ToolSidebar({
             }
           >
             Copy Unified Diff
+            <kbd className="tab-shortcut-hint" aria-hidden="true">
+              Ctrl+Shift+C
+            </kbd>
           </button>
           <button
             type="button"
             className="sidebar-action-btn"
             onClick={onCopyJson}
             disabled={!original && !modified}
-            title={!original && !modified ? 'Paste text first' : 'Copy state as JSON to clipboard'}
+            title={
+              !original && !modified ? 'Paste text first' : 'Copy state as JSON to clipboard (Ctrl+Shift+J)'
+            }
             aria-label={
               !original && !modified
                 ? 'Copy state as JSON to clipboard (disabled)'
@@ -242,6 +247,9 @@ export function ToolSidebar({
             }
           >
             Copy as JSON
+            <kbd className="tab-shortcut-hint" aria-hidden="true">
+              Ctrl+Shift+J
+            </kbd>
           </button>
         </div>
       </div>
