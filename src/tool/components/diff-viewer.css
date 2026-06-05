@@ -753,10 +753,8 @@
   .sidebar-action-btn kbd {
     display: none;
   }
-}
 
-/* Hide tab shortcut hints on mobile */
-@media (max-width: 480px) {
+  /* Hide tab shortcut hints on mobile */
   .tab-shortcut-hint {
     display: none;
   }

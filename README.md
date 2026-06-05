@@ -63,6 +63,7 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 | `Ctrl+Shift+S`                                | Swap original ↔ modified       |
 | `Ctrl+Shift+Backspace`<br>`Ctrl+Shift+Delete` | Clear both text panels         |
 | `Ctrl+Shift+C`                                | Copy Unified Diff to clipboard |
+| `Ctrl+Shift+J`                                | Copy state as JSON to clipboard |
 
 ## Project Structure
 
