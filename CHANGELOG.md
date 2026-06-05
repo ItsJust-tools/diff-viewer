@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **High-contrast CSS improvements**: Enhanced `[data-contrast='more']` support for diff row backgrounds and word-level diff highlights — added stronger contrast variants with thicker borders and bolder text in both light and dark high-contrast modes.
+- **Accessibility attributes**: Added `aria-label` to all sidebar interactive elements (checkboxes, number input, action buttons) and diff line rows. Marked `<kbd>` decorative shortcut hints as `aria-hidden="true"`. Added `role="region"` to sidebar wrapper for better screen reader landmark navigation.
+
+### Changed
+
+- **Bumped version to 1.7.0** for accessibility and high-contrast improvements.
+
+### Added
+
 - **Ctrl+Shift+C shortcut**: New keyboard shortcut to copy unified diff to clipboard.
 - **Optimized LCS memory**: Replaced `number[][]` DP table with a single `Uint16Array` flat buffer (~8× memory reduction per cell), allowing the O(m×n) guard to double to 20M cells before falling back to chunked diff.
 

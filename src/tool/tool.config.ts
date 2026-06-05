@@ -8,7 +8,7 @@ const toolConfig = {
   name: 'Diff Viewer',
   description:
     'View and compare text differences side-by-side. Paste two versions of any text and see exactly what changed, added, or removed.',
-  version: '1.6.0',
+  version: '1.7.0',
   exportFormats: ['json', 'png', 'jpeg', 'webp', 'pdf'],
   features: {
     export: true,

@@ -294,7 +294,13 @@ export default function ToolClient() {
 
   const toolbarContent = (
     <>
-      <ToolToolbar original={data.original} modified={data.modified} viewMode={data.viewMode} additions={diffStats.additions} deletions={diffStats.deletions} />
+      <ToolToolbar
+        original={data.original}
+        modified={data.modified}
+        viewMode={data.viewMode}
+        additions={diffStats.additions}
+        deletions={diffStats.deletions}
+      />
       {isDiffStale && (
         <span className="toolbar-large-warning" role="alert">
           Computing diff…

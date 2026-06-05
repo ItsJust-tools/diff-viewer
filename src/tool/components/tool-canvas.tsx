@@ -209,7 +209,11 @@ function applyWordDiffPairing(result: DiffLine[]): void {
       // Pair the first pending removed line with this added line (FIFO order)
       const removedLine = pendingRemoved.shift()!;
       const newLine = line.content;
-      result[removedLine.idx]!.wordChanges = computeWordDiff(removedLine.content, newLine, 'removed');
+      result[removedLine.idx]!.wordChanges = computeWordDiff(
+        removedLine.content,
+        newLine,
+        'removed'
+      );
       line.wordChanges = computeWordDiff(removedLine.content, newLine, 'added');
     } else if (line.type !== 'unchanged') {
       pendingRemoved.length = 0;
@@ -631,8 +635,21 @@ function DiffLineRow({
 
   const sign = line.type === 'added' ? '+' : line.type === 'removed' ? '-' : isHunk ? '~' : ' ';
 
+  const rowLabel =
+    line.type === 'added'
+      ? 'Added line'
+      : line.type === 'removed'
+        ? 'Removed line'
+        : isHunk
+          ? 'Hunk header'
+          : 'Unchanged line';
+
   return (
-    <div className={`diff-line diff-line-${line.type}${rowClass ? ' ' + rowClass : ''}`} role="row">
+    <div
+      className={`diff-line diff-line-${line.type}${rowClass ? ' ' + rowClass : ''}`}
+      role="row"
+      aria-label={rowLabel}
+    >
       <span
         className={`diff-line-number-old ${oldNumClass}`}
         aria-hidden={line.oldLineNumber == null}
@@ -937,7 +954,7 @@ function TabButton({
       title={shortcut ? `${label} (${shortcut})` : label}
     >
       {label}
-      {shortcut && <kbd className="tab-shortcut-hint">{shortcut}</kbd>}
+      {shortcut && <kbd className="tab-shortcut-hint" aria-hidden="true">{shortcut}</kbd>}
     </button>
   );
 }

@@ -15,7 +15,7 @@ interface ToolSidebarProps {
   /** Pre-computed full diff lines (without context filtering). */
   diffLines: DiffLine[];
   /** Optional pre-computed diff stats to avoid re-computing from diffLines. */
-  diffStats?: { additions: number; deletions: number; changes: number; };
+  diffStats?: { additions: number; deletions: number; changes: number };
   onShowWhitespaceChange?: (show: boolean) => void;
   onWordDiffChange?: (enabled: boolean) => void;
   onWrapLinesChange?: (enabled: boolean) => void;
@@ -53,7 +53,11 @@ export function ToolSidebar({
   // Compute diff stats from pre-computed diff lines (or use forwarded stats)
   const diffStats = useMemo(() => {
     if (precomputedStats) {
-      return { additions: precomputedStats.additions, deletions: precomputedStats.deletions, changes: precomputedStats.additions + precomputedStats.deletions };
+      return {
+        additions: precomputedStats.additions,
+        deletions: precomputedStats.deletions,
+        changes: precomputedStats.additions + precomputedStats.deletions,
+      };
     }
     if (!original && !modified) return { additions: 0, deletions: 0, changes: 0 };
     let additions = 0;
@@ -66,7 +70,7 @@ export function ToolSidebar({
   }, [original, modified, diffLines, precomputedStats]);
 
   return (
-    <div className="diff-sidebar">
+    <div className="diff-sidebar" role="region" aria-label="Diff viewer settings">
       <div className="sidebar-section">
         <h3>Statistics</h3>
         <dl className="stats-list">
@@ -115,6 +119,7 @@ export function ToolSidebar({
               type="checkbox"
               checked={showWhitespace}
               onChange={(e) => onShowWhitespaceChange?.(e.target.checked)}
+              aria-label="Show whitespace characters (spaces as ·, tabs as →)"
             />
             <span>Show Whitespace</span>
           </label>
@@ -126,6 +131,7 @@ export function ToolSidebar({
               type="checkbox"
               checked={wordDiff}
               onChange={(e) => onWordDiffChange?.(e.target.checked)}
+              aria-label="Enable word-level diff highlighting within changed lines"
             />
             <span>Word Diff</span>
           </label>
@@ -137,6 +143,7 @@ export function ToolSidebar({
               type="checkbox"
               checked={wrapLines}
               onChange={(e) => onWrapLinesChange?.(e.target.checked)}
+              aria-label="Wrap long lines instead of horizontal scrolling"
             />
             <span>Wrap Lines</span>
           </label>
@@ -157,6 +164,7 @@ export function ToolSidebar({
                 onContextLinesChange?.(Math.max(0, Math.min(20, Number(e.target.value))))
               }
               className="sidebar-number-input"
+              aria-label={'Context lines: ' + contextLines}
             />
           </div>
         )}
@@ -171,21 +179,41 @@ export function ToolSidebar({
             onClick={onSwap}
             disabled={!original && !modified}
             title={
-              !original && !modified ? 'Paste text in a panel first' : 'Swap original ↔ modified (Ctrl+Shift+S)'
+              !original && !modified
+                ? 'Paste text in a panel first'
+                : 'Swap original ↔ modified (Ctrl+Shift+S)'
+            }
+            aria-label={
+              !original && !modified
+                ? 'Swap original and modified text (disabled)'
+                : 'Swap original and modified text'
             }
           >
             Swap Original ↔ Modified
-            <kbd className="tab-shortcut-hint">Ctrl+Shift+S</kbd>
+            <kbd className="tab-shortcut-hint" aria-hidden="true">
+              Ctrl+Shift+S
+            </kbd>
           </button>
           <button
             type="button"
             className="sidebar-action-btn sidebar-action-btn-danger"
             onClick={onClear}
             disabled={!original && !modified}
-            title={!original && !modified ? 'Nothing to clear' : 'Clear both text panels (Ctrl+Shift+Backspace)'}
+            title={
+              !original && !modified
+                ? 'Nothing to clear'
+                : 'Clear both text panels (Ctrl+Shift+Backspace)'
+            }
+            aria-label={
+              !original && !modified
+                ? 'Clear both text panels (disabled)'
+                : 'Clear both text panels'
+            }
           >
             Clear Both
-            <kbd className="tab-shortcut-hint">Ctrl+Shift+⌫</kbd>
+            <kbd className="tab-shortcut-hint" aria-hidden="true">
+              Ctrl+Shift+⌫
+            </kbd>
           </button>
           <button
             type="button"
@@ -193,6 +221,11 @@ export function ToolSidebar({
             onClick={onCopyDiff}
             disabled={!original && !modified}
             title={!original && !modified ? 'Paste text first' : 'Copy unified diff to clipboard'}
+            aria-label={
+              !original && !modified
+                ? 'Copy unified diff to clipboard (disabled)'
+                : 'Copy unified diff to clipboard'
+            }
           >
             Copy Unified Diff
           </button>
@@ -202,6 +235,11 @@ export function ToolSidebar({
             onClick={onCopyJson}
             disabled={!original && !modified}
             title={!original && !modified ? 'Paste text first' : 'Copy state as JSON to clipboard'}
+            aria-label={
+              !original && !modified
+                ? 'Copy state as JSON to clipboard (disabled)'
+                : 'Copy state as JSON to clipboard'
+            }
           >
             Copy as JSON
           </button>

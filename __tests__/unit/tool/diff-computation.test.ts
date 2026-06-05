@@ -242,7 +242,10 @@ describe('computeDiff — edge cases', () => {
   it('skips word-level diff in chunked fallback when enableWordDiff is false', () => {
     // Create large enough input to trigger chunked path
     const origLines = Array.from({ length: 5000 }, (_, i) => `line${i}`);
-    const modLines = Array.from({ length: 5000 }, (_, i) => `line${i % 2 === 0 ? i : 'changed' + i}`);
+    const modLines = Array.from(
+      { length: 5000 },
+      (_, i) => `line${i % 2 === 0 ? i : 'changed' + i}`
+    );
     const result = computeDiff(origLines.join('\n'), modLines.join('\n'), -1, false);
     expect(result.length).toBeGreaterThan(0);
     for (const line of result) {

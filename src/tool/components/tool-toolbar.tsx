@@ -36,8 +36,7 @@ export function ToolToolbar({
 
   const LARGE_INPUT_THRESHOLD = 500_000;
   const isVeryLargeInput =
-    stats &&
-    (stats.origChars > LARGE_INPUT_THRESHOLD || stats.modChars > LARGE_INPUT_THRESHOLD);
+    stats && (stats.origChars > LARGE_INPUT_THRESHOLD || stats.modChars > LARGE_INPUT_THRESHOLD);
 
   return (
     <div className="diff-toolbar">
