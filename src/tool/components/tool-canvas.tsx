@@ -197,22 +197,22 @@ function buildDiffLinesFromOps(ops: DiffOp[], origLines: string[], modLines: str
  * Mutates the passed array in-place by attaching {@link DiffLine.wordChanges}.
  */
 function applyWordDiffPairing(result: DiffLine[]): void {
-  let pendingRemovedIdx = -1;
-  let pendingOldLine = '';
+  // Collect consecutive removed lines, then pair them with consecutive added lines.
+  // This handles multi-line changes where several removed lines are followed by
+  // several added lines, pairing them in order (1st removed ↔ 1st added, etc.).
+  const pendingRemoved: { idx: number; content: string }[] = [];
   for (let i = 0; i < result.length; i++) {
     const line = result[i] as DiffLine;
-    if (line.type === 'removed' && pendingRemovedIdx === -1) {
-      pendingRemovedIdx = i;
-      pendingOldLine = line.content;
-    } else if (line.type === 'added' && pendingRemovedIdx !== -1) {
+    if (line.type === 'removed') {
+      pendingRemoved.push({ idx: i, content: line.content });
+    } else if (line.type === 'added' && pendingRemoved.length > 0) {
+      // Pair the first pending removed line with this added line (FIFO order)
+      const removedLine = pendingRemoved.shift()!;
       const newLine = line.content;
-      result[pendingRemovedIdx]!.wordChanges = computeWordDiff(pendingOldLine, newLine, 'removed');
-      line.wordChanges = computeWordDiff(pendingOldLine, newLine, 'added');
-      pendingRemovedIdx = -1;
-      pendingOldLine = '';
+      result[removedLine.idx]!.wordChanges = computeWordDiff(removedLine.content, newLine, 'removed');
+      line.wordChanges = computeWordDiff(removedLine.content, newLine, 'added');
     } else if (line.type !== 'unchanged') {
-      pendingRemovedIdx = -1;
-      pendingOldLine = '';
+      pendingRemoved.length = 0;
     }
   }
 }
@@ -514,13 +514,6 @@ export function generateUnifiedDiffString(
   return result.join('\n');
 }
 
-/**
- * Generate a unified-diff formatted string from two texts.
- * Uses the same LCS algorithm as the diff view for consistent output.
- *
- * When `diffLines` is provided (pre-computed full diff), it avoids
- * re-computing the LCS, which is a significant optimization for large inputs.
- */
 /** Props for the main diff viewer canvas component. */
 interface ToolCanvasProps {
   original: string;

@@ -36,8 +36,8 @@ export default function ToolClient() {
   // Use deferred values for large inputs to keep the UI responsive
   // while diff computation catches up
   const isLargeInput = data.original.length > 50_000 || data.modified.length > 50_000;
-  const deferredOriginal = useDeferredValue(isLargeInput ? data.original : data.original);
-  const deferredModified = useDeferredValue(isLargeInput ? data.modified : data.modified);
+  const deferredOriginal = useDeferredValue(data.original);
+  const deferredModified = useDeferredValue(data.modified);
   const isDiffStale =
     isLargeInput && (deferredOriginal !== data.original || deferredModified !== data.modified);
 

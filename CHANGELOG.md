@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Ctrl+Shift+C shortcut**: New keyboard shortcut to copy unified diff to clipboard.
 - **Optimized LCS memory**: Replaced `number[][]` DP table with a single `Uint16Array` flat buffer (~8× memory reduction per cell), allowing the O(m×n) guard to double to 20M cells before falling back to chunked diff.
 
+### Fixed
+
+- **Removed duplicate JSDoc block**: Cleaned up a stray duplicate JSDoc comment that appeared before the `ToolCanvasProps` interface in `tool-canvas.tsx`.
+- **Simplified `useDeferredValue` call**: Removed a no-op ternary in `tool-client.tsx` that always passed the same value regardless of the `isLargeInput` flag.
+
+### Changed
+
+- **Improved multi-line word diff pairing**: `applyWordDiffPairing` now handles consecutive removed lines followed by consecutive added lines, pairing them in FIFO order (1st removed ↔ 1st added, 2nd removed ↔ 2nd added, etc.) instead of only pairing the first removed with the first added.
+
 ### Changed
 
 - **Bumped version to 1.6.0** for the above improvements.
