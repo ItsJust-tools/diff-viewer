@@ -7,9 +7,19 @@ interface ToolToolbarProps {
   original: string;
   modified: string;
   viewMode: 'side-by-side' | 'unified' | 'split';
+  /** Number of additions in the diff. */
+  additions?: number;
+  /** Number of deletions in the diff. */
+  deletions?: number;
 }
 
-export function ToolToolbar({ original, modified, viewMode }: ToolToolbarProps) {
+export function ToolToolbar({
+  original,
+  modified,
+  viewMode,
+  additions = 0,
+  deletions = 0,
+}: ToolToolbarProps) {
   const stats = useMemo(() => {
     const origLines = original ? original.split('\n').length : 0;
     const modLines = modified ? modified.split('\n').length : 0;
@@ -43,6 +53,16 @@ export function ToolToolbar({ original, modified, viewMode }: ToolToolbarProps) 
               <span className="diff-stat-additions">+</span> {stats!.modLines}L /{' '}
               {stats!.modChars.toLocaleString()}C
             </span>
+            {(additions > 0 || deletions > 0) && (
+              <>
+                <span className="toolbar-separator">|</span>
+                <span title="Diff changes">
+                  <span className="diff-stat-additions">+{additions}</span>
+                  {' / '}
+                  <span className="diff-stat-deletions">-{deletions}</span>
+                </span>
+              </>
+            )}
             <span className="toolbar-separator">|</span>
             <span title="Current view mode" className="toolbar-view-mode">
               {viewModeLabel}

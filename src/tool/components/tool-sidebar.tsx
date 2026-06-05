@@ -15,7 +15,7 @@ interface ToolSidebarProps {
   /** Pre-computed full diff lines (without context filtering). */
   diffLines: DiffLine[];
   /** Optional pre-computed diff stats to avoid re-computing from diffLines. */
-  diffStats?: { additions: number; deletions: number };
+  diffStats?: { additions: number; deletions: number; changes: number; };
   onShowWhitespaceChange?: (show: boolean) => void;
   onWordDiffChange?: (enabled: boolean) => void;
   onWrapLinesChange?: (enabled: boolean) => void;

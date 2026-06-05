@@ -149,14 +149,14 @@ export default function ToolClient() {
   );
 
   const diffStats = useMemo(() => {
-    if (fullDiffLines.length === 0) return { additions: 0, deletions: 0 };
+    if (fullDiffLines.length === 0) return { additions: 0, deletions: 0, changes: 0 };
     let additions = 0;
     let deletions = 0;
     for (const line of fullDiffLines) {
       if (line.type === 'added') additions++;
       else if (line.type === 'removed') deletions++;
     }
-    return { additions, deletions };
+    return { additions, deletions, changes: additions + deletions };
   }, [fullDiffLines]);
 
   const handleCopyDiff = useCallback(() => {
@@ -191,7 +191,7 @@ export default function ToolClient() {
     );
   }, [data, showToast]);
 
-  // Keyboard shortcuts for Swap, Clear, Copy Diff, and Export JSON
+  // Keyboard shortcuts for Swap, Clear, Copy Diff, Export JSON, and view mode switching
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       const mod = e.metaKey || e.ctrlKey;
@@ -220,11 +220,26 @@ export default function ToolClient() {
         handleClear();
         return;
       }
+
+      // View mode switching: Ctrl+1 (side-by-side), Ctrl+2 (unified), Ctrl+3 (split)
+      if (!e.shiftKey && !e.altKey) {
+        const modeMap: Record<string, 'side-by-side' | 'unified' | 'split'> = {
+          '1': 'side-by-side',
+          '2': 'unified',
+          '3': 'split',
+        };
+        const mode = modeMap[e.key];
+        if (mode && mode !== data.viewMode) {
+          e.preventDefault();
+          handleViewModeChange(mode);
+          return;
+        }
+      }
     }
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleSwap, handleClear, handleCopyDiff, tool]);
+  }, [handleSwap, handleClear, handleCopyDiff, handleViewModeChange, tool, data.viewMode]);
 
   useEffect(() => {
     if (hasLoadedSharedState.current) return;
@@ -279,7 +294,7 @@ export default function ToolClient() {
 
   const toolbarContent = (
     <>
-      <ToolToolbar original={data.original} modified={data.modified} viewMode={data.viewMode} />
+      <ToolToolbar original={data.original} modified={data.modified} viewMode={data.viewMode} additions={diffStats.additions} deletions={diffStats.deletions} />
       {isDiffStale && (
         <span className="toolbar-large-warning" role="alert">
           Computing diff…
