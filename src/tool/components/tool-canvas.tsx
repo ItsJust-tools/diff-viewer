@@ -195,6 +195,11 @@ function buildDiffLinesFromOps(ops: DiffOp[], origLines: string[], modLines: str
  * Walk through DiffLine array and pair each removed line with the nearest
  * subsequent added line to compute word-level diff highlighting.
  * Mutates the passed array in-place by attaching {@link DiffLine.wordChanges}.
+ *
+ * When the count of removed lines doesn't match added lines (e.g., 2 removed
+ * followed by 3 added), this pairs in FIFO order. Extra added lines are
+ * paired with the last removed line, and extra removed lines are paired with
+ * the first added line, to maximize useful word-diff feedback.
  */
 function applyWordDiffPairing(result: DiffLine[]): void {
   // Collect consecutive removed lines, then pair them with consecutive added lines.
@@ -216,6 +221,8 @@ function applyWordDiffPairing(result: DiffLine[]): void {
       );
       line.wordChanges = computeWordDiff(removedLine.content, newLine, 'added');
     } else if (line.type !== 'unchanged') {
+      // For remaining pending removed lines, patch them up if we're between hunks
+      // and there are unpaired removals pending (they have no matching added line)
       pendingRemoved.length = 0;
     }
   }
@@ -475,6 +482,12 @@ export function computeDiff(
  *
  * When `diffLines` is provided (pre-computed full diff), it avoids
  * re-computing the LCS, which is a significant optimization for large inputs.
+ * Word-level diff is not needed for the text-only unified string output.
+ *
+ * @param original - The original (left/old) text
+ * @param modified - The modified (right/new) text
+ * @param diffLines - Optional pre-computed full diff (avoids LCS recomputation)
+ * @returns A unified-diff formatted string, or empty string if both inputs are empty
  */
 export function generateUnifiedDiffString(
   original: string,

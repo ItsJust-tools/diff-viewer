@@ -2,17 +2,26 @@
 
 import { useMemo } from 'react';
 
-/** Props for the diff viewer toolbar. */
+/** Status and context information shown in the diff viewer toolbar. */
 interface ToolToolbarProps {
+  /** The original (left/old) text content. */
   original: string;
+  /** The modified (right/new) text content. */
   modified: string;
+  /** Currently active view mode for displaying the diff. */
   viewMode: 'side-by-side' | 'unified' | 'split';
-  /** Number of additions in the diff. */
+  /** Number of addition lines detected in the computed diff. */
   additions?: number;
-  /** Number of deletions in the diff. */
+  /** Number of deletion lines detected in the computed diff. */
   deletions?: number;
 }
 
+/**
+ * Displays toolbar stats and context information for the diff viewer.
+ * Shows line/character counts for original and modified texts,
+ * computed diff stats (additions/deletions), and the current view mode.
+ * Automatically detects large inputs (>500K chars) and shows a warning.
+ */
 export function ToolToolbar({
   original,
   modified,

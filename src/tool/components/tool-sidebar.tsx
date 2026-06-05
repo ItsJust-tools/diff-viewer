@@ -26,6 +26,14 @@ interface ToolSidebarProps {
   onCopyJson?: () => void;
 }
 
+/**
+ * Sidebar panel for the diff viewer containing statistics, view options,
+ * and action buttons (swap, clear, copy, etc.).
+ *
+ * View options include: whitespace visibility toggle (spaces as `·`, tabs as `→`),
+ * word-level diff highlighting toggle, line wrapping toggle, and context line
+ * count control (unified view only).
+ */
 export function ToolSidebar({
   original,
   modified,
@@ -50,7 +58,9 @@ export function ToolSidebar({
   const origChars = original.length;
   const modChars = modified.length;
 
-  // Compute diff stats from pre-computed diff lines (or use forwarded stats)
+  // Diff stats computation: use precomputed stats when available to avoid
+  // O(n) iteration over diffLines when the parent has already computed them.
+  // Falls back to iterating diffLines to stay correct when passed independently.
   const diffStats = useMemo(() => {
     if (precomputedStats) {
       return {

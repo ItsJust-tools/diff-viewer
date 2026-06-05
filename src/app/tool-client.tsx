@@ -308,7 +308,7 @@ export default function ToolClient() {
         deletions={diffStats.deletions}
       />
       {isDiffStale && (
-        <span className="toolbar-large-warning" role="alert">
+        <span className="toolbar-large-warning" role="alert" aria-live="assertive">
           Computing diff…
         </span>
       )}
