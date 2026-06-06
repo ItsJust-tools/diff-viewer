@@ -50,7 +50,7 @@ function computeLCSTable(a: string[], b: string[]): Uint32Array {
  * Backtrack through an LCS DP table to produce a sequence of DiffOps
  * (added, removed, unchanged) that transform string `a` into string `b`.
  */
-function backtrackDiff(a: string[], b: string[], dp: Uint16Array): DiffOp[] {
+function backtrackDiff(a: string[], b: string[], dp: Uint32Array): DiffOp[] {
   const n = b.length;
   const stride = n + 1;
   const ops: DiffOp[] = [];

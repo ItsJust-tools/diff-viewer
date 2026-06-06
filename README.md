@@ -121,7 +121,7 @@ The diff viewer uses the **Longest Common Subsequence (LCS)** algorithm to compu
 
 1. Both texts are split into lines (`\n`-delimited).
 2. An LCS dynamic programming table is built to find the longest sequence of unchanged lines.
-3. The table is stored in a **single flat `Uint16Array`** (~2 bytes per cell), which is ~8× more memory-efficient than a conventional 2D `number[][]` array. This allows handling up to ~4,472 × ~4,472 = 20M cells (~40 MB) before falling back.
+3. The table is stored in a **single flat `Uint32Array`** (~4 bytes per cell), which is ~8× more memory-efficient than a conventional 2D `number[][]` array. This allows handling up to ~4,472 × ~4,472 = 20M cells (~80 MB) before falling back.
 4. Backtracking through the DP table yields a sequence of `DiffOp` entries (`added`, `removed`, `unchanged`), which are then resolved into `DiffLine` objects with correct line numbers.
 
 ### Large Input Fallback
