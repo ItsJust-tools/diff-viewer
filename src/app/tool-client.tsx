@@ -6,7 +6,6 @@ import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from
 import type { DiffLine } from '@/tool';
 import {
   toolConfig,
-  templateBaseVersion,
   diffViewerTool,
   ToolCanvas,
   ToolToolbar,
@@ -203,6 +202,12 @@ export default function ToolClient() {
         return;
       }
 
+      if (e.shiftKey && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        tool.handleExport('png');
+        return;
+      }
+
       if (e.shiftKey && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
         handleSwap();
@@ -383,9 +388,6 @@ export default function ToolClient() {
         +{diffStats.additions} / -{diffStats.deletions}
       </span>
       <span className="status-slot status-slot-tool-version">Tool v{toolConfig.version}</span>
-      <span className="status-slot status-slot-template-version">
-        Template v{templateBaseVersion}
-      </span>
     </>
   );
 
