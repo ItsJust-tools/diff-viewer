@@ -112,6 +112,39 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for full details.
 - **Testing:** Vitest + Playwright
 - **Package Manager:** npm workspaces
 
+## Algorithm
+
+The diff viewer uses the **Longest Common Subsequence (LCS)** algorithm to compute line-level diffs, with optimizations for performance and memory.
+
+### Line-level Diff
+
+1. Both texts are split into lines (`\n`-delimited).
+2. An LCS dynamic programming table is built to find the longest sequence of unchanged lines.
+3. The table is stored in a **single flat `Uint16Array`** (~2 bytes per cell), which is ~8× more memory-efficient than a conventional 2D `number[][]` array. This allows handling up to ~4,472 × ~4,472 = 20M cells (~40 MB) before falling back.
+4. Backtracking through the DP table yields a sequence of `DiffOp` entries (`added`, `removed`, `unchanged`), which are then resolved into `DiffLine` objects with correct line numbers.
+
+### Large Input Fallback
+
+When the input exceeds ~20M cells (approximately 4,500 lines × 4,500 lines), the diff switches to a **chunked algorithm** that processes the input in fixed-size chunks (2,000 lines each). This avoids out-of-memory conditions while still producing substantially better diffs than a naive per-chunk comparison. Each chunk is analyzed independently with the full LCS algorithm, and results are stitched together.
+
+### Word-level Diff
+
+For each pair of changed lines (a removed line followed by an added line), a **second LCS pass** is performed at the token level. Lines are split into tokens using a regex that separates words (`\w+`) from whitespace runs (`\s+`). This highlights exactly which words were added or removed within each line. A soft guard prevents word-diff computation when token counts exceed 10,000 (unusual for a single line).
+
+### Performance Considerations
+
+- **Identical text fast path:** When `original === modified`, the LCS is skipped entirely — the diff is trivial.
+- **Single-source shortcuts:** When one side is empty, the diff is computed in O(n) without the DP table.
+- **Memoized computation:** Full LCS is computed once and cached; filtered views (with different context line settings) reuse the same raw result.
+- **Deferred values:** For inputs >50K characters, React's `useDeferredValue` ensures the UI stays responsive while the diff computation runs.
+- **Disableable word diff:** The `wordDiff` option controls whether the second LCS pass runs. Disabling it eliminates tokenization and a quadratic pass on every changed line, offering a smooth experience for very large diffs.
+
+### Limitations
+
+- The LCS algorithm has O(m×n) time complexity. Very large diffs (>10,000 lines) may take several seconds to compute.
+- Word-level diff only applies to Latin-script and whitespace-delimited texts. CJK or other non-space-delimited languages will show full-line changes without word-level highlights.
+- Character-level diff (showing inline character changes) is not currently supported.
+
 ## License
 
 MIT

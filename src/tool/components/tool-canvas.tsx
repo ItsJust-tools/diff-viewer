@@ -70,8 +70,16 @@ function backtrackDiff(a: string[], b: string[], dp: Uint16Array): DiffOp[] {
 }
 
 /**
- * Split text into words/tokens for word-level diff.
- * Keeps whitespace runs as separate tokens so spacing changes are visible.
+ * Split text into tokens for word-level diff.
+ * Matches runs of non-whitespace characters and runs of whitespace as separate tokens.
+ * This preserves spacing changes between words as visible tokens.
+ *
+ * Note: CJK characters and other non-whitespace-delimited scripts are treated as
+ * single continuous tokens, which means word-level highlighting won't distinguish
+ * individual characters in such scripts. This is a known limitation.
+ *
+ * @param text - The single-line text to tokenize
+ * @returns Array of non-empty string tokens, or `null` if text is empty
  */
 function tokenize(text: string): string[] {
   // Match word characters, whitespace runs, or individual non-whitespace/non-word chars
@@ -473,8 +481,10 @@ export function computeDiff(
  * Generate a unified-diff formatted string from two texts.
  * Uses the same LCS algorithm as the diff view for consistent output.
  *
- * When `diffLines` is provided (pre-computed full diff), it avoids
- * re-computing the LCS, which is a significant optimization for large inputs.
+ * When `diffLines` is provided (pre-computed full diff from {@link computeRawDiff}),
+ * it avoids re-computing the LCS, which is a significant optimization for large inputs.
+ * Without `diffLines`, a full LCS pass is performed via {@link computeRawDiff} directly
+ * (bypassing the unnecessary context-line filtering layer of {@link computeDiff}).
  */
 export function generateUnifiedDiffString(
   original: string,
@@ -496,7 +506,7 @@ export function generateUnifiedDiffString(
   }
 
   // Use pre-computed diff lines when available to avoid re-computing LCS
-  const diffLines_ = diffLines ?? computeDiff(original, modified, -1, false);
+  const diffLines_ = diffLines ?? computeRawDiff(original, modified, false);
   const m = original.split('\n').length;
   const n = modified.split('\n').length;
 
