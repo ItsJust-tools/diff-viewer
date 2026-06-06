@@ -7,7 +7,7 @@ import type { DiffLine, WordChange, DiffOp } from '../types';
  * Compute the Longest Common Subsequence (LCS) between two arrays of strings
  * using dynamic programming with a compact flat-buffer representation.
  *
- * Returns a flat Uint16Array of size (m+1) × (n+1) for backtracking.
+ * Returns a flat Uint32Array of size (m+1) × (n+1) for backtracking.
  * The cell at index i*(n+1)+j holds the LCS length for a[0..i-1] and b[0..j-1].
  *
  * Time: O(m×n) | Space: O(m×n) in a single Uint16Array (~2 bytes per cell).
@@ -15,13 +15,20 @@ import type { DiffLine, WordChange, DiffOp } from '../types';
  * of m+1 separate arrays.
  *
  * A soft guard prevents OOM on huge inputs.
+ *
+ * Note: this uses Uint32Array (not Uint16Array) because LCS lengths can
+ * exceed 65535 for large inputs. For example, comparing two ~1000-token
+ * lines at the word level can need LCS values well above 65535.
  */
-function computeLCSTable(a: string[], b: string[]): Uint16Array {
+function computeLCSTable(a: string[], b: string[]): Uint32Array {
   const m = a.length;
   const n = b.length;
   const stride = n + 1;
   const size = (m + 1) * stride;
-  const dp = new Uint16Array(size);
+  // Use Uint32Array (not Uint16Array) because LCS lengths can exceed
+  // 65535 for large inputs (e.g., word-level diffs with many tokens).
+  // Uint16Array would silently overflow, producing incorrect diff output.
+  const dp = new Uint32Array(size);
   for (let i = 1; i <= m; i++) {
     const base = i * stride;
     const prevBase = base - stride;
@@ -446,7 +453,7 @@ export function computeRawDiff(
   // Simple LCS — guard against very large inputs to avoid OOM
   const m = compareOrig.length;
   const n = compareMod.length;
-  // ~40 MB for Uint16Array (~2 bytes per cell) at 20M cells
+  // ~80 MB for Uint32Array (~4 bytes per cell) at 20M cells
   const LCS_MAX_CELLS = 20_000_000;
   if (m * n > LCS_MAX_CELLS) {
     // Chunked path always produces the full unfiltered diff

@@ -50,22 +50,22 @@ export default function ToolClient() {
 
   const handleOriginalChange = useCallback(
     (text: string) => {
+      const prefix = text.length > MAX_TEXT_LENGTH ? text.slice(0, MAX_TEXT_LENGTH) : text;
       if (text.length > MAX_TEXT_LENGTH) {
-        showToast(`Text too long — max ${MAX_TEXT_LENGTH.toLocaleString()} characters`, 'error');
-        return;
+        showToast(`Text truncated to ${MAX_TEXT_LENGTH.toLocaleString()} characters`, 'error');
       }
-      setToolData((prev) => ({ ...prev, original: text }));
+      setToolData((prev) => ({ ...prev, original: prefix }));
     },
     [setToolData, showToast]
   );
 
   const handleModifiedChange = useCallback(
     (text: string) => {
+      const prefix = text.length > MAX_TEXT_LENGTH ? text.slice(0, MAX_TEXT_LENGTH) : text;
       if (text.length > MAX_TEXT_LENGTH) {
-        showToast(`Text too long — max ${MAX_TEXT_LENGTH.toLocaleString()} characters`, 'error');
-        return;
+        showToast(`Text truncated to ${MAX_TEXT_LENGTH.toLocaleString()} characters`, 'error');
       }
-      setToolData((prev) => ({ ...prev, modified: text }));
+      setToolData((prev) => ({ ...prev, modified: prefix }));
     },
     [setToolData, showToast]
   );
