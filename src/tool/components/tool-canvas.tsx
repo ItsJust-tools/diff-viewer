@@ -771,7 +771,7 @@ export function ToolCanvas({
           {filteredDiffLines.length === 0 ? (
             <div className="diff-empty-placeholder" role="status">
               {original && modified
-                ? '✓ No differences — the texts are identical'
+                ? '\u2713 No differences \u2014 the texts are identical'
                 : original
                   ? 'Paste modified text to see the diff'
                   : modified
@@ -779,23 +779,16 @@ export function ToolCanvas({
                     : 'Paste text in both panels to compare'}
             </div>
           ) : (
-            <>
-              <div role="table" aria-label="Unified diff lines">
-                {filteredDiffLines.map((line, idx) => (
-                  <DiffLineRow
-                    key={idx}
-                    line={line}
-                    showWhitespace={showWhitespace}
-                    wordDiff={wordDiff}
-                  />
-                ))}
-              </div>
-              {addCount === 0 && delCount === 0 && original && modified && (
-                <div className="diff-identical-banner" role="status">
-                  ✓ Texts are identical — no changes detected
-                </div>
-              )}
-            </>
+            <div role="table" aria-label="Unified diff lines">
+              {filteredDiffLines.map((line, idx) => (
+                <DiffLineRow
+                  key={idx}
+                  line={line}
+                  showWhitespace={showWhitespace}
+                  wordDiff={wordDiff}
+                />
+              ))}
+            </div>
           )}
         </div>
       </div>
@@ -839,7 +832,7 @@ export function ToolCanvas({
             {filteredDiffLines.length === 0 ? (
               <div className="diff-empty-placeholder" role="status">
                 {original && modified
-                  ? '✓ No differences — the texts are identical'
+                  ? '\u2713 No differences \u2014 the texts are identical'
                   : original
                     ? 'Paste modified text to see the diff'
                     : modified
@@ -847,23 +840,16 @@ export function ToolCanvas({
                       : 'Diff will appear here after pasting text in both panels'}
               </div>
             ) : (
-              <>
-                <div role="table" aria-label="Split diff output lines">
-                  {filteredDiffLines.map((line, idx) => (
-                    <DiffLineRow
-                      key={idx}
-                      line={line}
-                      showWhitespace={showWhitespace}
-                      wordDiff={wordDiff}
-                    />
-                  ))}
-                </div>
-                {addCount === 0 && delCount === 0 && original && modified && (
-                  <div className="diff-identical-banner" role="status">
-                    ✓ Texts are identical — no changes detected
-                  </div>
-                )}
-              </>
+              <div role="table" aria-label="Split diff output lines">
+                {filteredDiffLines.map((line, idx) => (
+                  <DiffLineRow
+                    key={idx}
+                    line={line}
+                    showWhitespace={showWhitespace}
+                    wordDiff={wordDiff}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </div>

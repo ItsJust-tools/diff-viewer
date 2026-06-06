@@ -318,6 +318,7 @@
   overflow-x: auto;
   white-space: pre;
   word-wrap: normal;
+  cursor: text;
 }
 
 .diff-textarea::placeholder {
@@ -782,6 +783,65 @@
   .diff-word-added,
   .diff-word-removed {
     transition: none;
+  }
+}
+
+/* --- Print Styles --- */
+@media print {
+  .diff-canvas {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .diff-mode-tabs {
+    display: none !important;
+  }
+
+  .diff-textarea {
+    flex: none !important;
+    min-height: 0 !important;
+    height: 200px !important;
+    overflow: visible !important;
+    border: 1px solid #ccc !important;
+    resize: none !important;
+    cursor: auto !important;
+  }
+
+  .diff-panel-header,
+  .diff-unified-header,
+  .diff-split-header {
+    cursor: default !important;
+  }
+
+  .diff-empty-placeholder {
+    display: none !important;
+  }
+
+  .diff-lines-container {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .diff-line-row-added {
+    background: #e6ffe6 !important;
+    border-left: 3px solid #00aa00 !important;
+    break-inside: avoid;
+  }
+
+  .diff-line-row-removed {
+    background: #ffe6e6 !important;
+    border-left: 3px solid #cc0000 !important;
+    break-inside: avoid;
+  }
+
+  .diff-word-added {
+    background: #aaffaa !important;
+    border-color: #00aa00 !important;
+  }
+
+  .diff-word-removed {
+    background: #ffaaaa !important;
+    border-color: #cc0000 !important;
   }
 }
 
