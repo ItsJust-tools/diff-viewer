@@ -760,6 +760,17 @@ export function ToolCanvas({
   const origNumLines = original.split('\n').length || 1;
   const modNumLines = modified.split('\n').length || 1;
 
+  // Memoized diff counts used by unified/split views — avoids filtering arrays on every render
+  const diffCounts = useMemo(() => {
+    let adds = 0;
+    let dels = 0;
+    for (const l of filteredDiffLines) {
+      if (l.type === 'added') adds++;
+      else if (l.type === 'removed') dels++;
+    }
+    return { addCount: adds, delCount: dels };
+  }, [filteredDiffLines]);
+
   const renderSideBySide = () => (
     <div
       className="diff-side-by-side"
@@ -800,8 +811,7 @@ export function ToolCanvas({
   );
 
   const renderUnified = () => {
-    const addCount = filteredDiffLines.filter((l) => l.type === 'added').length;
-    const delCount = filteredDiffLines.filter((l) => l.type === 'removed').length;
+    const { addCount, delCount } = diffCounts;
     return (
       <div
         className="diff-unified"
@@ -845,8 +855,7 @@ export function ToolCanvas({
   };
 
   const renderSplit = () => {
-    const addCount = filteredDiffLines.filter((l) => l.type === 'added').length;
-    const delCount = filteredDiffLines.filter((l) => l.type === 'removed').length;
+    const { addCount, delCount } = diffCounts;
     return (
       <div
         className="diff-split"
@@ -926,6 +935,10 @@ export function ToolCanvas({
             nextIdx = (currentIdx + 1) % modes.length;
           } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
             nextIdx = (currentIdx - 1 + modes.length) % modes.length;
+          } else if (e.key === 'Home') {
+            nextIdx = 0;
+          } else if (e.key === 'End') {
+            nextIdx = modes.length - 1;
           }
           if (nextIdx !== null) {
             e.preventDefault();

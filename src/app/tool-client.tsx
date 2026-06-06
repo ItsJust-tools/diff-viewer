@@ -137,7 +137,7 @@ export default function ToolClient() {
       diffOriginal || diffModified
         ? computeRawDiff(diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace)
         : [],
-    [diffOriginal, diffModified, data.wordDiff]
+    [diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace]
   );
 
   // Derive the full (unfiltered) lines for side-by-side and split views
