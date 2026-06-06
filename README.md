@@ -18,6 +18,7 @@ View and compare text differences side-by-side. Paste two versions of any text a
 - **Word-level Diff Highlighting:** Within each changed line, added/removed words are highlighted separately for precise comparison
 - **Line Wrapping:** Toggle wrapping for long lines — avoids horizontal scrolling
 - **Whitespace Visibility:** Toggle display of spaces (·) and tabs (→)
+- **Ignore Whitespace:** Toggle to ignore whitespace-only changes in the diff — useful for comparing code where formatting/indentation differences don't matter
 - **Context Control:** Adjust how many surrounding lines to show in unified view (0–20)
 - **Swap & Clear:** One-click swap original ↔ modified or clear both panels
 - **Copy Unified Diff:** Copy the complete unified diff to clipboard for sharing in code reviews or patches

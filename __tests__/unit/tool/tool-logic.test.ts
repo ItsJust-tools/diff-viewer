@@ -191,6 +191,7 @@ describe('DiffViewer serialize', () => {
       contextLines: 2,
       wordDiff: true,
       wrapLines: false,
+      ignoreWhitespace: false,
     };
     const json = diffViewerTool.serialize(state);
     expect(() => JSON.parse(json)).not.toThrow();
@@ -211,6 +212,7 @@ describe('DiffViewer serialize', () => {
       contextLines: 3,
       wordDiff: true,
       wrapLines: false,
+      ignoreWhitespace: false,
     });
     const parsed = JSON.parse(json);
     expect(parsed.original).toBe('');
@@ -226,6 +228,7 @@ describe('DiffViewer serialize', () => {
       contextLines: 3,
       wordDiff: true,
       wrapLines: false,
+      ignoreWhitespace: false,
     });
     // Should not be on a single line
     expect(json).toContain('\n  ');

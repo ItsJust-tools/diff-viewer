@@ -12,6 +12,7 @@ interface ToolSidebarProps {
   wordDiff: boolean;
   wrapLines: boolean;
   contextLines: number;
+  ignoreWhitespace: boolean;
   /** Pre-computed full diff lines (without context filtering). */
   diffLines: DiffLine[];
   /** Optional pre-computed diff stats to avoid re-computing from diffLines. */
@@ -20,6 +21,7 @@ interface ToolSidebarProps {
   onWordDiffChange?: (enabled: boolean) => void;
   onWrapLinesChange?: (enabled: boolean) => void;
   onContextLinesChange?: (lines: number) => void;
+  onIgnoreWhitespaceChange?: (enabled: boolean) => void;
   onSwap?: () => void;
   onClear?: () => void;
   onCopyDiff?: () => void;
@@ -34,12 +36,14 @@ export function ToolSidebar({
   wordDiff,
   wrapLines,
   contextLines,
+  ignoreWhitespace,
   diffLines,
   diffStats: precomputedStats,
   onShowWhitespaceChange,
   onWordDiffChange,
   onWrapLinesChange,
   onContextLinesChange,
+  onIgnoreWhitespaceChange,
   onSwap,
   onClear,
   onCopyDiff,
@@ -146,6 +150,18 @@ export function ToolSidebar({
               aria-label="Wrap long lines instead of horizontal scrolling"
             />
             <span>Wrap Lines</span>
+          </label>
+        </div>
+
+        <div className="sidebar-option-row">
+          <label className="sidebar-checkbox-label">
+            <input
+              type="checkbox"
+              checked={ignoreWhitespace}
+              onChange={(e) => onIgnoreWhitespaceChange?.(e.target.checked)}
+              aria-label="Ignore whitespace-only changes when computing diff"
+            />
+            <span>Ignore Whitespace</span>
           </label>
         </div>
 

@@ -19,7 +19,8 @@ function isDiffViewerState(value: unknown): value is DiffViewerState {
     (v.showWhitespace === undefined || typeof v.showWhitespace === 'boolean') &&
     (v.contextLines === undefined || typeof v.contextLines === 'number') &&
     (v.wordDiff === undefined || typeof v.wordDiff === 'boolean') &&
-    (v.wrapLines === undefined || typeof v.wrapLines === 'boolean')
+    (v.wrapLines === undefined || typeof v.wrapLines === 'boolean') &&
+    (v.ignoreWhitespace === undefined || typeof v.ignoreWhitespace === 'boolean')
   );
 }
 
@@ -36,6 +37,7 @@ export const diffViewerTool: Tool<DiffViewerState> = {
     contextLines: 3,
     wordDiff: true,
     wrapLines: false,
+    ignoreWhitespace: false,
   },
   serialize: (state) => JSON.stringify(state, null, 2),
   deserialize: (data) => {
@@ -50,13 +52,14 @@ export const diffViewerTool: Tool<DiffViewerState> = {
           contextLines: data.contextLines ?? 3,
           wordDiff: data.wordDiff ?? true,
           wrapLines: data.wrapLines ?? false,
+          ignoreWhitespace: data.ignoreWhitespace ?? false,
         },
       };
     }
     return {
       success: false,
       error:
-        'Invalid data format: expected { original: string, modified: string, viewMode?: string, showWhitespace?: boolean, contextLines?: number, wordDiff?: boolean, wrapLines?: boolean }',
+        'Invalid data format: expected { original: string, modified: string, viewMode?: string, showWhitespace?: boolean, contextLines?: number, wordDiff?: boolean, wrapLines?: boolean, ignoreWhitespace?: boolean }',
     };
   },
   exporters: [

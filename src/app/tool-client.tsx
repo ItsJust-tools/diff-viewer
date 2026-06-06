@@ -98,6 +98,13 @@ export default function ToolClient() {
     [setToolData]
   );
 
+  const handleIgnoreWhitespaceChange = useCallback(
+    (ignoreWhitespace: boolean) => {
+      setToolData((prev) => ({ ...prev, ignoreWhitespace }));
+    },
+    [setToolData]
+  );
+
   const handleContextLinesChange = useCallback(
     (contextLines: number) => {
       setToolData((prev) => ({ ...prev, contextLines }));
@@ -127,7 +134,7 @@ export default function ToolClient() {
   // Using computeRawDiff avoids redundant LCS computation when deriving filtered views
   const rawDiffLines: DiffLine[] = useMemo(
     () =>
-      diffOriginal || diffModified ? computeRawDiff(diffOriginal, diffModified, data.wordDiff) : [],
+      diffOriginal || diffModified ? computeRawDiff(diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace) : [],
     [diffOriginal, diffModified, data.wordDiff]
   );
 
@@ -337,12 +344,14 @@ export default function ToolClient() {
       wordDiff={data.wordDiff}
       wrapLines={data.wrapLines}
       contextLines={data.contextLines}
+      ignoreWhitespace={data.ignoreWhitespace}
       diffLines={fullDiffLines}
       diffStats={diffStats}
       onShowWhitespaceChange={handleShowWhitespaceChange}
       onWordDiffChange={handleWordDiffChange}
       onWrapLinesChange={handleWrapLinesChange}
       onContextLinesChange={handleContextLinesChange}
+      onIgnoreWhitespaceChange={handleIgnoreWhitespaceChange}
       onSwap={handleSwap}
       onClear={handleClear}
       onCopyDiff={handleCopyDiff}

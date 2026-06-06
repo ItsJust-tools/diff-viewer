@@ -384,6 +384,11 @@ export function filterDiffLines(diffLines: DiffLine[], contextLines: number): Di
  * Skipping word-diff when it's not needed avoids expensive tokenization
  * for large diffs on every keystroke.
  *
+ * When `ignoreWhitespace` is true, leading/trailing whitespace differences
+ * are ignored during comparison — lines differing only in indentation or
+ * trailing spaces are treated as unchanged. The original text is always
+ * preserved for display.
+ *
  * To get a context-filtered view, pass the result through {@link filterDiffLines}
  * instead of calling this function again with different contextLines.
  * This avoids redundant LCS computation.
@@ -391,7 +396,8 @@ export function filterDiffLines(diffLines: DiffLine[], contextLines: number): Di
 export function computeRawDiff(
   original: string,
   modified: string,
-  enableWordDiff = true
+  enableWordDiff = true,
+  ignoreWhitespace = false
 ): DiffLine[] {
   // Fast path: if the strings are identical, skip LCS entirely.
   // This is a common pattern when users are typing in one panel and
@@ -427,9 +433,19 @@ export function computeRawDiff(
     }));
   }
 
+  // When ignoring whitespace, compute LCS on trimmed lines but display
+  // the original (untrimmed) content. This way whitespace-only changes
+  // are hidden from the diff while preserving actual text for display.
+  const compareOrig: string[] = ignoreWhitespace
+    ? origLines.map((l) => l.trim())
+    : origLines;
+  const compareMod: string[] = ignoreWhitespace
+    ? modLines.map((l) => l.trim())
+    : modLines;
+
   // Simple LCS — guard against very large inputs to avoid OOM
-  const m = origLines.length;
-  const n = modLines.length;
+  const m = compareOrig.length;
+  const n = compareMod.length;
   // ~40 MB for Uint16Array (~2 bytes per cell) at 20M cells
   const LCS_MAX_CELLS = 20_000_000;
   if (m * n > LCS_MAX_CELLS) {
@@ -437,8 +453,8 @@ export function computeRawDiff(
     return computeDiffChunked(origLines, modLines, -1, enableWordDiff);
   }
 
-  const dp = computeLCSTable(origLines, modLines);
-  const ops = backtrackDiff(origLines, modLines, dp);
+  const dp = computeLCSTable(compareOrig, compareMod);
+  const ops = backtrackDiff(compareOrig, compareMod, dp);
 
   const result = buildDiffLinesFromOps(ops, origLines, modLines);
 
@@ -471,9 +487,10 @@ export function computeDiff(
   original: string,
   modified: string,
   contextLines: number,
-  enableWordDiff = true
+  enableWordDiff = true,
+  ignoreWhitespace = false
 ): DiffLine[] {
-  const raw = computeRawDiff(original, modified, enableWordDiff);
+  const raw = computeRawDiff(original, modified, enableWordDiff, ignoreWhitespace);
   return filterDiffLines(raw, contextLines);
 }
 
@@ -489,7 +506,8 @@ export function computeDiff(
 export function generateUnifiedDiffString(
   original: string,
   modified: string,
-  diffLines?: DiffLine[]
+  diffLines?: DiffLine[],
+  ignoreWhitespace = false
 ): string {
   if (!original && !modified) return '';
   if (!original) {
@@ -506,7 +524,7 @@ export function generateUnifiedDiffString(
   }
 
   // Use pre-computed diff lines when available to avoid re-computing LCS
-  const diffLines_ = diffLines ?? computeRawDiff(original, modified, false);
+  const diffLines_ = diffLines ?? computeRawDiff(original, modified, false, ignoreWhitespace);
   const m = original.split('\n').length;
   const n = modified.split('\n').length;
 

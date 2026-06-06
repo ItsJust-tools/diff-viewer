@@ -14,6 +14,13 @@ export interface DiffViewerState {
   wordDiff: boolean;
   /** Whether to wrap long lines instead of truncating with ellipsis. */
   wrapLines: boolean;
+  /**
+   * When enabled, whitespace-only changes between lines are ignored in the
+   * LCS comparison. Lines that differ only in leading/trailing whitespace
+   * or indentation are treated as unchanged. The original text is still
+   * displayed as-is.
+   */
+  ignoreWhitespace: boolean;
 }
 
 /** A single line in the computed diff output. */
