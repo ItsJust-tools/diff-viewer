@@ -252,4 +252,78 @@ describe('computeDiff — edge cases', () => {
       expect(line.wordChanges).toBeUndefined();
     }
   });
+
+  it('handles chunk boundaries correctly with overlapping chunks', () => {
+    // Create input that spans multiple chunks to test boundary handling.
+    // The key scenario: a sequence of unchanged lines that crosses a chunk
+    // boundary should be correctly detected as unchanged, not as add/remove.
+    const origLines: string[] = [];
+    const modLines: string[] = [];
+    // 2500 lines of identical content (spans 2 chunks with 2000 chunk size)
+    for (let i = 0; i < 2500; i++) {
+      origLines.push(`line${i}`);
+      modLines.push(`line${i}`);
+    }
+    // Add a change at the end
+    modLines.push('extra line');
+
+    const result = computeDiff(origLines.join('\n'), modLines.join('\n'), -1);
+    // All 2500 original lines should be unchanged
+    const unchanged = result.filter((l) => l.type === 'unchanged');
+    expect(unchanged.length).toBe(2500);
+    // The extra line should be an addition
+    const added = result.filter((l) => l.type === 'added');
+    expect(added.length).toBe(1);
+    expect(added[0]!.content).toBe('extra line');
+    // No lines should be marked as removed (all original lines are present)
+    expect(result.filter((l) => l.type === 'removed').length).toBe(0);
+  });
+
+  it('handles chunk boundaries with insertions at the seam', () => {
+    // Create input where an insertion happens right at a chunk boundary.
+    // Chunk size is 2000, so the boundary is around line 1950-2050.
+    const origLines: string[] = [];
+    const modLines: string[] = [];
+    for (let i = 0; i < 4000; i++) {
+      origLines.push(`line${i}`);
+      modLines.push(`line${i}`);
+    }
+    // Insert a line at position 1995 (near the chunk boundary)
+    modLines.splice(1995, 0, 'INSERTED AT BOUNDARY');
+
+    const result = computeDiff(origLines.join('\n'), modLines.join('\n'), -1);
+    // Should have exactly one added line
+    const added = result.filter((l) => l.type === 'added');
+    expect(added.length).toBe(1);
+    expect(added[0]!.content).toBe('INSERTED AT BOUNDARY');
+    // All original lines should still be present as unchanged
+    const unchanged = result.filter((l) => l.type === 'unchanged');
+    expect(unchanged.length).toBe(4000);
+    // No lines should be removed
+    expect(result.filter((l) => l.type === 'removed').length).toBe(0);
+  });
+
+  it('handles chunk boundaries with deletions at the seam', () => {
+    // Create input where a deletion happens right at a chunk boundary.
+    const origLines: string[] = [];
+    const modLines: string[] = [];
+    for (let i = 0; i < 4000; i++) {
+      origLines.push(`line${i}`);
+      modLines.push(`line${i}`);
+    }
+    // Remove a line at position 1995 (near the chunk boundary)
+    origLines.splice(1995, 1);
+
+    const result = computeDiff(origLines.join('\n'), modLines.join('\n'), -1);
+    // Should have exactly one removed line (line1995)
+    const removed = result.filter((l) => l.type === 'removed');
+    const added = result.filter((l) => l.type === 'added');
+    const unchanged = result.filter((l) => l.type === 'unchanged');
+    // The LCS should find the deletion. With 3999×4000 = ~16M cells,
+    // this uses the non-chunked path. The result should have 1 removed line.
+    // Note: the LCS may produce different but equally valid alignments.
+    // The key assertion is that the total number of changed lines is correct.
+    expect(removed.length + added.length).toBe(1);
+    expect(unchanged.length).toBe(3999);
+  });
 });

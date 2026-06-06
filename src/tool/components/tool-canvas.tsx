@@ -290,8 +290,14 @@ function filterContextLines(result: DiffLine[], contextLines: number): DiffLine[
 
 /**
  * Chunked LCS diff for very large inputs where the full DP table would exceed
- * memory limits (~80 MB). Splits the input into chunks, computes LCS within
- * each chunk, and stitches the results together.
+ * memory limits (~80 MB). Splits the input into overlapping chunks, computes
+ * LCS within each chunk, and stitches the results together.
+ *
+ * Overlap between chunks ensures that lines matching across chunk boundaries
+ * are correctly detected, avoiding spurious add/remove pairs at chunk seams.
+ * Only the non-overlapping "leading" portion of each chunk's result is emitted;
+ * the overlap region provides context for the LCS but its ops are discarded
+ * (they were already emitted by the previous chunk).
  *
  * This produces substantially better diffs than a naive positional fallback
  * when lines have shifted, while still avoiding OOM.
@@ -309,6 +315,8 @@ function computeDiffChunked(
   enableWordDiff = true
 ): DiffLine[] {
   const CHUNK_SIZE = 2000; // 2000×2000 = 4M cells, well under 10M limit
+  const OVERLAP = 50; // overlap between chunks to catch boundary matches
+  const STEP = CHUNK_SIZE - OVERLAP; // how far we advance each iteration
   const totalOrig = origLines.length;
   const totalMod = modLines.length;
 
@@ -343,16 +351,36 @@ function computeDiffChunked(
     const dp = computeLCSTable(chunkOrig, chunkMod);
     const chunkOps = backtrackDiff(chunkOrig, chunkMod, dp);
 
+    // Determine the boundary for this chunk's "committed" region.
+    // The committed region is the first STEP lines of this chunk (or all
+    // remaining lines for the last chunk). The overlap region (last OVERLAP
+    // lines) is only used as context for the LCS and its ops are discarded.
+    const isLastOrigChunk = origEnd >= totalOrig;
+    const isLastModChunk = modEnd >= totalMod;
+    const commitOrigEnd = isLastOrigChunk ? totalOrig : origOffset + STEP;
+    const commitModEnd = isLastModChunk ? totalMod : modOffset + STEP;
+
     for (const op of chunkOps) {
+      const globalOldIdx = op.oldIdx >= 0 ? origOffset + op.oldIdx : -1;
+      const globalNewIdx = op.newIdx >= 0 ? modOffset + op.newIdx : -1;
+
+      // Only emit ops whose indices fall within the committed region.
+      // An op is committed if at least one of its indices is in the committed
+      // region (the first STEP lines of this chunk). The overlap region
+      // (last OVERLAP lines) is only used as context for the LCS.
+      const oldCommitted = globalOldIdx < 0 || globalOldIdx < commitOrigEnd;
+      const newCommitted = globalNewIdx < 0 || globalNewIdx < commitModEnd;
+      if (!oldCommitted && !newCommitted) continue;
+
       allOps.push({
         type: op.type,
-        oldIdx: op.oldIdx >= 0 ? origOffset + op.oldIdx : -1,
-        newIdx: op.newIdx >= 0 ? modOffset + op.newIdx : -1,
+        oldIdx: globalOldIdx,
+        newIdx: globalNewIdx,
       });
     }
 
-    origOffset = origEnd;
-    modOffset = modEnd;
+    origOffset = Math.min(origOffset + STEP, totalOrig);
+    modOffset = Math.min(modOffset + STEP, totalMod);
   }
 
   const result = buildDiffLinesFromOps(allOps, origLines, modLines);
