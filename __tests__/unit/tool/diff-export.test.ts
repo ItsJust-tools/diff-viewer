@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { generateUnifiedDiffString, filterDiffLines, computeRawDiff } from '@/tool/components/tool-canvas';
+import {
+  generateUnifiedDiffString,
+  filterDiffLines,
+  computeRawDiff,
+} from '@/tool/components/tool-canvas';
 import type { DiffLine } from '@/tool/types';
 
 describe('generateUnifiedDiffString', () => {
@@ -100,7 +104,11 @@ describe('generateUnifiedDiffString', () => {
 
   it('handles word-diff disabled for better performance', () => {
     const diffLines = computeRawDiff('The quick brown fox', 'The slow brown dog', false);
-    const result = generateUnifiedDiffString('The quick brown fox', 'The slow brown dog', diffLines);
+    const result = generateUnifiedDiffString(
+      'The quick brown fox',
+      'The slow brown dog',
+      diffLines
+    );
     expect(result).toContain('-The quick brown fox');
     expect(result).toContain('+The slow brown dog');
   });

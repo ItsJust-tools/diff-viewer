@@ -13,7 +13,10 @@ View and compare text differences side-by-side. Paste two versions of any text a
 
 ## Features
 
-- **Three View Modes:** Side-by-side editor, unified diff output, and split (editor + diff) view
+- **Three View Modes:**
+  - **Side-by-Side:** Two independent textarea panels (original / modified) — ideal for simultaneous editing and comparison
+  - **Unified:** Compact interleaved diff output with color-coded additions and removals, context line control, and hunk headers
+  - **Split:** Editor panel on the left + live unified diff output on the right — best of both worlds for iterative editing
 - **Real-time Diff:** See changes as you type with color-coded additions and removals
 - **Word-level Diff Highlighting:** Within each changed line, added/removed words are highlighted separately for precise comparison
 - **Line Wrapping:** Toggle wrapping for long lines — avoids horizontal scrolling
@@ -22,6 +25,8 @@ View and compare text differences side-by-side. Paste two versions of any text a
 - **Context Control:** Adjust how many surrounding lines to show in unified view (0–20)
 - **Swap & Clear:** One-click swap original ↔ modified or clear both panels
 - **Copy Unified Diff:** Copy the complete unified diff to clipboard for sharing in code reviews or patches
+- **Copy State as JSON:** Copy full viewer state (both texts + all settings) as JSON for programmatic use
+- **Real-time Stats:** Line counts and character counts update live for both panels, along with addition/deletion tallies
 - **Shareable URLs:** Share your diff via compressed state in the URL — share a link that restores both texts and view settings on open
 - **Export:** Export as JSON, PNG, JPEG, WebP, or PDF
 
@@ -54,16 +59,16 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 
 ## Keyboard Shortcuts
 
-| Shortcut                                      | Action                         |
-| --------------------------------------------- | ------------------------------ |
-| `Ctrl+1`                                      | Switch to Side-by-Side view    |
-| `Ctrl+2`                                      | Switch to Unified view         |
-| `Ctrl+3`                                      | Switch to Split view           |
-| `Ctrl+Shift+E`                                | Export as JSON                 |
-| `Ctrl+Shift+P`                                | Export as PNG                  |
-| `Ctrl+Shift+S`                                | Swap original ↔ modified       |
-| `Ctrl+Shift+Backspace`<br>`Ctrl+Shift+Delete` | Clear both text panels         |
-| `Ctrl+Shift+C`                                | Copy Unified Diff to clipboard |
+| Shortcut                                      | Action                          |
+| --------------------------------------------- | ------------------------------- |
+| `Ctrl+1`                                      | Switch to Side-by-Side view     |
+| `Ctrl+2`                                      | Switch to Unified view          |
+| `Ctrl+3`                                      | Switch to Split view            |
+| `Ctrl+Shift+E`                                | Export as JSON                  |
+| `Ctrl+Shift+P`                                | Export as PNG                   |
+| `Ctrl+Shift+S`                                | Swap original ↔ modified        |
+| `Ctrl+Shift+Backspace`<br>`Ctrl+Shift+Delete` | Clear both text panels          |
+| `Ctrl+Shift+C`                                | Copy Unified Diff to clipboard  |
 | `Ctrl+Shift+J`                                | Copy state as JSON to clipboard |
 
 ## Project Structure

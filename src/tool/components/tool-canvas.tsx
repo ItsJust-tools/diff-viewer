@@ -471,12 +471,8 @@ export function computeRawDiff(
   // When ignoring whitespace, compute LCS on trimmed lines but display
   // the original (untrimmed) content. This way whitespace-only changes
   // are hidden from the diff while preserving actual text for display.
-  const compareOrig: string[] = ignoreWhitespace
-    ? origLines.map((l) => l.trim())
-    : origLines;
-  const compareMod: string[] = ignoreWhitespace
-    ? modLines.map((l) => l.trim())
-    : modLines;
+  const compareOrig: string[] = ignoreWhitespace ? origLines.map((l) => l.trim()) : origLines;
+  const compareMod: string[] = ignoreWhitespace ? modLines.map((l) => l.trim()) : modLines;
 
   // Simple LCS — guard against very large inputs to avoid OOM
   const m = compareOrig.length;
@@ -1003,7 +999,11 @@ function TabButton({
       title={shortcut ? `${label} (${shortcut})` : label}
     >
       {label}
-      {shortcut && <kbd className="tab-shortcut-hint" aria-hidden="true">{shortcut}</kbd>}
+      {shortcut && (
+        <kbd className="tab-shortcut-hint" aria-hidden="true">
+          {shortcut}
+        </kbd>
+      )}
     </button>
   );
 }

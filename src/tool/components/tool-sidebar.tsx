@@ -254,7 +254,9 @@ export function ToolSidebar({
             onClick={onCopyJson}
             disabled={!original && !modified}
             title={
-              !original && !modified ? 'Paste text first' : 'Copy state as JSON to clipboard (Ctrl+Shift+J)'
+              !original && !modified
+                ? 'Paste text first'
+                : 'Copy state as JSON to clipboard (Ctrl+Shift+J)'
             }
             aria-label={
               !original && !modified

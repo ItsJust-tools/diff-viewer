@@ -134,7 +134,9 @@ export default function ToolClient() {
   // Using computeRawDiff avoids redundant LCS computation when deriving filtered views
   const rawDiffLines: DiffLine[] = useMemo(
     () =>
-      diffOriginal || diffModified ? computeRawDiff(diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace) : [],
+      diffOriginal || diffModified
+        ? computeRawDiff(diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace)
+        : [],
     [diffOriginal, diffModified, data.wordDiff]
   );
 
@@ -257,7 +259,15 @@ export default function ToolClient() {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleSwap, handleClear, handleCopyDiff, handleCopyJson, handleViewModeChange, tool, data.viewMode]);
+  }, [
+    handleSwap,
+    handleClear,
+    handleCopyDiff,
+    handleCopyJson,
+    handleViewModeChange,
+    tool,
+    data.viewMode,
+  ]);
 
   useEffect(() => {
     if (hasLoadedSharedState.current) return;
