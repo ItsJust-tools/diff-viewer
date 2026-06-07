@@ -3,12 +3,14 @@ import packageJson from '../../package.json';
 
 export const templateBaseVersion = packageJson.version;
 
+export const toolVersion = packageJson.version;
+
 const toolConfig = {
   id: 'diff-viewer',
   name: 'Diff Viewer',
   description:
     'View and compare text differences side-by-side. Paste two versions of any text and see exactly what changed, added, or removed.',
-  version: '1.8.0',
+  version: packageJson.version,
   exportFormats: ['json', 'png', 'jpeg', 'webp', 'pdf'],
   features: {
     export: true,

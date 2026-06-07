@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Version sync**: `tool.config.ts` now derives its `version` from `package.json` via `packageJson.version`, eliminating the drift where `package.json` declared 1.7.0 but the tool config reported 1.8.0. Added `toolVersion` export alongside `templateBaseVersion`.
+- **CONTRIBUTING.md template references**: Replaced stale template repo URL with the correct `ItsJust-tools/diff-viewer.git` so contributors open the right repo.
+
 ### Added
 
 - **High-contrast CSS improvements**: Enhanced `[data-contrast='more']` support for diff row backgrounds and word-level diff highlights — added stronger contrast variants with thicker borders and bolder text in both light and dark high-contrast modes.

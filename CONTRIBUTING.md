@@ -5,8 +5,8 @@ Thanks for your interest in contributing! This document covers the basics.
 ## Development Setup
 
 ```bash
-git clone https://github.com/ItsJust-tools/template.git
-cd template
+git clone https://github.com/ItsJust-tools/diff-viewer.git
+cd diff-viewer
 npm install
 ```
 

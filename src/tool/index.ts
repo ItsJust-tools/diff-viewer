@@ -1,5 +1,5 @@
 export { default as toolConfig } from './tool.config';
-export { templateBaseVersion } from './tool.config';
+export { templateBaseVersion, toolVersion } from './tool.config';
 export { templateMetadata, getPublicSiteUrl } from './template-metadata';
 export { diffViewerTool } from './tool-definition';
 export {
