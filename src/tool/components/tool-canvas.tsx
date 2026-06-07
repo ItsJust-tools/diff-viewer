@@ -306,13 +306,15 @@ function filterContextLines(result: DiffLine[], contextLines: number): DiffLine[
  * @param modLines - Modified text split into lines
  * @param contextLines - Context lines for filtering (-1 for no filtering)
  * @param enableWordDiff - When true, compute word-level diff highlighting for changed lines
+ * @param ignoreWhitespace - When true, trim lines before LCS comparison
  * @returns Array of DiffLine objects
  */
 function computeDiffChunked(
   origLines: string[],
   modLines: string[],
   contextLines: number,
-  enableWordDiff = true
+  enableWordDiff = true,
+  ignoreWhitespace = false
 ): DiffLine[] {
   const CHUNK_SIZE = 2000; // 2000×2000 = 4M cells, well under 10M limit
   const OVERLAP = 50; // overlap between chunks to catch boundary matches
@@ -348,8 +350,18 @@ function computeDiffChunked(
       continue;
     }
 
-    const dp = computeLCSTable(chunkOrig, chunkMod);
-    const chunkOps = backtrackDiff(chunkOrig, chunkMod, dp);
+    // When ignoring whitespace, compute LCS on trimmed lines but display
+    // the original (untrimmed) content. This way whitespace-only changes
+    // are hidden from the diff while preserving actual text for display.
+    const compareChunkOrig = ignoreWhitespace
+      ? chunkOrig.map((l) => l.trim())
+      : chunkOrig;
+    const compareChunkMod = ignoreWhitespace
+      ? chunkMod.map((l) => l.trim())
+      : chunkMod;
+
+    const dp = computeLCSTable(compareChunkOrig, compareChunkMod);
+    const chunkOps = backtrackDiff(compareChunkOrig, compareChunkMod, dp);
 
     // Determine the boundary for this chunk's "committed" region.
     // The committed region is the first STEP lines of this chunk (or all
@@ -481,7 +493,7 @@ export function computeRawDiff(
   const LCS_MAX_CELLS = 20_000_000;
   if (m * n > LCS_MAX_CELLS) {
     // Chunked path always produces the full unfiltered diff
-    return computeDiffChunked(origLines, modLines, -1, enableWordDiff);
+    return computeDiffChunked(origLines, modLines, -1, enableWordDiff, ignoreWhitespace);
   }
 
   const dp = computeLCSTable(compareOrig, compareMod);
