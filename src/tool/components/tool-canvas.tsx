@@ -10,13 +10,13 @@ import type { DiffLine, WordChange, DiffOp } from '../types';
  * Returns a flat Uint32Array of size (m+1) × (n+1) for backtracking.
  * The cell at index i*(n+1)+j holds the LCS length for a[0..i-1] and b[0..j-1].
  *
- * Time: O(m×n) | Space: O(m×n) in a single Uint16Array (~2 bytes per cell).
+ * Time: O(m×n) | Space: O(m×n) in a single Uint32Array (~4 bytes per cell).
  * This is ~8× more memory-efficient than a number[][] and avoids allocation
  * of m+1 separate arrays.
  *
- * A soft guard prevents OOM on huge inputs.
+ * A soft guard prevents OOM on huge inputs (see LCS_MAX_CELLS).
  *
- * Note: this uses Uint32Array (not Uint16Array) because LCS lengths can
+ * Note: Uint32Array is used (not Uint16Array) because LCS lengths can
  * exceed 65535 for large inputs. For example, comparing two ~1000-token
  * lines at the word level can need LCS values well above 65535.
  */
@@ -27,7 +27,6 @@ function computeLCSTable(a: string[], b: string[]): Uint32Array {
   const size = (m + 1) * stride;
   // Use Uint32Array (not Uint16Array) because LCS lengths can exceed
   // 65535 for large inputs (e.g., word-level diffs with many tokens).
-  // Uint16Array would silently overflow, producing incorrect diff output.
   const dp = new Uint32Array(size);
   for (let i = 1; i <= m; i++) {
     const base = i * stride;
@@ -415,7 +414,8 @@ function computeDiffChunked(
  */
 export function filterDiffLines(diffLines: DiffLine[], contextLines: number): DiffLine[] {
   if (contextLines < 0) return diffLines;
-  // If there are no changed lines, the filtered result is always empty
+  // If there are no changed lines, or no lines at all, the filtered result is empty
+  if (diffLines.length === 0) return [];
   if (!diffLines.some((l) => l.type !== 'unchanged')) return [];
   return filterContextLines(diffLines, contextLines);
 }
@@ -736,7 +736,7 @@ function DiffLineRow({
       <span className={`diff-line-sign ${signClass}`} aria-hidden>
         {sign}
       </span>
-      <span className="diff-line-content" role="cell">
+      <span className="diff-line-content" role="cell" tabIndex={0}>
         <DiffLineContent line={line} showWhitespace={showWhitespace} wordDiff={wordDiff} />
       </span>
     </div>

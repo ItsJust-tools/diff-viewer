@@ -60,7 +60,7 @@ export function ToolSidebar({
       return {
         additions: precomputedStats.additions,
         deletions: precomputedStats.deletions,
-        changes: precomputedStats.additions + precomputedStats.deletions,
+        changes: precomputedStats.changes,
       };
     }
     if (!original && !modified) return { additions: 0, deletions: 0, changes: 0 };

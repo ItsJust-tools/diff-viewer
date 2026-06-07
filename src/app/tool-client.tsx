@@ -328,6 +328,8 @@ export default function ToolClient() {
         viewMode={data.viewMode}
         additions={diffStats.additions}
         deletions={diffStats.deletions}
+        wordDiff={data.wordDiff}
+        showWhitespace={data.showWhitespace}
       />
       {isDiffStale && (
         <span className="toolbar-large-warning" role="alert">

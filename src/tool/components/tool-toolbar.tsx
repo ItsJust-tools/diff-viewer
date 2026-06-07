@@ -11,6 +11,10 @@ interface ToolToolbarProps {
   additions?: number;
   /** Number of deletions in the diff. */
   deletions?: number;
+  /** Whether word-level diff highlighting is enabled. */
+  wordDiff?: boolean;
+  /** Whether whitespace visualization is enabled. */
+  showWhitespace?: boolean;
 }
 
 export function ToolToolbar({
@@ -19,6 +23,8 @@ export function ToolToolbar({
   viewMode,
   additions = 0,
   deletions = 0,
+  wordDiff = false,
+  showWhitespace = false,
 }: ToolToolbarProps) {
   const stats = useMemo(() => {
     const origLines = original ? original.split('\n').length : 0;
@@ -37,6 +43,10 @@ export function ToolToolbar({
   const LARGE_INPUT_THRESHOLD = 500_000;
   const isVeryLargeInput =
     stats && (stats.origChars > LARGE_INPUT_THRESHOLD || stats.modChars > LARGE_INPUT_THRESHOLD);
+
+  const activeFlags = [];
+  if (showWhitespace) activeFlags.push('WS');
+  if (wordDiff) activeFlags.push('WD');
 
   return (
     <div className="diff-toolbar">
@@ -59,6 +69,14 @@ export function ToolToolbar({
                   <span className="diff-stat-additions">+{additions}</span>
                   {' / '}
                   <span className="diff-stat-deletions">-{deletions}</span>
+                </span>
+              </>
+            )}
+            {activeFlags.length > 0 && (
+              <>
+                <span className="toolbar-separator">|</span>
+                <span className="toolbar-active-flags" title="Active settings">
+                  {activeFlags.join(', ')}
                 </span>
               </>
             )}
