@@ -119,49 +119,61 @@ export function ToolSidebar({
 
         <div className="sidebar-option-row">
           <label className="sidebar-checkbox-label">
-            <input
-              type="checkbox"
-              checked={showWhitespace}
-              onChange={(e) => onShowWhitespaceChange?.(e.target.checked)}
-              aria-label="Show whitespace characters (spaces as ·, tabs as →)"
-            />
-            <span>Show Whitespace</span>
+            <span className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={showWhitespace}
+                onChange={(e) => onShowWhitespaceChange?.(e.target.checked)}
+                aria-label="Show whitespace characters (spaces as ·, tabs as →)"
+              />
+              <span>Show Whitespace</span>
+            </span>
+            <span className="sidebar-checkbox-desc">Visualize spaces (·) and tabs (→)</span>
           </label>
         </div>
 
         <div className="sidebar-option-row">
           <label className="sidebar-checkbox-label">
-            <input
-              type="checkbox"
-              checked={wordDiff}
-              onChange={(e) => onWordDiffChange?.(e.target.checked)}
-              aria-label="Enable word-level diff highlighting within changed lines"
-            />
-            <span>Word Diff</span>
+            <span className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={wordDiff}
+                onChange={(e) => onWordDiffChange?.(e.target.checked)}
+                aria-label="Enable word-level diff highlighting within changed lines"
+              />
+              <span>Word Diff</span>
+            </span>
+            <span className="sidebar-checkbox-desc">Highlight added/removed words within lines</span>
           </label>
         </div>
 
         <div className="sidebar-option-row">
           <label className="sidebar-checkbox-label">
-            <input
-              type="checkbox"
-              checked={wrapLines}
-              onChange={(e) => onWrapLinesChange?.(e.target.checked)}
-              aria-label="Wrap long lines instead of horizontal scrolling"
-            />
-            <span>Wrap Lines</span>
+            <span className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={wrapLines}
+                onChange={(e) => onWrapLinesChange?.(e.target.checked)}
+                aria-label="Wrap long lines instead of horizontal scrolling"
+              />
+              <span>Wrap Lines</span>
+            </span>
+            <span className="sidebar-checkbox-desc">Avoid horizontal scroll for long lines</span>
           </label>
         </div>
 
         <div className="sidebar-option-row">
           <label className="sidebar-checkbox-label">
-            <input
-              type="checkbox"
-              checked={ignoreWhitespace}
-              onChange={(e) => onIgnoreWhitespaceChange?.(e.target.checked)}
-              aria-label="Ignore whitespace-only changes when computing diff"
-            />
-            <span>Ignore Whitespace</span>
+            <span className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={ignoreWhitespace}
+                onChange={(e) => onIgnoreWhitespaceChange?.(e.target.checked)}
+                aria-label="Ignore whitespace-only changes when computing diff"
+              />
+              <span>Ignore Whitespace</span>
+            </span>
+            <span className="sidebar-checkbox-desc">Skip indentation and trailing space changes</span>
           </label>
         </div>
 

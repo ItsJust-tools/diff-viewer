@@ -42,6 +42,21 @@ const toolConfig = {
           description: 'screenshot as PNG',
         },
         {
+          keys: 'Ctrl+Shift+J',
+          label: 'Export JPEG',
+          description: 'screenshot as JPEG',
+        },
+        {
+          keys: 'Ctrl+Shift+W',
+          label: 'Export WebP',
+          description: 'screenshot as WebP',
+        },
+        {
+          keys: 'Ctrl+Shift+D',
+          label: 'Export PDF',
+          description: 'export as PDF',
+        },
+        {
           keys: 'Ctrl+1',
           label: 'Side-by-Side',
           description: 'switch to side-by-side view',

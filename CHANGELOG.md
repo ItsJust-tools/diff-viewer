@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Export keyboard shortcuts**: Added `Ctrl+Shift+J` (JPEG), `Ctrl+Shift+W` (WebP), and `Ctrl+Shift+D` (PDF) shortcuts alongside the existing JSON and PNG shortcuts. Refactored to a unified export key map for consistency.
+- **Enhanced sidebar option labels**: Each checkbox option now has a brief description below it explaining what it does (e.g., "Visualize spaces (·) and tabs (→)", "Highlight added/removed words within lines") for improved discoverability.
+- **README keyboard shortcuts table**: Documented the new JPEG, WebP, and PDF export shortcuts.
+
+### Changed
+
+- **Optimized diff lines computation**: Removed the redundant `filterDiffLines(rawDiffLines, -1)` call — `rawDiffLines` is already the full unfiltered diff, so no additional filtering is needed.
+- **Cleaned up ToolToolbar stats**: Replaced the `useMemo` + null-object pattern with direct computed constants, eliminating the non-null assertion (`stats!`) for safer code.
+
 ### Fixed
 
 - **Version sync**: `tool.config.ts` now derives its `version` from `package.json` via `packageJson.version`, eliminating the drift where `package.json` declared 1.7.0 but the tool config reported 1.8.0. Added `toolVersion` export alongside `templateBaseVersion`.

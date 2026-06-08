@@ -66,6 +66,9 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 | `Ctrl+3`                                      | Switch to Split view            |
 | `Ctrl+Shift+E`                                | Export as JSON                  |
 | `Ctrl+Shift+P`                                | Export as PNG                   |
+| `Ctrl+Shift+J`                                | Export as JPEG                  |
+| `Ctrl+Shift+W`                                | Export as WebP                  |
+| `Ctrl+Shift+D`                                | Export as PDF                   |
 | `Ctrl+Shift+S`                                | Swap original ↔ modified        |
 | `Ctrl+Shift+Backspace`<br>`Ctrl+Shift+Delete` | Clear both text panels          |
 | `Ctrl+Shift+C`                                | Copy Unified Diff to clipboard  |

@@ -141,11 +141,8 @@ export default function ToolClient() {
   );
 
   // Derive the full (unfiltered) lines for side-by-side and split views
-  // When contextLines is -1, filterDiffLines returns the raw diff as-is
-  const fullDiffLines: DiffLine[] = useMemo(
-    () => filterDiffLines(rawDiffLines, -1),
-    [rawDiffLines]
-  );
+  // When rawDiffLines is computed with no context filtering, it's already the full diff
+  const fullDiffLines: DiffLine[] = rawDiffLines;
 
   // Pre-compute filtered diff lines for unified view to avoid redundant LCS in ToolCanvas
   const filteredDiffLines: DiffLine[] = useMemo(
@@ -205,16 +202,27 @@ export default function ToolClient() {
       const mod = e.metaKey || e.ctrlKey;
       if (!mod) return;
 
-      if (e.shiftKey && (e.key === 'e' || e.key === 'E')) {
-        e.preventDefault();
-        tool.handleExport('json');
-        return;
-      }
-
-      if (e.shiftKey && (e.key === 'p' || e.key === 'P')) {
-        e.preventDefault();
-        tool.handleExport('png');
-        return;
+      // Export shortcuts: Ctrl+Shift+E (JSON), Ctrl+Shift+P (PNG),
+      // Ctrl+Shift+J (JPEG), Ctrl+Shift+W (WebP), Ctrl+Shift+D (PDF)
+      if (e.shiftKey) {
+        const exportKeyMap: Record<string, 'json' | 'png' | 'jpeg' | 'webp' | 'pdf'> = {
+          e: 'json',
+          E: 'json',
+          p: 'png',
+          P: 'png',
+          j: 'jpeg',
+          J: 'jpeg',
+          w: 'webp',
+          W: 'webp',
+          d: 'pdf',
+          D: 'pdf',
+        };
+        const fmt = exportKeyMap[e.key];
+        if (fmt) {
+          e.preventDefault();
+          tool.handleExport(fmt);
+          return;
+        }
       }
 
       if (e.shiftKey && (e.key === 's' || e.key === 'S')) {
