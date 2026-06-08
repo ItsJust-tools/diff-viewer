@@ -682,10 +682,13 @@ function DiffLineRow({
   line,
   showWhitespace,
   wordDiff,
+  rowIndex,
 }: {
   line: DiffLine;
   showWhitespace: boolean;
   wordDiff: boolean;
+  /** 1-based row index for aria-rowindex. 0 = not in a table context. */
+  rowIndex?: number;
 }) {
   const isHunk = line.type === 'unchanged' && line.content.startsWith('@@');
 
@@ -723,6 +726,7 @@ function DiffLineRow({
     <div
       className={`diff-line diff-line-${line.type}${rowClass ? ' ' + rowClass : ''}`}
       role="row"
+      aria-rowindex={rowIndex}
       aria-label={rowLabel}
     >
       <span
@@ -861,6 +865,7 @@ export function ToolCanvas({
                   line={line}
                   showWhitespace={showWhitespace}
                   wordDiff={wordDiff}
+                  rowIndex={idx + 1}
                 />
               ))}
             </div>
@@ -921,6 +926,7 @@ export function ToolCanvas({
                     line={line}
                     showWhitespace={showWhitespace}
                     wordDiff={wordDiff}
+                    rowIndex={idx + 1}
                   />
                 ))}
               </div>

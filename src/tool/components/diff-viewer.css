@@ -262,6 +262,18 @@
   overflow-x: auto;
   text-overflow: clip;
   min-width: 0;
+  /* Allow easy triple-click to select the entire line */
+  user-select: all;
+  -webkit-user-select: all;
+}
+
+/* Selection within diff line content */
+.diff-line-content::selection {
+  background: var(--accent-subtle);
+}
+
+.diff-line-content::-moz-selection {
+  background: var(--accent-subtle);
 }
 
 .diff-line-content[tabindex]:focus {
@@ -270,13 +282,24 @@
   border-radius: 1px;
 }
 
-.diff-line-content::selection {
+/* Subtle hover highlight on diff lines for easier scanning */
+.diff-line:hover {
   background: var(--accent-subtle);
 }
 
-.diff-line-content::-moz-selection {
-  background: var(--accent-subtle);
+.diff-line-row-added:hover,
+.diff-line-row-removed:hover {
+  filter: brightness(1.05);
 }
+
+/* Focus-visible on the diff line wrapper for keyboard navigation */
+.diff-line:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-radius: 2px;
+}
+
+
 
 /* Empty diff placeholder */
 .diff-empty-placeholder {
