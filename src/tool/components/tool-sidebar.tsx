@@ -268,7 +268,7 @@ export function ToolSidebar({
             title={
               !original && !modified
                 ? 'Paste text first'
-                : 'Copy state as JSON to clipboard (Ctrl+Shift+J)'
+                : 'Copy state as JSON to clipboard (Ctrl+Shift+Y)'
             }
             aria-label={
               !original && !modified
@@ -278,7 +278,7 @@ export function ToolSidebar({
           >
             Copy as JSON
             <kbd className="tab-shortcut-hint" aria-hidden="true">
-              Ctrl+Shift+J
+              Ctrl+Shift+Y
             </kbd>
           </button>
         </div>
