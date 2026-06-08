@@ -219,17 +219,21 @@ function applyWordDiffPairing(result: DiffLine[]): void {
     const line = result[i] as DiffLine;
     if (line.type === 'removed') {
       pendingRemoved.push({ idx: i, content: line.content });
-    } else if (line.type === 'added' && pendingRemoved.length > 0) {
-      // Pair the first pending removed line with this added line (FIFO order)
-      const removedLine = pendingRemoved.shift()!;
-      const newLine = line.content;
-      result[removedLine.idx]!.wordChanges = computeWordDiff(
-        removedLine.content,
-        newLine,
-        'removed'
-      );
-      line.wordChanges = computeWordDiff(removedLine.content, newLine, 'added');
-    } else if (line.type !== 'unchanged') {
+    } else if (line.type === 'added') {
+      if (pendingRemoved.length > 0) {
+        // Pair the first pending removed line with this added line (FIFO order)
+        const removedLine = pendingRemoved.shift()!;
+        const newLine = line.content;
+        result[removedLine.idx]!.wordChanges = computeWordDiff(
+          removedLine.content,
+          newLine,
+          'removed'
+        );
+        line.wordChanges = computeWordDiff(removedLine.content, newLine, 'added');
+      }
+    } else {
+      // For unchanged lines, reset the pending removed queue — subsequent added
+      // lines after an unchanged block shouldn't be paired with earlier removals.
       pendingRemoved.length = 0;
     }
   }

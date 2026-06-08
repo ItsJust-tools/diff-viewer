@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Enhanced sidebar option labels**: Each checkbox option now has a brief description below it explaining what it does (e.g., "Visualize spaces (·) and tabs (→)", "Highlight added/removed words within lines") for improved discoverability.
 - **README keyboard shortcuts table**: Documented the new JPEG, WebP, and PDF export shortcuts.
 
+### Fixed
+
+- **Duplicate shortcut `Ctrl+Shift+J`**: The shortcut was shared between "Export as JPEG" and "Copy state as JSON". The keyboard handler resolved this silently (export takes priority), but the config and README showed the conflict. Changed "Copy as JSON" to `Ctrl+Shift+Y` for unambiguous operation.
+- **Dead branch in word-diff pairing**: Removed an unreachable `else if (line.type !== 'unchanged')` branch in `applyWordDiffPairing`. Replaced with a clearer `else` clause that resets the pending remove queue on unchanged lines, matching the documented intent.
+
 ### Changed
 
 - **Optimized diff lines computation**: Removed the redundant `filterDiffLines(rawDiffLines, -1)` call — `rawDiffLines` is already the full unfiltered diff, so no additional filtering is needed.

@@ -93,7 +93,7 @@ export function ToolSidebar({
           <div className="stat-row">
             <dt>Modified Characters</dt>
             <dd>{modChars.toLocaleString()}</dd>
-          </div>{' '}
+          </div>
           {origChars > 1_000_000 || modChars > 1_000_000 ? (
             <div className="stat-row large-input-warning">
               Large input detected — diff may be slower

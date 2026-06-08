@@ -87,7 +87,7 @@ const toolConfig = {
           description: 'copy unified diff to clipboard',
         },
         {
-          keys: 'Ctrl+Shift+J',
+          keys: 'Ctrl+Shift+Y',
           label: 'Copy as JSON',
           description: 'copy viewer state as JSON to clipboard',
         },

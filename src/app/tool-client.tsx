@@ -237,7 +237,7 @@ export default function ToolClient() {
         return;
       }
 
-      if (e.shiftKey && (e.key === 'j' || e.key === 'J')) {
+      if (e.shiftKey && (e.key === 'y' || e.key === 'Y')) {
         e.preventDefault();
         handleCopyJson();
         return;
