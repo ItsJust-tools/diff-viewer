@@ -572,13 +572,13 @@ export function generateUnifiedDiffString(
 
   // Use pre-computed diff lines when available to avoid re-computing LCS
   const diffLines_ = diffLines ?? computeRawDiff(original, modified, false, ignoreWhitespace);
-  const m = original.split('\n').length;
-  const n = modified.split('\n').length;
+  const mCount = original.split('\n').length;
+  const nCount = modified.split('\n').length;
 
   const result: string[] = [];
   result.push(`--- original`);
   result.push(`+++ modified`);
-  result.push(`@@ -1,${m} +1,${n} @@`);
+  result.push(`@@ -1,${mCount} +1,${nCount} @@`);
 
   for (const line of diffLines_) {
     if (line.type === 'added') {
