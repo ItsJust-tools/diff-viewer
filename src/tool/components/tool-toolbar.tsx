@@ -40,7 +40,8 @@ export function ToolToolbar({
   const viewModeLabel =
     viewMode === 'side-by-side' ? 'Side-by-Side' : viewMode === 'unified' ? 'Unified' : 'Split';
 
-  const LARGE_INPUT_THRESHOLD = 500_000;
+  // Warning threshold below MAX_TEXT_LENGTH (500K) so users get feedback before truncation at the input boundary
+  const LARGE_INPUT_THRESHOLD = 100_000;
   const isVeryLargeInput =
     stats && (stats.origChars > LARGE_INPUT_THRESHOLD || stats.modChars > LARGE_INPUT_THRESHOLD);
 

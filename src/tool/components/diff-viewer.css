@@ -680,23 +680,6 @@
   background: rgba(239, 68, 68, 0.5);
 }
 
-/* --- Identical text banner (visible when both texts are set but diff is empty) --- */
-.diff-identical-banner {
-  padding: 0.75rem 1rem;
-  margin: 0.5rem 0.75rem;
-  text-align: center;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--success);
-  background: rgba(34, 197, 94, 0.08);
-  border: 1px solid rgba(34, 197, 94, 0.25);
-  border-radius: var(--radius);
-}
-
-[data-contrast='more'] .diff-identical-banner {
-  border: 2px solid var(--success);
-  font-weight: 700;
-}
 
 /* --- Line wrapping support (applied to all diff views) --- */
 .diff-canvas-wrap .diff-line-content {
@@ -868,11 +851,4 @@
     background: #ffaaaa !important;
     border-color: #cc0000 !important;
   }
-}
-
-/* --- Tool sidebar in shell context --- */
-.tool-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
 }
