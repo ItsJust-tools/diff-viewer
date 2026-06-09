@@ -356,12 +356,8 @@ function computeDiffChunked(
     // When ignoring whitespace, compute LCS on trimmed lines but display
     // the original (untrimmed) content. This way whitespace-only changes
     // are hidden from the diff while preserving actual text for display.
-    const compareChunkOrig = ignoreWhitespace
-      ? chunkOrig.map((l) => l.trim())
-      : chunkOrig;
-    const compareChunkMod = ignoreWhitespace
-      ? chunkMod.map((l) => l.trim())
-      : chunkMod;
+    const compareChunkOrig = ignoreWhitespace ? chunkOrig.map((l) => l.trim()) : chunkOrig;
+    const compareChunkMod = ignoreWhitespace ? chunkMod.map((l) => l.trim()) : chunkMod;
 
     const dp = computeLCSTable(compareChunkOrig, compareChunkMod);
     const chunkOps = backtrackDiff(compareChunkOrig, compareChunkMod, dp);

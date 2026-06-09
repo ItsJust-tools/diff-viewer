@@ -59,20 +59,24 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 
 ## Keyboard Shortcuts
 
-| Shortcut                                      | Action                          |
-| --------------------------------------------- | ------------------------------- |
-| `Ctrl+1`                                      | Switch to Side-by-Side view     |
-| `Ctrl+2`                                      | Switch to Unified view          |
-| `Ctrl+3`                                      | Switch to Split view            |
-| `Ctrl+Shift+E`                                | Export as JSON                  |
-| `Ctrl+Shift+P`                                | Export as PNG                   |
-| `Ctrl+Shift+J`                                | Export as JPEG                  |
-| `Ctrl+Shift+W`                                | Export as WebP                  |
-| `Ctrl+Shift+D`                                | Export as PDF                   |
-| `Ctrl+Shift+S`                                | Swap original ↔ modified        |
-| `Ctrl+Shift+Backspace`<br>`Ctrl+Shift+Delete` | Clear both text panels          |
-| `Ctrl+Shift+C`                                | Copy Unified Diff to clipboard  |
-| `Ctrl+Shift+Y`                                | Copy state as JSON to clipboard |
+| Shortcut                                      | Action                              |
+| --------------------------------------------- | ----------------------------------- |
+| `Ctrl+1`                                      | Switch to Side-by-Side view         |
+| `Ctrl+2`                                      | Switch to Unified view              |
+| `Ctrl+3`                                      | Switch to Split view                |
+| `Ctrl+Shift+E`                                | Export as JSON                      |
+| `Ctrl+Shift+P`                                | Export as PNG                       |
+| `Ctrl+Shift+J`                                | Export as JPEG                      |
+| `Ctrl+Shift+W`                                | Export as WebP                      |
+| `Ctrl+Shift+D`                                | Export as PDF                       |
+| `Ctrl+Shift+S`                                | Swap original ↔ modified            |
+| `Ctrl+Shift+Backspace`<br>`Ctrl+Shift+Delete` | Clear both text panels              |
+| `Ctrl+Shift+C`                                | Copy Unified Diff to clipboard      |
+| `Ctrl+Shift+Y`                                | Copy state as JSON to clipboard     |
+| `Ctrl+.`                                      | Toggle whitespace visualization     |
+| `Ctrl+,`                                      | Toggle word-level diff highlighting |
+| `Ctrl+W`                                      | Toggle line wrapping                |
+| `Ctrl+I`                                      | Toggle ignore whitespace changes    |
 
 ## Project Structure
 

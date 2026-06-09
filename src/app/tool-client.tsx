@@ -262,6 +262,44 @@ export default function ToolClient() {
           handleViewModeChange(mode);
           return;
         }
+
+        // Toggle options: Ctrl+W (wrap lines), Ctrl+Shift+W is export WebP
+        if (e.key === 'w' && !e.shiftKey) {
+          e.preventDefault();
+          handleWrapLinesChange(!data.wrapLines);
+          showToast(`Line wrapping ${data.wrapLines ? 'disabled' : 'enabled'}`, 'success');
+          return;
+        }
+
+        // Ctrl+. (period) to toggle showWhitespace
+        if (e.key === '.') {
+          e.preventDefault();
+          handleShowWhitespaceChange(!data.showWhitespace);
+          showToast(
+            `Whitespace visualization ${data.showWhitespace ? 'disabled' : 'enabled'}`,
+            'success'
+          );
+          return;
+        }
+
+        // Ctrl+, (comma) to toggle word diff
+        if (e.key === ',') {
+          e.preventDefault();
+          handleWordDiffChange(!data.wordDiff);
+          showToast(`Word-level diff ${data.wordDiff ? 'disabled' : 'enabled'}`, 'success');
+          return;
+        }
+
+        // Ctrl+I to toggle ignore whitespace
+        if (e.key === 'i') {
+          e.preventDefault();
+          handleIgnoreWhitespaceChange(!data.ignoreWhitespace);
+          showToast(
+            `Ignore whitespace ${data.ignoreWhitespace ? 'disabled' : 'enabled'}`,
+            'success'
+          );
+          return;
+        }
       }
     }
 
@@ -273,8 +311,17 @@ export default function ToolClient() {
     handleCopyDiff,
     handleCopyJson,
     handleViewModeChange,
+    handleWrapLinesChange,
+    handleShowWhitespaceChange,
+    handleWordDiffChange,
+    handleIgnoreWhitespaceChange,
+    showToast,
     tool,
     data.viewMode,
+    data.wrapLines,
+    data.showWhitespace,
+    data.wordDiff,
+    data.ignoreWhitespace,
   ]);
 
   useEffect(() => {

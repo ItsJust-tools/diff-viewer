@@ -143,7 +143,9 @@ export function ToolSidebar({
               />
               <span>Word Diff</span>
             </span>
-            <span className="sidebar-checkbox-desc">Highlight added/removed words within lines</span>
+            <span className="sidebar-checkbox-desc">
+              Highlight added/removed words within lines
+            </span>
           </label>
         </div>
 
@@ -173,7 +175,9 @@ export function ToolSidebar({
               />
               <span>Ignore Whitespace</span>
             </span>
-            <span className="sidebar-checkbox-desc">Skip indentation and trailing space changes</span>
+            <span className="sidebar-checkbox-desc">
+              Skip indentation and trailing space changes
+            </span>
           </label>
         </div>
 

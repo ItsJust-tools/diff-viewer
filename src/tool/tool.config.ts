@@ -91,6 +91,26 @@ const toolConfig = {
           label: 'Copy as JSON',
           description: 'copy viewer state as JSON to clipboard',
         },
+        {
+          keys: 'Ctrl+.',
+          label: 'Toggle Whitespace',
+          description: 'toggle whitespace visualization',
+        },
+        {
+          keys: 'Ctrl+,',
+          label: 'Toggle Word Diff',
+          description: 'toggle word-level diff highlighting',
+        },
+        {
+          keys: 'Ctrl+W',
+          label: 'Toggle Wrap',
+          description: 'toggle line wrapping',
+        },
+        {
+          keys: 'Ctrl+I',
+          label: 'Toggle Ignore WS',
+          description: 'toggle ignore whitespace-only changes',
+        },
       ],
     },
   ],

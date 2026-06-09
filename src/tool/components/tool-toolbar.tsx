@@ -35,8 +35,7 @@ export function ToolToolbar({
 
   // Warning threshold below MAX_TEXT_LENGTH (500K) so users get feedback before truncation at the input boundary
   const LARGE_INPUT_THRESHOLD = 100_000;
-  const isVeryLargeInput =
-    origChars > LARGE_INPUT_THRESHOLD || modChars > LARGE_INPUT_THRESHOLD;
+  const isVeryLargeInput = origChars > LARGE_INPUT_THRESHOLD || modChars > LARGE_INPUT_THRESHOLD;
 
   const activeFlags = [];
   if (showWhitespace) activeFlags.push('WS');
