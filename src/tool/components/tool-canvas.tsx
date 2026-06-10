@@ -781,7 +781,7 @@ export function ToolCanvas({
   onModifiedChange,
   onViewModeChange,
   isDiffStale: externalIsDiffStale,
-}: ToolCanvasProps & { isDiffStale?: boolean }) {
+}: ToolCanvasProps) {
   const filteredDiffLines = useMemo(
     () =>
       viewMode === 'unified'
@@ -870,7 +870,7 @@ export function ToolCanvas({
         <div className="diff-unified-header">
           <span>Unified Diff View</span>
           {showStale && (
-            <span className="toolbar-large-warning" role="alert" style={{ fontSize: '0.75rem', marginLeft: '0.5rem' }}>
+            <span className="toolbar-large-warning" role="alert" style={{ marginLeft: '0.5rem' }}>
               Computing diff…
             </span>
           )}
@@ -938,7 +938,7 @@ export function ToolCanvas({
           <div className="diff-split-header">
             <span>Diff Output</span>
             {showStale && (
-              <span className="toolbar-large-warning" role="alert" style={{ fontSize: '0.75rem', marginLeft: '0.5rem' }}>
+              <span className="toolbar-large-warning" role="alert" style={{ marginLeft: '0.5rem' }}>
                 Computing…
               </span>
             )}

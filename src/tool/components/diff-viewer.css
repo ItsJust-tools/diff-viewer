@@ -840,6 +840,11 @@
     scroll-behavior: auto;
   }
 
+  .diff-line-row-added:hover,
+  .diff-line-row-removed:hover {
+    filter: none;
+  }
+
   .diff-line-row-added,
   .diff-line-row-removed,
   .diff-word-added,
