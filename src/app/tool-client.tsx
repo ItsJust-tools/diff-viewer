@@ -140,10 +140,6 @@ export default function ToolClient() {
     [diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace]
   );
 
-  // Derive the full (unfiltered) lines for side-by-side and split views
-  // When rawDiffLines is computed with no context filtering, it's already the full diff
-  const fullDiffLines: DiffLine[] = rawDiffLines;
-
   // Pre-compute filtered diff lines for unified view to avoid redundant LCS in ToolCanvas
   const filteredDiffLines: DiffLine[] = useMemo(
     () =>
@@ -154,18 +150,18 @@ export default function ToolClient() {
   );
 
   const diffStats = useMemo(() => {
-    if (fullDiffLines.length === 0) return { additions: 0, deletions: 0, changes: 0 };
+    if (rawDiffLines.length === 0) return { additions: 0, deletions: 0, changes: 0 };
     let additions = 0;
     let deletions = 0;
-    for (const line of fullDiffLines) {
+    for (const line of rawDiffLines) {
       if (line.type === 'added') additions++;
       else if (line.type === 'removed') deletions++;
     }
     return { additions, deletions, changes: additions + deletions };
-  }, [fullDiffLines]);
+  }, [rawDiffLines]);
 
   const handleCopyDiff = useCallback(() => {
-    const diff = generateUnifiedDiffString(data.original, data.modified, fullDiffLines);
+    const diff = generateUnifiedDiffString(data.original, data.modified, rawDiffLines, data.ignoreWhitespace);
     if (!diff) {
       showToast('Nothing to copy — paste text in both panels first', 'error');
       return;
@@ -174,7 +170,7 @@ export default function ToolClient() {
       () => showToast('Unified diff copied to clipboard', 'success'),
       () => showToast('Failed to copy to clipboard', 'error')
     );
-  }, [data.original, data.modified, fullDiffLines, showToast]);
+  }, [data.original, data.modified, rawDiffLines, showToast, data.ignoreWhitespace]);
 
   const handleCopyJson = useCallback(() => {
     const json = JSON.stringify(
@@ -186,6 +182,7 @@ export default function ToolClient() {
         contextLines: data.contextLines,
         wordDiff: data.wordDiff,
         wrapLines: data.wrapLines,
+        ignoreWhitespace: data.ignoreWhitespace,
       },
       null,
       2
@@ -412,7 +409,7 @@ export default function ToolClient() {
       wrapLines={data.wrapLines}
       contextLines={data.contextLines}
       ignoreWhitespace={data.ignoreWhitespace}
-      diffLines={fullDiffLines}
+      diffLines={rawDiffLines}
       diffStats={diffStats}
       onShowWhitespaceChange={handleShowWhitespaceChange}
       onWordDiffChange={handleWordDiffChange}
@@ -436,7 +433,7 @@ export default function ToolClient() {
       contextLines={data.contextLines}
       wordDiff={data.wordDiff}
       wrapLines={data.wrapLines}
-      diffLines={fullDiffLines}
+      diffLines={rawDiffLines}
       filteredDiffLines={filteredDiffLines}
       onOriginalChange={handleOriginalChange}
       onModifiedChange={handleModifiedChange}

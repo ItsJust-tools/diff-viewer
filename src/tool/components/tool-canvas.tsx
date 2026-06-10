@@ -25,8 +25,6 @@ function computeLCSTable(a: string[], b: string[]): Uint32Array {
   const n = b.length;
   const stride = n + 1;
   const size = (m + 1) * stride;
-  // Use Uint32Array (not Uint16Array) because LCS lengths can exceed
-  // 65535 for large inputs (e.g., word-level diffs with many tokens).
   const dp = new Uint32Array(size);
   for (let i = 1; i <= m; i++) {
     const base = i * stride;
@@ -77,19 +75,18 @@ function backtrackDiff(a: string[], b: string[], dp: Uint32Array): DiffOp[] {
 
 /**
  * Split text into tokens for word-level diff.
- * Matches runs of non-whitespace characters and runs of whitespace as separate tokens.
- * This preserves spacing changes between words as visible tokens.
- *
- * Note: CJK characters and other non-whitespace-delimited scripts are treated as
- * single continuous tokens, which means word-level highlighting won't distinguish
- * individual characters in such scripts. This is a known limitation.
+ * Matches runs of non-whitespace ASCII/Latin characters and runs of whitespace
+ * as separate tokens, and treats each CJK (Chinese, Japanese, Korean) character
+ * as its own individual token.
+ * This preserves spacing changes between words as visible tokens and enables
+ * character-level highlighting for non-whitespace-delimited scripts.
  *
  * @param text - The single-line text to tokenize
  * @returns Array of non-empty string tokens, or `null` if text is empty
  */
 function tokenize(text: string): string[] {
-  // Match word characters, whitespace runs, or individual non-whitespace/non-word chars
-  return text.match(/[^\s]+|\s+/g) ?? [];
+  // Match Latin word runs, whitespace runs, or individual CJK-like characters
+  return text.match(/[\w\u00C0-\u024F\u1E00-\u1EFF']+|\s+|[\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]/gu) ?? [];
 }
 
 /**
@@ -273,7 +270,11 @@ function filterContextLines(result: DiffLine[], contextLines: number): DiffLine[
 
         let hunkLabel = '...';
         if (startOld != null && endOld != null && startNew != null && endNew != null) {
-          hunkLabel = `@@ -${startOld},${endOld - startOld + 1} +${startNew},${endNew - startNew + 1} @@`;
+          if (startOld <= endOld && startNew <= endNew) {
+            hunkLabel = `@@ -${startOld},${endOld - startOld + 1} +${startNew},${endNew - startNew + 1} @@`;
+          }
+          // When valid ranges span both old and new but one side is empty (e.g. start==end+1
+          // after boundary contains only adds/removes), fall through to '...'
         }
 
         filtered.push({

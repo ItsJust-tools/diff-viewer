@@ -733,16 +733,20 @@
 /* --- Line wrapping support (applied to all diff views) --- */
 .diff-canvas-wrap .diff-line-content {
   white-space: pre-wrap;
-  word-break: break-all;
+  overflow-wrap: anywhere;
+  word-break: normal;
   overflow: visible;
   text-overflow: clip;
+  hyphens: auto;
 }
 
 /* Also wrap textareas when line wrapping is enabled */
 .diff-canvas-wrap .diff-textarea {
   white-space: pre-wrap;
-  word-break: break-all;
+  overflow-wrap: anywhere;
+  word-break: normal;
   overflow-x: hidden;
+  hyphens: auto;
 }
 
 /* --- Responsive: collapse side-by-side to stacked on narrow screens --- */
