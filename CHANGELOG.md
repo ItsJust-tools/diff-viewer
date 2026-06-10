@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Pre-commit hook validation**: Updated `.husky/pre-commit` to run lint-staged, unit tests, and full build before every commit, replacing the old hook that only ran `git add -p` without validation. Catches broken code locally before it reaches CI or deployment. (Closes #21)
 - **Export keyboard shortcuts**: Added `Ctrl+Shift+J` (JPEG), `Ctrl+Shift+W` (WebP), and `Ctrl+Shift+D` (PDF) shortcuts alongside the existing JSON and PNG shortcuts. Refactored to a unified export key map for consistency.
 - **Enhanced sidebar option labels**: Each checkbox option now has a brief description below it explaining what it does (e.g., "Visualize spaces (·) and tabs (→)", "Highlight added/removed words within lines") for improved discoverability.
 - **README keyboard shortcuts table**: Documented the new JPEG, WebP, and PDF export shortcuts.
