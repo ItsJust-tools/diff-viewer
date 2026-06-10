@@ -73,8 +73,9 @@ export default function ToolClient() {
   const handleViewModeChange = useCallback(
     (viewMode: 'side-by-side' | 'unified' | 'split') => {
       setToolData((prev) => ({ ...prev, viewMode }));
+      showToast(`Switched to ${viewMode === 'side-by-side' ? 'Side-by-Side' : viewMode === 'unified' ? 'Unified' : 'Split'} view`, 'success');
     },
-    [setToolData]
+    [setToolData, showToast]
   );
 
   const handleShowWhitespaceChange = useCallback(
@@ -425,6 +426,7 @@ export default function ToolClient() {
 
   const canvasContent = (
     <ToolCanvas
+      isDiffStale={isDiffStale}
       canvasRef={canvasRef}
       original={data.original}
       modified={data.modified}

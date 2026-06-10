@@ -620,6 +620,8 @@ interface ToolCanvasProps {
   onOriginalChange?: (text: string) => void;
   onModifiedChange?: (text: string) => void;
   onViewModeChange?: (mode: 'side-by-side' | 'unified' | 'split') => void;
+  /** Whether the diff shown may be stale (deferred values still computing). */
+  isDiffStale?: boolean;
 }
 
 /**
@@ -778,7 +780,8 @@ export function ToolCanvas({
   onOriginalChange,
   onModifiedChange,
   onViewModeChange,
-}: ToolCanvasProps) {
+  isDiffStale: externalIsDiffStale,
+}: ToolCanvasProps & { isDiffStale?: boolean }) {
   const filteredDiffLines = useMemo(
     () =>
       viewMode === 'unified'
@@ -836,12 +839,27 @@ export function ToolCanvas({
           spellCheck={false}
           aria-label="Modified text"
         />
+        {!original && !modified && (
+          <div className="diff-empty-placeholder" role="status" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            Paste text in both panels to compare
+          </div>
+        )}
       </div>
+      {(original || modified) && (
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {original && modified
+            ? 'Text comparison ready — toggle to Unified or Split view to see the diff'
+            : modified
+              ? 'Modified text entered; paste original text to compare'
+              : 'Original text entered; paste modified text to compare'}
+        </div>
+      )}
     </div>
   );
 
   const renderUnified = () => {
     const { addCount, delCount } = diffCounts;
+    const showStale = externalIsDiffStale && filteredDiffLines.length > 0;
     return (
       <div
         className="diff-unified"
@@ -851,7 +869,12 @@ export function ToolCanvas({
       >
         <div className="diff-unified-header">
           <span>Unified Diff View</span>
-          <span className="diff-header-diff-stats">
+          {showStale && (
+            <span className="toolbar-large-warning" role="alert" style={{ fontSize: '0.75rem', marginLeft: '0.5rem' }}>
+              Computing diff…
+            </span>
+          )}
+          <span className="diff-header-diff-stats" style={{ marginLeft: 'auto' }}>
             {addCount} addition{addCount !== 1 ? 's' : ''}, {delCount} deletion
             {delCount !== 1 ? 's' : ''}
           </span>
@@ -887,6 +910,7 @@ export function ToolCanvas({
 
   const renderSplit = () => {
     const { addCount, delCount } = diffCounts;
+    const showStale = externalIsDiffStale && filteredDiffLines.length > 0;
     return (
       <div
         className="diff-split"
@@ -913,7 +937,12 @@ export function ToolCanvas({
         <div className="diff-split-output">
           <div className="diff-split-header">
             <span>Diff Output</span>
-            <span className="diff-header-diff-stats">
+            {showStale && (
+              <span className="toolbar-large-warning" role="alert" style={{ fontSize: '0.75rem', marginLeft: '0.5rem' }}>
+                Computing…
+              </span>
+            )}
+            <span className="diff-header-diff-stats" style={{ marginLeft: 'auto' }}>
               {addCount}+, {delCount}-
             </span>
           </div>

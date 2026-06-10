@@ -95,10 +95,16 @@ export function ToolSidebar({
             <dd>{modChars.toLocaleString()}</dd>
           </div>
           {origChars > 500_000 || modChars > 500_000 ? (
-            <div className="stat-row large-input-warning">
+            <div className="stat-row large-input-warning" role="alert">
               Large input detected — performance may degrade
             </div>
-          ) : null}
+          ) : (
+            origChars > 100_000 || modChars > 100_000 ? (
+              <div className="stat-row" style={{ fontSize: '0.6875rem', color: 'var(--warning)', marginTop: '0.25rem' }}>
+                Large input — diff may be slower
+              </div>
+            ) : null
+          )}
           <div className="stat-row stat-separator">
             <dt className="diff-stat-additions">Additions</dt>
             <dd className="diff-stat-additions">+{diffStats.additions.toLocaleString()}</dd>
