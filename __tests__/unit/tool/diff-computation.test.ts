@@ -195,6 +195,15 @@ describe('computeDiff — edge cases', () => {
     expect(result.some((l) => l.type === 'added')).toBe(true);
   });
 
+  it('ignoreWhitespace fast path returns all unchanged when only whitespace differs', () => {
+    const result = computeDiff('  indented\n    more indented', 'indented\nmore indented', -1, true, true);
+    expect(result).toHaveLength(2);
+    expect(result[0]!.type).toBe('unchanged');
+    expect(result[0]!.content).toBe('  indented');
+    expect(result[1]!.type).toBe('unchanged');
+    expect(result[1]!.content).toBe('    more indented');
+  });
+
   it('handles very large inputs with fallback (no OOM)', () => {
     const origLines = Array.from({ length: 5000 }, (_, i) => `line${i}`);
     const modLines = Array.from(

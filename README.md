@@ -147,6 +147,7 @@ For each pair of changed lines (a removed line followed by an added line), a **s
 ### Performance Considerations
 
 - **Identical text fast path:** When `original === modified`, the LCS is skipped entirely — the diff is trivial.
+- **Whitespace-identical fast path:** When `ignoreWhitespace` is enabled and the trimmed texts are identical (only whitespace differs), the LCS is also skipped — all lines are returned as unchanged while preserving original formatting.
 - **Single-source shortcuts:** When one side is empty, the diff is computed in O(n) without the DP table.
 - **Memoized computation:** Full LCS is computed once and cached; filtered views (with different context line settings) reuse the same raw result.
 - **Deferred values:** For inputs >50K characters, React's `useDeferredValue` ensures the UI stays responsive while the diff computation runs.

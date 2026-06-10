@@ -447,10 +447,23 @@ export function computeRawDiff(
   enableWordDiff = true,
   ignoreWhitespace = false
 ): DiffLine[] {
-  // Fast path: if the strings are identical, skip LCS entirely.
+  // Fast path: if the strings are identical (or whitespace-trimmed identical
+  // when ignoreWhitespace is on), skip LCS entirely.
   // This is a common pattern when users are typing in one panel and
   // haven't changed the other yet, or when they paste the same text twice.
   if (original === modified) {
+    const origLines = original.split('\n');
+    return origLines.map((line, i) => ({
+      type: 'unchanged' as const,
+      oldLineNumber: i + 1,
+      newLineNumber: i + 1,
+      content: line,
+    }));
+  }
+
+  // Fast path: when ignoring whitespace, if the trimmed texts are identical,
+  // all lines are unchanged (only whitespace differs).
+  if (ignoreWhitespace && original.trim() === modified.trim()) {
     const origLines = original.split('\n');
     return origLines.map((line, i) => ({
       type: 'unchanged' as const,
