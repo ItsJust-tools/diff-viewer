@@ -604,8 +604,6 @@ export function generateUnifiedDiffString(
   // last changed line plus contextLines, with at least one unchanged line between
   // hunks before merging them.
   const effectiveContext = contextLines < 0 ? Number.MAX_SAFE_INTEGER : contextLines;
-  const totalOldLines = original.split('\n').length;
-  const totalNewLines = modified.split('\n').length;
 
   // Find indices of changed lines
   const changedIndices: number[] = [];
@@ -653,7 +651,6 @@ export function generateUnifiedDiffString(
 
     // Calculate line ranges for the hunk header
     const firstLine = hunkLines[0]!;
-    const lastLine = hunkLines[hunkLines.length - 1]!;
 
     const hunkOldStart = firstLine.oldLineNumber ?? 1;
     const hunkNewStart = firstLine.newLineNumber ?? 1;

@@ -171,7 +171,7 @@ export default function ToolClient() {
       () => showToast('Unified diff copied to clipboard', 'success'),
       () => showToast('Failed to copy to clipboard', 'error')
     );
-  }, [data.original, data.modified, rawDiffLines, showToast, data.ignoreWhitespace]);
+  }, [data.original, data.modified, rawDiffLines, showToast, data.ignoreWhitespace, data.contextLines]);
 
   const handleCopyJson = useCallback(() => {
     const json = JSON.stringify(
