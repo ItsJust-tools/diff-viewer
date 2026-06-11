@@ -82,6 +82,11 @@
     border-color 0.15s ease;
 }
 
+[data-theme='dark'] .diff-line-row-added {
+  background: rgba(16, 185, 129, 0.08);
+  border-left: 3px solid rgba(16, 185, 129, 0.25);
+}
+
 [data-contrast='more'] .diff-line-row-added {
   background: rgba(0, 107, 31, 0.12);
   border-left: 3px solid rgba(0, 107, 31, 0.5);
@@ -98,6 +103,11 @@
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
+}
+
+[data-theme='dark'] .diff-line-row-removed {
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid rgba(239, 68, 68, 0.25);
 }
 
 [data-contrast='more'] .diff-line-row-removed {
@@ -704,6 +714,11 @@
     border-color 0.15s ease;
 }
 
+[data-theme='dark'] .diff-word-added {
+  background: rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
 [data-contrast='more'] .diff-word-added {
   background: rgba(0, 107, 31, 0.3);
   border: 1.5px solid rgba(0, 107, 31, 0.7);
@@ -722,6 +737,11 @@
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
+}
+
+[data-theme='dark'] .diff-word-removed {
+  background: rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
 [data-contrast='more'] .diff-word-removed {
@@ -762,6 +782,13 @@
   hyphens: auto;
 }
 
+/* Font smoothing for monospace diff content */
+.diff-line-content,
+.diff-textarea {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* --- Responsive: collapse side-by-side to stacked on narrow screens --- */
 @media (max-width: 768px) {
   .diff-side-by-side {
@@ -788,6 +815,21 @@
 
   .diff-line-content {
     padding-left: 4px;
+  }
+
+  /* Collapse split view to stacked on narrow screens */
+  .diff-split {
+    flex-direction: column;
+  }
+
+  .diff-split-editor {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 40vh;
+  }
+
+  .diff-split-output {
+    max-height: 60vh;
   }
 }
 

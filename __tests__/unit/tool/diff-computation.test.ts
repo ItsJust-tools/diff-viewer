@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { computeDiff } from '@/tool/components/tool-canvas';
+import {
+  computeDiff,
+  computeRawDiff,
+  filterDiffLines,
+  generateUnifiedDiffString,
+} from '@/tool/components/tool-canvas';
 
 describe('computeDiff — basic cases', () => {
   it('produces empty diff for empty inputs', () => {
@@ -334,5 +339,230 @@ describe('computeDiff — edge cases', () => {
     // The key assertion is that the total number of changed lines is correct.
     expect(removed.length + added.length).toBe(1);
     expect(unchanged.length).toBe(3999);
+  });
+});
+
+describe('computeDiff — ignoreWhitespace', () => {
+  it('treats lines with only whitespace changes as unchanged', () => {
+    const result = computeDiff('  hello\nworld', 'hello\nworld', -1, true, true);
+    expect(result.every((l) => l.type === 'unchanged')).toBe(true);
+  });
+
+  it('still detects real content changes when ignoreWhitespace is on', () => {
+    const result = computeDiff('hello\nworld', 'hello\nWRONG', -1, false, true);
+    const added = result.filter((l) => l.type === 'added');
+    const removed = result.filter((l) => l.type === 'removed');
+    expect(added).toHaveLength(1);
+    expect(removed).toHaveLength(1);
+    expect(removed[0]!.content).toBe('world');
+    expect(added[0]!.content).toBe('WRONG');
+  });
+
+  it('preserves original (untrimmed) content when ignoreWhitespace is on', () => {
+    const result = computeDiff('  hello', 'hello', -1, false, true);
+    // The line should show as unchanged but preserve original content
+    expect(result).toHaveLength(1);
+    expect(result[0]!.type).toBe('unchanged');
+    expect(result[0]!.content).toBe('  hello'); // preserved original
+  });
+
+  it('fast path returns all unchanged when only whitespace differs', () => {
+    const result = computeDiff('  hello\n  world', 'hello\nworld', -1, true, true);
+    expect(result).toHaveLength(2);
+    expect(result.every((l) => l.type === 'unchanged')).toBe(true);
+    expect(result[0]!.content).toBe('  hello');
+    expect(result[1]!.content).toBe('  world');
+  });
+});
+
+describe('computeRawDiff', () => {
+  it('returns one unchanged empty string line for empty inputs (fast path)', () => {
+    const result = computeRawDiff('', '');
+    // Fast path: '' === '' triggers the identical-string path, which
+    // splits '' into [''], producing one "unchanged" line with empty content
+    expect(result).toHaveLength(1);
+    expect(result[0]!.type).toBe('unchanged');
+    expect(result[0]!.content).toBe('');
+  });
+
+  it('returns all added when original is empty', () => {
+    const result = computeRawDiff('', 'a\nb');
+    expect(result).toHaveLength(2);
+    expect(result.every((l) => l.type === 'added')).toBe(true);
+  });
+
+  it('returns all removed when modified is empty', () => {
+    const result = computeRawDiff('a\nb', '');
+    expect(result).toHaveLength(2);
+    expect(result.every((l) => l.type === 'removed')).toBe(true);
+  });
+
+  it('returns unchanged lines when texts match', () => {
+    const result = computeRawDiff('a\nb', 'a\nb');
+    expect(result).toHaveLength(2);
+    expect(result.every((l) => l.type === 'unchanged')).toBe(true);
+  });
+
+  it('returns unchanged lines for identical text without context filtering', () => {
+    const result = computeRawDiff('hello\nworld', 'hello\nworld');
+    expect(result).toHaveLength(2);
+    expect(result.every((l) => l.type === 'unchanged')).toBe(true);
+  });
+
+  it('fast path for identical strings skips LCS entirely', () => {
+    const longOriginal = Array.from({ length: 100 }, (_, i) => `line ${i}`).join('\n');
+    const result = computeRawDiff(longOriginal, longOriginal);
+    expect(result).toHaveLength(100);
+    expect(result.every((l) => l.type === 'unchanged')).toBe(true);
+  });
+
+  it('fast path for whitespace-identical when ignoreWhitespace is on', () => {
+    const result = computeRawDiff('  hello\n  world', 'hello\nworld', true, true);
+    expect(result).toHaveLength(2);
+    expect(result.every((l) => l.type === 'unchanged')).toBe(true);
+    expect(result[0]!.content).toBe('  hello');
+  });
+
+  it('computes raw diff with word-level changes enabled (may produce 3-4 lines)', () => {
+    const result = computeRawDiff('a\nb\nc', 'a\nX\nc', true);
+    // The LCS may produce 3 or 4 lines depending on how empty-string
+    // at the trailing split is handled.  Check the key assertions.
+    const removed = result.find((l) => l.type === 'removed');
+    const added = result.find((l) => l.type === 'added');
+    expect(removed).toBeDefined();
+    expect(added).toBeDefined();
+    // Word changes should be present since wordDiff is enabled
+    expect(removed!.wordChanges).toBeDefined();
+    expect(added!.wordChanges).toBeDefined();
+  });
+
+  it('skips word-level changes when enableWordDiff is false', () => {
+    const result = computeRawDiff('a\nb\nc', 'a\nX\nc', false);
+    const removed = result.find((l) => l.type === 'removed');
+    const added = result.find((l) => l.type === 'added');
+    expect(removed).toBeDefined();
+    expect(added).toBeDefined();
+    expect(removed!.wordChanges).toBeUndefined();
+    expect(added!.wordChanges).toBeUndefined();
+  });
+
+  it('falls back to chunked path for very large inputs', () => {
+    const origLines = Array.from({ length: 8000 }, (_, i) => `line ${i}`);
+    const modLines = Array.from({ length: 8000 }, (_, i) =>
+      i % 1000 === 0 ? `modified ${i}` : `line ${i}`
+    );
+    const result = computeRawDiff(origLines.join('\n'), modLines.join('\n'), false);
+    const added = result.filter((l) => l.type === 'added');
+    const removed = result.filter((l) => l.type === 'removed');
+    expect(added.length).toBeGreaterThan(0);
+    expect(removed.length).toBeGreaterThan(0);
+  });
+});
+
+describe('filterDiffLines', () => {
+  it('returns all lines unchanged when contextLines is -1', () => {
+    const raw = computeRawDiff('hello\nworld\nfoo', 'hello\nCHANGED\nfoo');
+    const filtered = filterDiffLines(raw, -1);
+    expect(filtered).toEqual(raw);
+  });
+
+  it('collapses unchanged lines far from changes with context 0', () => {
+    const original = Array.from({ length: 100 }, (_, i) => `line ${i}`).join('\n');
+    const modified = original.replace('line 50', 'CHANGED');
+    const raw = computeRawDiff(original, modified);
+    const filtered = filterDiffLines(raw, 0);
+    expect(filtered.length).toBeLessThan(raw.length);
+    expect(filtered.some((l) => l.type === 'added')).toBe(true);
+    expect(filtered.some((l) => l.type === 'removed')).toBe(true);
+  });
+
+  it('returns empty array for empty input', () => {
+    expect(filterDiffLines([], 3)).toEqual([]);
+  });
+
+  it('returns empty array when there are no changed lines and contextLines >= 0', () => {
+    const raw = computeRawDiff('hello\nworld', 'hello\nworld');
+    const filtered = filterDiffLines(raw, 3);
+    expect(filtered).toEqual([]);
+  });
+
+  it('keeps context lines around changes when contextLines > 0', () => {
+    const original = ['a', 'b', 'c', 'd', 'e'].join('\n');
+    const modified = ['a', 'b', 'X', 'd', 'e'].join('\n');
+    const raw = computeRawDiff(original, modified);
+    const filtered = filterDiffLines(raw, 1);
+    expect(filtered.length).toBeGreaterThanOrEqual(3);
+    expect(filtered.filter((l) => l.type === 'unchanged').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('preserves all lines when every line is a change', () => {
+    const raw = computeRawDiff('a\nb\nc', 'X\nY\nZ');
+    const filtered = filterDiffLines(raw, 3);
+    expect(filtered).toHaveLength(raw.length);
+    expect(filtered.every((l) => l.type !== 'unchanged')).toBe(true);
+  });
+});
+
+describe('generateUnifiedDiffString', () => {
+  it('returns empty string for empty inputs', () => {
+    expect(generateUnifiedDiffString('', '')).toBe('');
+  });
+
+  it('returns all added lines prefixed with + when original is empty', () => {
+    const result = generateUnifiedDiffString('', 'a\nb');
+    expect(result).toBe('+a\n+b');
+  });
+
+  it('returns all removed lines prefixed with - when modified is empty', () => {
+    const result = generateUnifiedDiffString('a\nb', '');
+    expect(result).toBe('-a\n-b');
+  });
+
+  it('produces a properly formatted unified diff header', () => {
+    const result = generateUnifiedDiffString('hello', 'world');
+    expect(result).toContain('--- original');
+    expect(result).toContain('+++ modified');
+    expect(result).toContain('@@');
+    const lines = result.split('\n');
+    expect(lines[0]).toBe('--- original');
+    expect(lines[1]).toBe('+++ modified');
+    expect(lines[2]).toMatch(/^@@/);
+  });
+
+  it('prefixes added lines with + and removed with -', () => {
+    const result = generateUnifiedDiffString('a\nb\nc', 'a\nX\nc');
+    const lines = result.split('\n');
+    const contentLines = lines.slice(3);
+    expect(contentLines).toContain('-b');
+    expect(contentLines).toContain('+X');
+    expect(contentLines).toContain(' a');
+  });
+
+  it('uses pre-computed diff lines when provided (avoids re-computation)', () => {
+    const raw = computeRawDiff('a\nb', 'a\nX');
+    const result = generateUnifiedDiffString('a\nb', 'a\nX', raw);
+    expect(result).toContain('--- original');
+    expect(result).toContain('+++ modified');
+    const lines = result.split('\n');
+    expect(lines).toContain('-b');
+    expect(lines).toContain('+X');
+  });
+
+  it('handles ignoreWhitespace for unified diff output', () => {
+    const result = generateUnifiedDiffString('  hello', 'hello', undefined, true);
+    // With ignoreWhitespace, the texts are considered identical,
+    // so the diff shows unchanged content (not empty output).
+    expect(result).toContain('--- original');
+    expect(result).toContain('+++ modified');
+    const lines = result.split('\n');
+    // The content line should be the original (padded) text
+    expect(lines.some((l) => l.trim() === 'hello' || l === '  hello')).toBe(true);
+  });
+
+  it('prefaces unchanged lines with a space', () => {
+    const mixedResult = generateUnifiedDiffString('a\nb\nc', 'a\nX\nc');
+    const lines = mixedResult.split('\n');
+    const contentLines = lines.slice(3);
+    expect(contentLines).toContain(' a');
   });
 });
