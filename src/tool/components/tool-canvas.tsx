@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import type { DiffLine, WordChange, DiffOp } from '../types';
 
 /**
@@ -703,7 +703,7 @@ interface ToolCanvasProps {
  * Renders the content of a diff line, optionally with word-level highlighting.
  * When wordChanges are present, renders each segment with inline highlighting.
  */
-function DiffLineContent({
+const DiffLineContent = memo(function DiffLineContent({
   line,
   showWhitespace,
   wordDiff,
@@ -760,12 +760,12 @@ function DiffLineContent({
     : line.content;
 
   return <>{displayContent || '\u00A0'}</>;
-}
+});
 
 DiffLineContent.displayName = 'DiffLineContent';
 
 /** Renders a single line in the unified/split diff view with line numbers and type indicator. */
-function DiffLineRow({
+const DiffLineRow = memo(function DiffLineRow({
   line,
   showWhitespace,
   wordDiff,
@@ -836,7 +836,7 @@ function DiffLineRow({
       </span>
     </div>
   );
-}
+});
 
 DiffLineRow.displayName = 'DiffLineRow';
 

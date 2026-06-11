@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Memoized `DiffLineRow` and `DiffLineContent` components**: Wrapped both components in `React.memo` to prevent unnecessary re-renders on text input changes, significantly improving render performance for large diffs.
 - **Pre-commit hook validation**: Updated `.husky/pre-commit` to run lint-staged, unit tests, and full build before every commit, replacing the old hook that only ran `git add -p` without validation. Catches broken code locally before it reaches CI or deployment. (Closes #21)
 - **Export keyboard shortcuts**: Added `Ctrl+Shift+J` (JPEG), `Ctrl+Shift+W` (WebP), and `Ctrl+Shift+D` (PDF) shortcuts alongside the existing JSON and PNG shortcuts. Refactored to a unified export key map for consistency.
 - **Enhanced sidebar option labels**: Each checkbox option now has a brief description below it explaining what it does (e.g., "Visualize spaces (·) and tabs (→)", "Highlight added/removed words within lines") for improved discoverability.
