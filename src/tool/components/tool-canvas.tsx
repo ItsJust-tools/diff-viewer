@@ -555,15 +555,26 @@ export function computeDiff(
  * Generate a unified-diff formatted string from two texts.
  * Uses the same LCS algorithm as the diff view for consistent output.
  *
+ * The output follows the GNU unified diff format with proper hunk headers
+ * (``@@ -start,count +start,count @@``) separated by context lines.
+ * Hunks are grouped around change regions for compact, readable output.
+ *
  * When `diffLines` is provided (pre-computed full diff from {@link computeRawDiff}),
  * it avoids re-computing the LCS, which is a significant optimization for large inputs.
  * Without `diffLines`, a full LCS pass is performed via {@link computeRawDiff} directly
  * (bypassing the unnecessary context-line filtering layer of {@link computeDiff}).
+ *
+ * @param original - The original (old) text
+ * @param modified - The modified (new) text
+ * @param diffLines - Optional pre-computed full diff lines (from computeRawDiff)
+ * @param contextLines - Number of context lines per hunk (default 3, pass -1 for all lines)
+ * @param ignoreWhitespace - When true, whitespace-only changes are ignored
  */
 export function generateUnifiedDiffString(
   original: string,
   modified: string,
   diffLines?: DiffLine[],
+  contextLines: number = 3,
   ignoreWhitespace = false
 ): string {
   if (!original && !modified) return '';
@@ -580,23 +591,90 @@ export function generateUnifiedDiffString(
       .join('\n');
   }
 
-  // Use pre-computed diff lines when available to avoid re-computing LCS
+  // Use pre-computed diff lines when available to avoid re-computing LCS.
+  // We need the full unfiltered diff so we can build hunks ourselves.
   const diffLines_ = diffLines ?? computeRawDiff(original, modified, false, ignoreWhitespace);
-  const mCount = original.split('\n').length;
-  const nCount = modified.split('\n').length;
 
   const result: string[] = [];
   result.push(`--- original`);
   result.push(`+++ modified`);
-  result.push(`@@ -1,${mCount} +1,${nCount} @@`);
 
-  for (const line of diffLines_) {
-    if (line.type === 'added') {
-      result.push(`+${line.content}`);
-    } else if (line.type === 'removed') {
-      result.push(`-${line.content}`);
+  // Build hunks: group consecutive changed lines with their surrounding context.
+  // A hunk starts at the first changed line minus contextLines and ends at the
+  // last changed line plus contextLines, with at least one unchanged line between
+  // hunks before merging them.
+  const effectiveContext = contextLines < 0 ? Number.MAX_SAFE_INTEGER : contextLines;
+  const totalOldLines = original.split('\n').length;
+  const totalNewLines = modified.split('\n').length;
+
+  // Find indices of changed lines
+  const changedIndices: number[] = [];
+  for (let idx = 0; idx < diffLines_.length; idx++) {
+    const line = diffLines_[idx] as DiffLine;
+    if (line.type !== 'unchanged') {
+      changedIndices.push(idx);
+    }
+  }
+
+  if (changedIndices.length === 0) {
+    // No changes — everything is unchanged. For a unified diff this means
+    // there's nothing to show beyond the header (or we show everything).
+    if (effectiveContext === Number.MAX_SAFE_INTEGER) {
+      for (const line of diffLines_) {
+        result.push(` ${line.content}`);
+      }
+    }
+    return result.join('\n');
+  }
+
+  // Group changed indices into hunks: a new hunk starts when there's more than
+  // 2*effectiveContext unchanged lines between changes.
+  const hunks: { start: number; end: number }[] = [];
+  let hunkStart = Math.max(0, changedIndices[0]! - effectiveContext);
+  let hunkEnd = Math.min(diffLines_.length - 1, changedIndices[0]! + effectiveContext);
+
+  for (let ci = 1; ci < changedIndices.length; ci++) {
+    const idx = changedIndices[ci]!;
+    // If the gap between the current hunk end and this change is <= 2*effectiveContext,
+    // extend the hunk. Otherwise, close the current hunk and start a new one.
+    if (idx - hunkEnd <= 2 * effectiveContext + 1) {
+      hunkEnd = Math.min(diffLines_.length - 1, idx + effectiveContext);
     } else {
-      result.push(` ${line.content}`);
+      hunks.push({ start: hunkStart, end: hunkEnd });
+      hunkStart = Math.max(0, idx - effectiveContext);
+      hunkEnd = Math.min(diffLines_.length - 1, idx + effectiveContext);
+    }
+  }
+  hunks.push({ start: hunkStart, end: hunkEnd });
+
+  // Emit each hunk
+  for (const hunk of hunks) {
+    const hunkLines = diffLines_.slice(hunk.start, hunk.end + 1);
+
+    // Calculate line ranges for the hunk header
+    const firstLine = hunkLines[0]!;
+    const lastLine = hunkLines[hunkLines.length - 1]!;
+
+    const hunkOldStart = firstLine.oldLineNumber ?? 1;
+    const hunkNewStart = firstLine.newLineNumber ?? 1;
+
+    let hunkOldCount = 0;
+    let hunkNewCount = 0;
+    for (const hl of hunkLines) {
+      if (hl.oldLineNumber != null) hunkOldCount++;
+      if (hl.newLineNumber != null) hunkNewCount++;
+    }
+
+    result.push(`@@ -${hunkOldStart},${hunkOldCount} +${hunkNewStart},${hunkNewCount} @@`);
+
+    for (const line of hunkLines) {
+      if (line.type === 'added') {
+        result.push(`+${line.content}`);
+      } else if (line.type === 'removed') {
+        result.push(`-${line.content}`);
+      } else {
+        result.push(` ${line.content}`);
+      }
     }
   }
 

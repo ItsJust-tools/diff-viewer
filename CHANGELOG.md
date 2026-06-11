@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Optimized diff lines computation**: Removed the redundant `filterDiffLines(rawDiffLines, -1)` call — `rawDiffLines` is already the full unfiltered diff, so no additional filtering is needed.
 - **Cleaned up ToolToolbar stats**: Replaced the `useMemo` + null-object pattern with direct computed constants, eliminating the non-null assertion (`stats!`) for safer code.
+- **Proper multi-hunk unified diff output**: `generateUnifiedDiffString` now generates correct GNU-style unified diffs with context-aware hunk headers (`@@ -start,count +start,count @@`) around each change region instead of a single hunk covering the entire file. Added an optional `contextLines` parameter (default 3) to control hunk size.
 
 ### Fixed
 

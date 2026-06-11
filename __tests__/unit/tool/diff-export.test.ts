@@ -31,14 +31,12 @@ describe('generateUnifiedDiffString', () => {
 
   it('returns empty diff for identical texts', () => {
     const result = generateUnifiedDiffString('hello\nworld', 'hello\nworld');
-    // All lines should be context lines prefixed with space (no +/- lines)
+    // When there are no changes, there are no hunks — the diff is empty beyond headers.
+    // This is correct unified diff format: identical files produce no hunk lines.
     const lines = result.split('\n');
-    expect(lines.filter((l) => l.startsWith(' '))).toHaveLength(2);
-    // +++ modified starts with +, so filter more precisely
-    const adds = lines.filter((l) => l.startsWith('+') && !l.startsWith('+++'));
-    const removes = lines.filter((l) => l.startsWith('-') && !l.startsWith('---'));
-    expect(adds).toHaveLength(0);
-    expect(removes).toHaveLength(0);
+    expect(lines).toHaveLength(2); // just header lines
+    expect(lines[0]).toBe('--- original');
+    expect(lines[1]).toBe('+++ modified');
   });
 
   it('shows addition with + prefix', () => {
@@ -120,8 +118,8 @@ describe('generateUnifiedDiffString — with context lines filtering', () => {
       { type: 'unchanged', oldLineNumber: 1, newLineNumber: 1, content: 'hello' },
       { type: 'unchanged', oldLineNumber: 2, newLineNumber: 2, content: 'world' },
     ];
-    const result = generateUnifiedDiffString('hello\nworld', 'hello\nworld', diffLines);
-    // The diff uses DiffLine content, not the original/modified strings
+    const result = generateUnifiedDiffString('hello\nworld', 'hello\nworld', diffLines, -1);
+    // With contextLines=-1, all unchanged lines are included
     expect(result).toContain(' hello');
     expect(result).toContain(' world');
   });

@@ -162,7 +162,7 @@ export default function ToolClient() {
   }, [rawDiffLines]);
 
   const handleCopyDiff = useCallback(() => {
-    const diff = generateUnifiedDiffString(data.original, data.modified, rawDiffLines, data.ignoreWhitespace);
+    const diff = generateUnifiedDiffString(data.original, data.modified, rawDiffLines, data.contextLines, data.ignoreWhitespace);
     if (!diff) {
       showToast('Nothing to copy — paste text in both panels first', 'error');
       return;

@@ -549,14 +549,11 @@ describe('generateUnifiedDiffString', () => {
   });
 
   it('handles ignoreWhitespace for unified diff output', () => {
-    const result = generateUnifiedDiffString('  hello', 'hello', undefined, true);
-    // With ignoreWhitespace, the texts are considered identical,
-    // so the diff shows unchanged content (not empty output).
+    const result = generateUnifiedDiffString('  hello', 'hello', undefined, 3, true);
+    // With ignoreWhitespace, the texts are considered identical (only whitespace differs),
+    // so there are no hunks — just the header lines.
     expect(result).toContain('--- original');
     expect(result).toContain('+++ modified');
-    const lines = result.split('\n');
-    // The content line should be the original (padded) text
-    expect(lines.some((l) => l.trim() === 'hello' || l === '  hello')).toBe(true);
   });
 
   it('prefaces unchanged lines with a space', () => {
