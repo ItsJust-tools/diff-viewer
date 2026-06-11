@@ -840,7 +840,7 @@ export function ToolCanvas({
           aria-label="Modified text"
         />
         {!original && !modified && (
-          <div className="diff-empty-placeholder" role="status" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="diff-empty-placeholder" role="status">
             Paste text in both panels to compare
           </div>
         )}
@@ -870,11 +870,11 @@ export function ToolCanvas({
         <div className="diff-unified-header">
           <span>Unified Diff View</span>
           {showStale && (
-            <span className="toolbar-large-warning" role="alert" style={{ marginLeft: '0.5rem' }}>
+            <span className="toolbar-large-warning" role="alert">
               Computing diff…
             </span>
           )}
-          <span className="diff-header-diff-stats" style={{ marginLeft: 'auto' }}>
+          <span className="diff-header-diff-stats">
             {addCount} addition{addCount !== 1 ? 's' : ''}, {delCount} deletion
             {delCount !== 1 ? 's' : ''}
           </span>
@@ -938,11 +938,11 @@ export function ToolCanvas({
           <div className="diff-split-header">
             <span>Diff Output</span>
             {showStale && (
-              <span className="toolbar-large-warning" role="alert" style={{ marginLeft: '0.5rem' }}>
+              <span className="toolbar-large-warning" role="alert">
                 Computing…
               </span>
             )}
-            <span className="diff-header-diff-stats" style={{ marginLeft: 'auto' }}>
+            <span className="diff-header-diff-stats">
               {addCount}+, {delCount}-
             </span>
           </div>

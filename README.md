@@ -82,7 +82,6 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 
 ```
 diff-viewer/
-├── packages/core/          # Shared @itsjust/core component library
 ├── src/
 │   ├── app/               # Next.js App Router (pages, layout, SEO)
 │   │   ├── page.tsx       # Tool entry point

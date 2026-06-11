@@ -135,6 +135,7 @@
 .diff-header-diff-stats {
   font-size: 0.75rem;
   color: var(--muted);
+  margin-left: auto;
 }
 
 /* --- Status bar diff stats --- */
@@ -162,6 +163,12 @@
   border-radius: var(--radius);
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+.stat-large-input-note {
+  font-size: 0.6875rem;
+  color: var(--warning);
+  margin-top: 0.25rem;
 }
 
 /* --- View Mode Tabs --- */
@@ -314,6 +321,10 @@
   text-align: center;
   color: var(--muted);
   font-size: 0.875rem;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* --- Side-by-Side View --- */
@@ -665,6 +676,7 @@
   color: var(--warning);
   font-size: 0.75rem;
   font-weight: 500;
+  margin-left: 0.5rem;
 }
 
 /* --- Status bar --- */

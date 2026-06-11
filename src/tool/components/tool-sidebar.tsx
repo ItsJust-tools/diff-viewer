@@ -100,7 +100,7 @@ export function ToolSidebar({
             </div>
           ) : (
             origChars > 100_000 || modChars > 100_000 ? (
-              <div className="stat-row" style={{ fontSize: '0.6875rem', color: 'var(--warning)', marginTop: '0.25rem' }}>
+              <div className="stat-large-input-note">
                 Large input — diff may be slower
               </div>
             ) : null
