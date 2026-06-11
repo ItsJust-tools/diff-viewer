@@ -43,14 +43,16 @@
 
 /* --- Hunk headers --- */
 .diff-hunk-header {
-  color: var(--muted);
+  color: var(--accent);
   font-style: italic;
   font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .diff-hunk-ellipsis {
-  color: var(--muted);
+  color: var(--accent);
   font-style: italic;
+  font-weight: 500;
 }
 
 /* --- Line row variants --- */
@@ -129,8 +131,10 @@
 }
 
 .diff-line-row-hunk {
-  background: var(--card);
-  border-left: 3px solid transparent;
+  background: var(--accent-subtle);
+  border-left: 3px solid var(--accent);
+  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
 }
 
 /* --- Panel headers --- */
@@ -438,6 +442,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -560,6 +565,7 @@
   font-weight: 400;
   margin-top: 0;
   opacity: 0.75;
+  line-height: 1.4;
 }
 
 .sidebar-label {
@@ -963,5 +969,35 @@
   .diff-word-removed {
     background: #ffaaaa !important;
     border-color: #cc0000 !important;
+  }
+
+  /* Print handling for split view — ensure full content is visible */
+  .diff-split {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+
+  .diff-split-editor {
+    border-right: none !important;
+    border-bottom: 1px solid #ccc !important;
+    max-height: none !important;
+  }
+
+  .diff-split-output {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .diff-line-row-hunk {
+    background: #f0f0ff !important;
+    border-left: 3px solid #6666cc !important;
+  }
+
+  .diff-hunk-header {
+    color: #6666cc !important;
+  }
+
+  .diff-hunk-ellipsis {
+    color: #6666cc !important;
   }
 }
