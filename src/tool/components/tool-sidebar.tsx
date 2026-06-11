@@ -240,7 +240,7 @@ export function ToolSidebar({
             title={
               !original && !modified
                 ? 'Nothing to clear'
-                : 'Clear both text panels (Ctrl+Shift+Backspace)'
+                : 'Clear both text panels (Ctrl+Shift+Backspace / Ctrl+Shift+Delete)'
             }
             aria-label={
               !original && !modified
@@ -250,7 +250,7 @@ export function ToolSidebar({
           >
             Clear Both
             <kbd className="tab-shortcut-hint" aria-hidden="true">
-              Ctrl+Shift+⌫
+              Ctrl+Shift+⌫ / Del
             </kbd>
           </button>
           <button

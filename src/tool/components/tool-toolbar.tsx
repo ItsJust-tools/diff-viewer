@@ -13,6 +13,8 @@ interface ToolToolbarProps {
   wordDiff?: boolean;
   /** Whether whitespace visualization is enabled. */
   showWhitespace?: boolean;
+  /** Whether whitespace-only changes are ignored in the diff. */
+  ignoreWhitespace?: boolean;
 }
 
 export function ToolToolbar({
@@ -23,6 +25,7 @@ export function ToolToolbar({
   deletions = 0,
   wordDiff = false,
   showWhitespace = false,
+  ignoreWhitespace = false,
 }: ToolToolbarProps) {
   const origLines = original ? original.split('\n').length : 0;
   const modLines = modified ? modified.split('\n').length : 0;
@@ -40,6 +43,7 @@ export function ToolToolbar({
   const activeFlags = [];
   if (showWhitespace) activeFlags.push('WS');
   if (wordDiff) activeFlags.push('WD');
+  if (ignoreWhitespace) activeFlags.push('IW');
 
   return (
     <div className="diff-toolbar">

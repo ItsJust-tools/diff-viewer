@@ -50,9 +50,10 @@ export default function ToolClient() {
 
   const handleOriginalChange = useCallback(
     (text: string) => {
+      const excess = text.length - MAX_TEXT_LENGTH;
       const prefix = text.length > MAX_TEXT_LENGTH ? text.slice(0, MAX_TEXT_LENGTH) : text;
       if (text.length > MAX_TEXT_LENGTH) {
-        showToast(`Text truncated to ${MAX_TEXT_LENGTH.toLocaleString()} characters`, 'error');
+        showToast(`Truncated: ${prefix.length.toLocaleString()} chars kept, ${excess.toLocaleString()} discarded`, 'error');
       }
       setToolData((prev) => ({ ...prev, original: prefix }));
     },
@@ -61,9 +62,10 @@ export default function ToolClient() {
 
   const handleModifiedChange = useCallback(
     (text: string) => {
+      const excess = text.length - MAX_TEXT_LENGTH;
       const prefix = text.length > MAX_TEXT_LENGTH ? text.slice(0, MAX_TEXT_LENGTH) : text;
       if (text.length > MAX_TEXT_LENGTH) {
-        showToast(`Text truncated to ${MAX_TEXT_LENGTH.toLocaleString()} characters`, 'error');
+        showToast(`Truncated: ${prefix.length.toLocaleString()} chars kept, ${excess.toLocaleString()} discarded`, 'error');
       }
       setToolData((prev) => ({ ...prev, modified: prefix }));
     },
@@ -383,6 +385,7 @@ export default function ToolClient() {
         deletions={diffStats.deletions}
         wordDiff={data.wordDiff}
         showWhitespace={data.showWhitespace}
+        ignoreWhitespace={data.ignoreWhitespace}
       />
       {isDiffStale && (
         <span className="toolbar-large-warning" role="alert">
