@@ -175,6 +175,28 @@ export default function ToolClient() {
     );
   }, [data.original, data.modified, rawDiffLines, showToast, data.ignoreWhitespace, data.contextLines]);
 
+  const handleCopyOriginal = useCallback(() => {
+    if (!data.original) {
+      showToast('Nothing to copy — original text is empty', 'error');
+      return;
+    }
+    navigator.clipboard.writeText(data.original).then(
+      () => showToast('Original text copied to clipboard', 'success'),
+      () => showToast('Failed to copy to clipboard', 'error')
+    );
+  }, [data.original, showToast]);
+
+  const handleCopyModified = useCallback(() => {
+    if (!data.modified) {
+      showToast('Nothing to copy — modified text is empty', 'error');
+      return;
+    }
+    navigator.clipboard.writeText(data.modified).then(
+      () => showToast('Modified text copied to clipboard', 'success'),
+      () => showToast('Failed to copy to clipboard', 'error')
+    );
+  }, [data.modified, showToast]);
+
   const handleCopyJson = useCallback(() => {
     const json = JSON.stringify(
       {
@@ -425,6 +447,8 @@ export default function ToolClient() {
       onClear={handleClear}
       onCopyDiff={handleCopyDiff}
       onCopyJson={handleCopyJson}
+      onCopyOriginal={handleCopyOriginal}
+      onCopyModified={handleCopyModified}
     />
   );
 

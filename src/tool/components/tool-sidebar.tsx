@@ -26,6 +26,8 @@ interface ToolSidebarProps {
   onClear?: () => void;
   onCopyDiff?: () => void;
   onCopyJson?: () => void;
+  onCopyOriginal?: () => void;
+  onCopyModified?: () => void;
 }
 
 export function ToolSidebar({
@@ -48,6 +50,8 @@ export function ToolSidebar({
   onClear,
   onCopyDiff,
   onCopyJson,
+  onCopyOriginal,
+  onCopyModified,
 }: ToolSidebarProps) {
   const origLines = original ? original.split('\n').length : 0;
   const modLines = modified ? modified.split('\n').length : 0;
@@ -291,6 +295,28 @@ export function ToolSidebar({
               Ctrl+Shift+Y
             </kbd>
           </button>
+          {original && (
+            <button
+              type="button"
+              className="sidebar-action-btn"
+              onClick={onCopyOriginal}
+              title="Copy original text to clipboard"
+              aria-label="Copy original text to clipboard"
+            >
+              Copy Original Text
+            </button>
+          )}
+          {modified && (
+            <button
+              type="button"
+              className="sidebar-action-btn"
+              onClick={onCopyModified}
+              title="Copy modified text to clipboard"
+              aria-label="Copy modified text to clipboard"
+            >
+              Copy Modified Text
+            </button>
+          )}
         </div>
       </div>
     </div>

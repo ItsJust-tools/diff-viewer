@@ -26,6 +26,7 @@ View and compare text differences side-by-side. Paste two versions of any text a
 - **Swap & Clear:** One-click swap original ↔ modified or clear both panels
 - **Copy Unified Diff:** Copy the complete unified diff to clipboard for sharing in code reviews or patches
 - **Copy State as JSON:** Copy full viewer state (both texts + all settings) as JSON for programmatic use
+- **Copy Original / Modified Text:** Quickly copy either panel's content to clipboard with one click
 - **Real-time Stats:** Line counts and character counts update live for both panels, along with addition/deletion tallies
 - **Shareable URLs:** Share your diff via compressed state in the URL — share a link that restores both texts and view settings on open
 - **Export:** Export as JSON, PNG, JPEG, WebP, or PDF
