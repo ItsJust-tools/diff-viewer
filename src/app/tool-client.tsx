@@ -307,14 +307,6 @@ export default function ToolClient() {
           return;
         }
 
-        // Toggle options: Ctrl+W (wrap lines), Ctrl+Shift+W is export WebP
-        if (e.key === 'w' && !e.shiftKey) {
-          e.preventDefault();
-          handleWrapLinesChange(!data.wrapLines);
-          showToast(`Line wrapping ${data.wrapLines ? 'disabled' : 'enabled'}`, 'success');
-          return;
-        }
-
         // Ctrl+. (period) to toggle showWhitespace
         if (e.key === '.') {
           e.preventDefault();
@@ -344,6 +336,14 @@ export default function ToolClient() {
           );
           return;
         }
+      }
+
+      // Alt+W to toggle line wrapping (Ctrl+W universally closes browser tabs)
+      if (!e.shiftKey && !e.ctrlKey && !e.metaKey && e.altKey && e.key === 'w') {
+        e.preventDefault();
+        handleWrapLinesChange(!data.wrapLines);
+        showToast(`Line wrapping ${data.wrapLines ? 'disabled' : 'enabled'}`, 'success');
+        return;
       }
     }
 

@@ -102,7 +102,7 @@ const toolConfig = {
           description: 'toggle word-level diff highlighting',
         },
         {
-          keys: 'Ctrl+W',
+          keys: 'Alt+W',
           label: 'Toggle Wrap',
           description: 'toggle line wrapping',
         },

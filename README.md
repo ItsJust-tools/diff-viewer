@@ -76,7 +76,7 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 | `Ctrl+Shift+Y`                                | Copy state as JSON to clipboard     |
 | `Ctrl+.`                                      | Toggle whitespace visualization     |
 | `Ctrl+,`                                      | Toggle word-level diff highlighting |
-| `Ctrl+W`                                      | Toggle line wrapping                |
+| `Alt+W`                                       | Toggle line wrapping                |
 | `Ctrl+I`                                      | Toggle ignore whitespace changes    |
 
 ## Project Structure

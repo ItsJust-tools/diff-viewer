@@ -14,7 +14,8 @@ import type { DiffLine, WordChange, DiffOp } from '../types';
  * This is ~8× more memory-efficient than a number[][] and avoids allocation
  * of m+1 separate arrays.
  *
- * A soft guard prevents OOM on huge inputs (see LCS_MAX_CELLS).
+ * The caller is responsible for guarding against OOM via LCS_MAX_CELLS
+ * before calling this function (see computeRawDiff).
  *
  * Note: Uint32Array is used (not Uint16Array) because LCS lengths can
  * exceed 65535 for large inputs. For example, comparing two ~1000-token
@@ -82,10 +83,16 @@ function backtrackDiff(a: string[], b: string[], dp: Uint32Array): DiffOp[] {
  * @returns Array of non-empty string tokens (empty array when text is empty)
  */
 function tokenize(text: string): string[] {
-  // Match Latin word runs, whitespace runs, or individual CJK-like characters
+  // Match Latin word runs, whitespace runs, or individual CJK/Korean/Japanese characters.
+  // Korean Hangul: U+AC00-U+D7AF (complete syllables)
+  // Korean Jamo: U+1100-U+11FF (consonant/vowel components)
+  // CJK Unified: U+2E80-U+9FFF (Chinese characters + CJK extensions)
+  // CJK Supplement: U+F900-U+FAFF, U+3400-U+4DBF (CJK extension A)
+  // Japanese Kana: U+3040-U+30FF (Hiragana + Katakana)
+  // Small Kana Extension: U+1B000-U+1B0FF
   return (
     text.match(
-      /[\w\u00C0-\u024F\u1E00-\u1EFF']+|\s+|[\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]/gu
+      /[\w\u00C0-\u024F\u1E00-\u1EFF']+|\s+|[\u1100-\u11FF\u2E80-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF\u3400-\u4DBF\u3040-\u30FF\u1B000-\u1B0FF]/gu
     ) ?? []
   );
 }
