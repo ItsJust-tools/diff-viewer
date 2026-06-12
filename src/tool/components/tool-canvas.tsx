@@ -29,13 +29,13 @@ function computeLCSTable(a: string[], b: string[]): Uint32Array {
   for (let i = 1; i <= m; i++) {
     const base = i * stride;
     const prevBase = base - stride;
-    const aVal = a[i - 1] as string;
+    const aVal = a[i - 1]!;
     for (let j = 1; j <= n; j++) {
       if (aVal === b[j - 1]) {
-        dp[base + j] = (dp[prevBase + j - 1] as number) + 1;
+        dp[base + j] = (dp[prevBase + j - 1]!) + 1;
       } else {
-        const up = dp[prevBase + j] as number;
-        const left = dp[base + j - 1] as number;
+        const up = dp[prevBase + j]!;
+        const left = dp[base + j - 1]!;
         dp[base + j] = up > left ? up : left;
       }
     }
@@ -60,7 +60,7 @@ function backtrackDiff(a: string[], b: string[], dp: Uint32Array): DiffOp[] {
       j--;
     } else if (
       j > 0 &&
-      (i === 0 || (dp[i * stride + j - 1] as number) >= (dp[(i - 1) * stride + j] as number))
+      (i === 0 || (dp[i * stride + j - 1]!) >= (dp[(i - 1) * stride + j]!))
     ) {
       ops.push({ type: 'added', oldIdx: -1, newIdx: j - 1 });
       j--;
@@ -82,7 +82,7 @@ function backtrackDiff(a: string[], b: string[], dp: Uint32Array): DiffOp[] {
  * character-level highlighting for non-whitespace-delimited scripts.
  *
  * @param text - The single-line text to tokenize
- * @returns Array of non-empty string tokens, or `null` if text is empty
+ * @returns Array of non-empty string tokens (empty array when text is empty)
  */
 function tokenize(text: string): string[] {
   // Match Latin word runs, whitespace runs, or individual CJK-like characters
@@ -213,7 +213,7 @@ function applyWordDiffPairing(result: DiffLine[]): void {
   // several added lines, pairing them in order (1st removed ↔ 1st added, etc.).
   const pendingRemoved: { idx: number; content: string }[] = [];
   for (let i = 0; i < result.length; i++) {
-    const line = result[i] as DiffLine;
+    const line = result[i]!;
     if (line.type === 'removed') {
       pendingRemoved.push({ idx: i, content: line.content });
     } else if (line.type === 'added') {
@@ -246,7 +246,7 @@ function filterContextLines(result: DiffLine[], contextLines: number): DiffLine[
 
   const changedIndices = new Set<number>();
   for (let idx = 0; idx < result.length; idx++) {
-    if ((result[idx] as DiffLine).type !== 'unchanged') {
+    if (result[idx]!.type !== 'unchanged') {
       for (let c = -contextLines; c <= contextLines; c++) {
         const ci = idx + c;
         if (ci >= 0 && ci < result.length) {
@@ -261,8 +261,8 @@ function filterContextLines(result: DiffLine[], contextLines: number): DiffLine[
   for (let idx = 0; idx < result.length; idx++) {
     if (changedIndices.has(idx)) {
       if (lastIncluded >= 0 && idx - lastIncluded > 1) {
-        const prevLine = result[lastIncluded] as DiffLine;
-        const nextLine = result[idx] as DiffLine;
+        const prevLine = result[lastIncluded]!;
+        const nextLine = result[idx]!;
         const startOld = prevLine.oldLineNumber != null ? prevLine.oldLineNumber + 1 : null;
         const startNew = prevLine.newLineNumber != null ? prevLine.newLineNumber + 1 : null;
         const endOld = nextLine.oldLineNumber != null ? nextLine.oldLineNumber - 1 : null;
@@ -275,6 +275,12 @@ function filterContextLines(result: DiffLine[], contextLines: number): DiffLine[
           }
           // When valid ranges span both old and new but one side is empty (e.g. start==end+1
           // after boundary contains only adds/removes), fall through to '...'
+        } else if (startOld != null && endOld != null && startOld <= endOld) {
+          // Collapsed region has only original-side lines (removals only)
+          hunkLabel = `@@ -${startOld},${endOld - startOld + 1} +1,0 @@`;
+        } else if (startNew != null && endNew != null && startNew <= endNew) {
+          // Collapsed region has only modified-side lines (additions only)
+          hunkLabel = `@@ -1,0 +${startNew},${endNew - startNew + 1} @@`;
         }
 
         filtered.push({
@@ -714,12 +720,10 @@ const DiffLineContent = memo(function DiffLineContent({
 }) {
   const isHunk = line.type === 'unchanged' && line.content.startsWith('@@');
 
-  // For hunk headers, render as-is
+  // For hunk headers, render as-is without whitespace visualization
+  // (the @@ syntax is structural, not content, and dots would be confusing)
   if (isHunk) {
-    const displayContent = showWhitespace
-      ? line.content.replace(/ /g, '\u00B7').replace(/\t/g, '\u2192   ')
-      : line.content;
-    return <span className="diff-hunk-header">{displayContent}</span>;
+    return <span className="diff-hunk-header">{line.content}</span>;
   }
 
   // For the plain '...' hunk marker
