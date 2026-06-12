@@ -76,7 +76,10 @@ export function ToolToolbar({
             {activeFlags.length > 0 && (
               <>
                 <span className="toolbar-separator">|</span>
-                <span className="toolbar-active-flags" title="Active settings: WS=Whitespace, WD=Word Diff, WR=Wrap, IW=Ignore Whitespace">
+                <span
+                  className="toolbar-active-flags"
+                  title="Active settings: WS=Whitespace, WD=Word Diff, WR=Wrap, IW=Ignore Whitespace"
+                >
                   {activeFlags.join(', ')}
                 </span>
               </>

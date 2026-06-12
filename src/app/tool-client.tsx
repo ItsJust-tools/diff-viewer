@@ -53,7 +53,10 @@ export default function ToolClient() {
       const excess = text.length - MAX_TEXT_LENGTH;
       const prefix = text.length > MAX_TEXT_LENGTH ? text.slice(0, MAX_TEXT_LENGTH) : text;
       if (text.length > MAX_TEXT_LENGTH) {
-        showToast(`Truncated: ${prefix.length.toLocaleString()} chars kept, ${excess.toLocaleString()} discarded`, 'error');
+        showToast(
+          `Truncated: ${prefix.length.toLocaleString()} chars kept, ${excess.toLocaleString()} discarded`,
+          'error'
+        );
       }
       setToolData((prev) => ({ ...prev, original: prefix }));
     },
@@ -65,7 +68,10 @@ export default function ToolClient() {
       const excess = text.length - MAX_TEXT_LENGTH;
       const prefix = text.length > MAX_TEXT_LENGTH ? text.slice(0, MAX_TEXT_LENGTH) : text;
       if (text.length > MAX_TEXT_LENGTH) {
-        showToast(`Truncated: ${prefix.length.toLocaleString()} chars kept, ${excess.toLocaleString()} discarded`, 'error');
+        showToast(
+          `Truncated: ${prefix.length.toLocaleString()} chars kept, ${excess.toLocaleString()} discarded`,
+          'error'
+        );
       }
       setToolData((prev) => ({ ...prev, modified: prefix }));
     },
@@ -75,7 +81,10 @@ export default function ToolClient() {
   const handleViewModeChange = useCallback(
     (viewMode: 'side-by-side' | 'unified' | 'split') => {
       setToolData((prev) => ({ ...prev, viewMode }));
-      showToast(`Switched to ${viewMode === 'side-by-side' ? 'Side-by-Side' : viewMode === 'unified' ? 'Unified' : 'Split'} view`, 'success');
+      showToast(
+        `Switched to ${viewMode === 'side-by-side' ? 'Side-by-Side' : viewMode === 'unified' ? 'Unified' : 'Split'} view`,
+        'success'
+      );
     },
     [setToolData, showToast]
   );
@@ -164,7 +173,13 @@ export default function ToolClient() {
   }, [rawDiffLines]);
 
   const handleCopyDiff = useCallback(() => {
-    const diff = generateUnifiedDiffString(data.original, data.modified, rawDiffLines, data.contextLines, data.ignoreWhitespace);
+    const diff = generateUnifiedDiffString(
+      data.original,
+      data.modified,
+      rawDiffLines,
+      data.contextLines,
+      data.ignoreWhitespace
+    );
     if (!diff) {
       showToast('Nothing to copy — paste text in both panels first', 'error');
       return;
@@ -173,7 +188,14 @@ export default function ToolClient() {
       () => showToast('Unified diff copied to clipboard', 'success'),
       () => showToast('Failed to copy to clipboard', 'error')
     );
-  }, [data.original, data.modified, rawDiffLines, showToast, data.ignoreWhitespace, data.contextLines]);
+  }, [
+    data.original,
+    data.modified,
+    rawDiffLines,
+    showToast,
+    data.ignoreWhitespace,
+    data.contextLines,
+  ]);
 
   const handleCopyOriginal = useCallback(() => {
     if (!data.original) {
