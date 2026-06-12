@@ -341,7 +341,7 @@
 
 [data-contrast='more'] .diff-line-row-added:hover,
 [data-contrast='more'] .diff-line-row-removed:hover {
-  filter: brightness(1.0);
+  filter: brightness(1);
   outline: 1px solid currentColor;
   outline-offset: -1px;
 }

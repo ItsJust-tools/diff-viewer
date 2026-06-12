@@ -32,7 +32,7 @@ function computeLCSTable(a: string[], b: string[]): Uint32Array {
     const aVal = a[i - 1]!;
     for (let j = 1; j <= n; j++) {
       if (aVal === b[j - 1]) {
-        dp[base + j] = (dp[prevBase + j - 1]!) + 1;
+        dp[base + j] = dp[prevBase + j - 1]! + 1;
       } else {
         const up = dp[prevBase + j]!;
         const left = dp[base + j - 1]!;
@@ -58,10 +58,7 @@ function backtrackDiff(a: string[], b: string[], dp: Uint32Array): DiffOp[] {
       ops.push({ type: 'unchanged', oldIdx: i - 1, newIdx: j - 1 });
       i--;
       j--;
-    } else if (
-      j > 0 &&
-      (i === 0 || (dp[i * stride + j - 1]!) >= (dp[(i - 1) * stride + j]!))
-    ) {
+    } else if (j > 0 && (i === 0 || dp[i * stride + j - 1]! >= dp[(i - 1) * stride + j]!)) {
       ops.push({ type: 'added', oldIdx: -1, newIdx: j - 1 });
       j--;
     } else if (i > 0) {
@@ -86,7 +83,11 @@ function backtrackDiff(a: string[], b: string[], dp: Uint32Array): DiffOp[] {
  */
 function tokenize(text: string): string[] {
   // Match Latin word runs, whitespace runs, or individual CJK-like characters
-  return text.match(/[\w\u00C0-\u024F\u1E00-\u1EFF']+|\s+|[\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]/gu) ?? [];
+  return (
+    text.match(
+      /[\w\u00C0-\u024F\u1E00-\u1EFF']+|\s+|[\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]/gu
+    ) ?? []
+  );
 }
 
 /**

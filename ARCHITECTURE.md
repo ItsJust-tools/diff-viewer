@@ -77,12 +77,14 @@ The diff engine is entirely client-side with no external diff libraries:
 ### UI Components
 
 #### ToolCanvas
+
 - Renders one of three view modes based on `viewMode` state: side-by-side, unified, or split.
 - Tabs switch views with keyboard navigation (ArrowLeft/Right, Home, End) following WAI-ARIA tab pattern.
 - Memoized sub-components (`DiffLineRow`, `DiffLineContent`) minimize re-renders on text input.
 - Line wrapping is applied via a CSS class toggle (`diff-canvas-wrap`).
 
 #### ToolSidebar
+
 - Read-only statistics: line/character counts for both panels, addition/deletion totals.
 - Checkbox controls: Show Whitespace, Word Diff, Wrap Lines, Ignore Whitespace.
 - Conditional context-lines number input (only shown in unified view).
@@ -91,6 +93,7 @@ The diff engine is entirely client-side with no external diff libraries:
 - Keyboard shortcut hints rendered as `<kbd>` elements (hidden on mobile).
 
 #### ToolToolbar
+
 - Displays context-aware stats: original/modified line and character counts, diff change counts, active flags (WS/WD/WR/IW), current view mode.
 - Large-input warning threshold at 100K characters (before the 500K truncation boundary).
 - Shown in the `ToolShell` toolbar slot alongside `ImportExport` component.

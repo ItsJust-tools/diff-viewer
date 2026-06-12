@@ -201,7 +201,13 @@ describe('computeDiff — edge cases', () => {
   });
 
   it('ignoreWhitespace fast path returns all unchanged when only whitespace differs', () => {
-    const result = computeDiff('  indented\n    more indented', 'indented\nmore indented', -1, true, true);
+    const result = computeDiff(
+      '  indented\n    more indented',
+      'indented\nmore indented',
+      -1,
+      true,
+      true
+    );
     expect(result).toHaveLength(2);
     expect(result[0]!.type).toBe('unchanged');
     expect(result[0]!.content).toBe('  indented');
