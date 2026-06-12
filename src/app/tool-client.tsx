@@ -385,6 +385,7 @@ export default function ToolClient() {
         deletions={diffStats.deletions}
         wordDiff={data.wordDiff}
         showWhitespace={data.showWhitespace}
+        wrapLines={data.wrapLines}
         ignoreWhitespace={data.ignoreWhitespace}
       />
       {isDiffStale && (

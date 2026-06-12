@@ -13,6 +13,8 @@ interface ToolToolbarProps {
   wordDiff?: boolean;
   /** Whether whitespace visualization is enabled. */
   showWhitespace?: boolean;
+  /** Whether line wrapping is enabled. */
+  wrapLines?: boolean;
   /** Whether whitespace-only changes are ignored in the diff. */
   ignoreWhitespace?: boolean;
 }
@@ -25,6 +27,7 @@ export function ToolToolbar({
   deletions = 0,
   wordDiff = false,
   showWhitespace = false,
+  wrapLines = false,
   ignoreWhitespace = false,
 }: ToolToolbarProps) {
   const origLines = original ? original.split('\n').length : 0;
@@ -43,6 +46,7 @@ export function ToolToolbar({
   const activeFlags = [];
   if (showWhitespace) activeFlags.push('WS');
   if (wordDiff) activeFlags.push('WD');
+  if (wrapLines) activeFlags.push('WR');
   if (ignoreWhitespace) activeFlags.push('IW');
 
   return (
