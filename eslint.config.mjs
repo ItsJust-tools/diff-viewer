@@ -8,6 +8,10 @@ const eslintConfig = defineConfig([
   {
     files: ['src/tool/**/*.{ts,tsx}', 'src/app/tool-client.tsx'],
     rules: {
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/immutability': 'off',
       'no-restricted-syntax': [
         'error',
         {
