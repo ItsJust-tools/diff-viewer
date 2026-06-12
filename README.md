@@ -159,6 +159,13 @@ For each pair of changed lines (a removed line followed by an added line), a **s
 - Word-level diff uses character-level tokens for CJK (Chinese, Japanese, Korean) texts while using word boundaries for Latin scripts.
 - Character-level diff (showing inline character changes) is not currently supported.
 
+## Related Documentation
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Development setup, coding conventions, and PR process
+- [CHANGELOG.md](CHANGELOG.md) — Release history and version changelog
+- [SECURITY.md](SECURITY.md) — Security policy and vulnerability reporting
+- [ARCHITECTURE.md](ARCHITECTURE.md) — Detailed architecture and data flow
+
 ## License
 
 MIT

@@ -183,6 +183,18 @@
   font-size: 0.6875rem;
   color: var(--warning);
   margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+[data-contrast='more'] .stat-large-input-note {
+  background: rgba(245, 158, 11, 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+  border-left: 2px solid var(--warning);
+}
+
+[data-theme='dark'][data-contrast='more'] .stat-large-input-note {
+  background: rgba(255, 209, 102, 0.08);
 }
 
 /* --- View Mode Tabs --- */
@@ -320,6 +332,18 @@
 .diff-line-row-added:hover,
 .diff-line-row-removed:hover {
   filter: brightness(1.05);
+}
+
+[data-theme='dark'] .diff-line-row-added:hover,
+[data-theme='dark'] .diff-line-row-removed:hover {
+  filter: brightness(1.1);
+}
+
+[data-contrast='more'] .diff-line-row-added:hover,
+[data-contrast='more'] .diff-line-row-removed:hover {
+  filter: brightness(1.0);
+  outline: 1px solid currentColor;
+  outline-offset: -1px;
 }
 
 /* Focus-visible on the diff line wrapper for keyboard navigation */
@@ -903,6 +927,7 @@
   .diff-line-row-added:hover,
   .diff-line-row-removed:hover {
     filter: none;
+    outline: none;
   }
 
   .diff-line-row-added,
