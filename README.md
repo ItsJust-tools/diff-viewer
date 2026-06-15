@@ -74,6 +74,8 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 | `Ctrl+Shift+Backspace`<br>`Ctrl+Shift+Delete` | Clear both text panels              |
 | `Ctrl+Shift+C`                                | Copy Unified Diff to clipboard      |
 | `Ctrl+Shift+Y`                                | Copy state as JSON to clipboard     |
+| `Ctrl+Shift+O`                                | Copy original text to clipboard     |
+| `Ctrl+Shift+M`                                | Copy modified text to clipboard     |
 | `Ctrl+.`                                      | Toggle whitespace visualization     |
 | `Ctrl+,`                                      | Toggle word-level diff highlighting |
 | `Alt+W`                                       | Toggle line wrapping                |

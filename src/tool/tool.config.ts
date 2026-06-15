@@ -92,6 +92,16 @@ const toolConfig = {
           description: 'copy viewer state as JSON to clipboard',
         },
         {
+          keys: 'Ctrl+Shift+O',
+          label: 'Copy Original',
+          description: 'copy original text to clipboard',
+        },
+        {
+          keys: 'Ctrl+Shift+M',
+          label: 'Copy Modified',
+          description: 'copy modified text to clipboard',
+        },
+        {
           keys: 'Ctrl+.',
           label: 'Toggle Whitespace',
           description: 'toggle whitespace visualization',

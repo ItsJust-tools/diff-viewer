@@ -274,6 +274,20 @@ export default function ToolClient() {
         return;
       }
 
+      // Ctrl+Shift+O to copy original text
+      if (e.shiftKey && (e.key === 'o' || e.key === 'O')) {
+        e.preventDefault();
+        handleCopyOriginal();
+        return;
+      }
+
+      // Ctrl+Shift+M to copy modified text
+      if (e.shiftKey && (e.key === 'm' || e.key === 'M')) {
+        e.preventDefault();
+        handleCopyModified();
+        return;
+      }
+
       if ((e.shiftKey && e.key === 'Backspace') || (e.shiftKey && e.key === 'Delete')) {
         e.preventDefault();
         handleClear();
@@ -341,6 +355,8 @@ export default function ToolClient() {
     handleClear,
     handleCopyDiff,
     handleCopyJson,
+    handleCopyOriginal,
+    handleCopyModified,
     handleViewModeChange,
     handleWrapLinesChange,
     handleShowWhitespaceChange,

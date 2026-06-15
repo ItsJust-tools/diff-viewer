@@ -83,16 +83,19 @@ function backtrackDiff(a: string[], b: string[], dp: Uint32Array): DiffOp[] {
  * @returns Array of non-empty string tokens (empty array when text is empty)
  */
 function tokenize(text: string): string[] {
-  // Match Latin word runs, whitespace runs, or individual CJK/Korean/Japanese characters.
+  // Match Latin word runs (including accented Latin, Greek, Cyrillic, and combining marks),
+  // whitespace runs, or individual CJK/Korean/Japanese characters.
   // Korean Hangul: U+AC00-U+D7AF (complete syllables)
   // Korean Jamo: U+1100-U+11FF (consonant/vowel components)
   // CJK Unified: U+2E80-U+9FFF (Chinese characters + CJK extensions)
   // CJK Supplement: U+F900-U+FAFF, U+3400-U+4DBF (CJK extension A)
   // Japanese Kana: U+3040-U+30FF (Hiragana + Katakana)
   // Small Kana Extension: U+1B000-U+1B0FF
+  // Greek: U+0370-U+03FF
+  // Cyrillic: U+0400-U+04FF
   return (
     text.match(
-      /[\w\u00C0-\u024F\u1E00-\u1EFF']+|\s+|[\u1100-\u11FF\u2E80-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF\u3400-\u4DBF\u3040-\u30FF\u1B000-\u1B0FF]/gu
+      /[\w\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF\u1E00-\u1EFF']+|\s+|[\u1100-\u11FF\u2E80-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF\u3400-\u4DBF\u3040-\u30FF\u1B000-\u1B0FF]/gu
     ) ?? []
   );
 }
@@ -124,6 +127,43 @@ function computeWordDiff(
   // Use a simplified LCS on tokens for word-level diff.
   // Guard against huge token counts.
   if (oldTokens.length * newTokens.length > 10_000) {
+    // Fallback: split on whitespace boundaries for a basic word-level diff
+    // when the full LCS would be too expensive. This still provides useful
+    // highlighting even for very long lines.
+    const fallbackTokens = (s: string) => s.split(/(\s+)/).filter(Boolean);
+    const fbOld = fallbackTokens(oldLine);
+    const fbNew = fallbackTokens(newLine);
+    if (fbOld.length * fbNew.length <= 10_000 && fbOld.length > 1 && fbNew.length > 1) {
+      const fbDp = computeLCSTable(fbOld, fbNew);
+      const fbOps = backtrackDiff(fbOld, fbNew, fbDp);
+      const fbResult: WordChange[] = [];
+      for (const op of fbOps) {
+        const text =
+          op.type === 'added'
+            ? fbNew[op.newIdx]
+            : op.type === 'removed'
+              ? fbOld[op.oldIdx]
+              : fbOld[op.oldIdx];
+        if (text === undefined) continue;
+        const mappedType =
+          type === 'added' && op.type === 'removed'
+            ? ('removed' as const)
+            : type === 'removed' && op.type === 'added'
+              ? ('added' as const)
+              : op.type === 'added'
+                ? ('added' as const)
+                : op.type === 'removed'
+                  ? ('removed' as const)
+                  : ('unchanged' as const);
+        const last = fbResult[fbResult.length - 1];
+        if (last && last.type === mappedType) {
+          last.text += text;
+        } else {
+          fbResult.push({ type: mappedType, text });
+        }
+      }
+      return fbResult;
+    }
     return [{ type, text: type === 'added' ? newLine : oldLine }];
   }
 

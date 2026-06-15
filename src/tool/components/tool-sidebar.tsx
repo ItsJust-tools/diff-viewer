@@ -296,10 +296,13 @@ export function ToolSidebar({
               type="button"
               className="sidebar-action-btn"
               onClick={onCopyOriginal}
-              title="Copy original text to clipboard"
+              title="Copy original text to clipboard (Ctrl+Shift+O)"
               aria-label="Copy original text to clipboard"
             >
               Copy Original Text
+              <kbd className="tab-shortcut-hint" aria-hidden="true">
+                Ctrl+Shift+O
+              </kbd>
             </button>
           )}
           {modified && (
@@ -307,10 +310,13 @@ export function ToolSidebar({
               type="button"
               className="sidebar-action-btn"
               onClick={onCopyModified}
-              title="Copy modified text to clipboard"
+              title="Copy modified text to clipboard (Ctrl+Shift+M)"
               aria-label="Copy modified text to clipboard"
             >
               Copy Modified Text
+              <kbd className="tab-shortcut-hint" aria-hidden="true">
+                Ctrl+Shift+M
+              </kbd>
             </button>
           )}
         </div>
