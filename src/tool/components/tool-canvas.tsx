@@ -461,6 +461,12 @@ export function computeRawDiff(
   enableWordDiff = true,
   ignoreWhitespace = false
 ): DiffLine[] {
+  // Fast path: if both inputs are empty, return an empty diff immediately.
+  // This is checked before the identical-string fast path because
+  // `''.split('\n')` returns `['']` (length 1), which would produce an
+  // incorrect single-element unchanged line for empty inputs.
+  if (original === '' && modified === '') return [];
+
   // Fast path: if the strings are identical (or whitespace-trimmed identical
   // when ignoreWhitespace is on), skip LCS entirely.
   // This is a common pattern when users are typing in one panel and
@@ -490,7 +496,6 @@ export function computeRawDiff(
   const origLines = original.split('\n');
   const modLines = modified.split('\n');
 
-  if (original === '' && modified === '') return [];
   if (original === '') {
     return modLines.map((line, i) => ({
       type: 'added' as const,

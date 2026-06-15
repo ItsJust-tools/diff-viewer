@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`computeRawDiff` empty-empty edge case**: Moved the `'' && ''` check before the identical-string fast path so `computeRawDiff('', '')` returns `[]` instead of a spurious single unchanged line. This makes the raw diff consistent with `computeDiff` (which already handled this case via `filterDiffLines`) and avoids an unexpected 1-element array when both inputs are empty.
+
 ### Added
 
 - **Memoized `DiffLineRow` and `DiffLineContent` components**: Wrapped both components in `React.memo` to prevent unnecessary re-renders on text input changes, significantly improving render performance for large diffs.

@@ -220,20 +220,7 @@ export default function ToolClient() {
   }, [data.modified, showToast]);
 
   const handleCopyJson = useCallback(() => {
-    const json = JSON.stringify(
-      {
-        original: data.original,
-        modified: data.modified,
-        viewMode: data.viewMode,
-        showWhitespace: data.showWhitespace,
-        contextLines: data.contextLines,
-        wordDiff: data.wordDiff,
-        wrapLines: data.wrapLines,
-        ignoreWhitespace: data.ignoreWhitespace,
-      },
-      null,
-      2
-    );
+    const json = diffViewerTool.serialize(data);
     navigator.clipboard.writeText(json).then(
       () => showToast('State copied as JSON to clipboard', 'success'),
       () => showToast('Failed to copy to clipboard', 'error')

@@ -382,13 +382,9 @@ describe('computeDiff — ignoreWhitespace', () => {
 });
 
 describe('computeRawDiff', () => {
-  it('returns one unchanged empty string line for empty inputs (fast path)', () => {
+  it('returns empty diff for empty inputs (raw)', () => {
     const result = computeRawDiff('', '');
-    // Fast path: '' === '' triggers the identical-string path, which
-    // splits '' into [''], producing one "unchanged" line with empty content
-    expect(result).toHaveLength(1);
-    expect(result[0]!.type).toBe('unchanged');
-    expect(result[0]!.content).toBe('');
+    expect(result).toEqual([]);
   });
 
   it('returns all added when original is empty', () => {
