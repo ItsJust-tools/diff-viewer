@@ -84,18 +84,24 @@ function backtrackDiff(a: string[], b: string[], dp: Uint32Array): DiffOp[] {
  */
 function tokenize(text: string): string[] {
   // Match Latin word runs (including accented Latin, Greek, Cyrillic, and combining marks),
-  // whitespace runs, or individual CJK/Korean/Japanese characters.
-  // Korean Hangul: U+AC00-U+D7AF (complete syllables)
-  // Korean Jamo: U+1100-U+11FF (consonant/vowel components)
-  // CJK Unified: U+2E80-U+9FFF (Chinese characters + CJK extensions)
-  // CJK Supplement: U+F900-U+FAFF, U+3400-U+4DBF (CJK extension A)
-  // Japanese Kana: U+3040-U+30FF (Hiragana + Katakana)
-  // Small Kana Extension: U+1B000-U+1B0FF
-  // Greek: U+0370-U+03FF
-  // Cyrillic: U+0400-U+04FF
+  // whitespace runs, or individual characters from non-space-delimited scripts.
+  //
+  // Supported scripts:
+  //   Latin (extended): U+00C0-U+024F, U+1E00-U+1EFF
+  //   Greek: U+0370-U+03FF
+  //   Cyrillic: U+0400-U+04FF
+  //   Arabic: U+0600-U+06FF, U+0750-U+077F, U+08A0-U+08FF
+  //   Thai: U+0E00-U+0E7F
+  //   Korean Hangul: U+AC00-U+D7AF (complete syllables)
+  //   Korean Jamo: U+1100-U+11FF (consonant/vowel components)
+  //   CJK Unified: U+2E80-U+9FFF (Chinese characters + CJK extensions)
+  //   CJK Supplement: U+F900-U+FAFF, U+3400-U+4DBF (CJK extension A)
+  //   Japanese Kana: U+3040-U+30FF (Hiragana + Katakana)
+  //   Small Kana Extension: U+1B000-U+1B0FF
+  //   Emoji: U+1F300-U+1F9FF (Miscellaneous Symbols, Pictographs, Emoticons, etc.)
   return (
     text.match(
-      /[\w\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF\u1E00-\u1EFF']+|\s+|[\u1100-\u11FF\u2E80-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF\u3400-\u4DBF\u3040-\u30FF\u{1B000}-\u{1B0FF}]/gu
+      /[\w\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF\u1E00-\u1EFF']+|\s+|[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\u0E00-\u0E7F\u1100-\u11FF\u2E80-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF\u3400-\u4DBF\u3040-\u30FF\u{1B000}-\u{1B0FF}\u{1F300}-\u{1F9FF}]/gu
     ) ?? []
   );
 }

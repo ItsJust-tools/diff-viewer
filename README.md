@@ -18,7 +18,7 @@ View and compare text differences side-by-side. Paste two versions of any text a
   - **Unified:** Compact interleaved diff output with color-coded additions and removals, context line control, and hunk headers
   - **Split:** Editor panel on the left + live unified diff output on the right — best of both worlds for iterative editing
 - **Real-time Diff:** See changes as you type with color-coded additions and removals
-- **Word-level Diff Highlighting:** Within each changed line, added/removed words are highlighted separately for precise comparison. Supports both Latin/Cyrillic word boundaries and CJK character-level diff for Chinese, Japanese, and Korean text.
+- **Word-level Diff Highlighting:** Within each changed line, added/removed words are highlighted separately for precise comparison. Supports Latin/Cyrillic word boundaries, CJK character-level diff for Chinese, Japanese, and Korean text, as well as Arabic, Thai, and emoji character-level diff.
 - **Line Wrapping:** Toggle wrapping for long lines — avoids horizontal scrolling, with smart hyphenation for improved readability
 - **Whitespace Visibility:** Toggle display of spaces (·) and tabs (→)
 - **Ignore Whitespace:** Toggle to ignore whitespace-only changes in the diff — useful for comparing code where formatting/indentation differences don't matter
@@ -158,7 +158,7 @@ For each pair of changed lines (a removed line followed by an added line), a **s
 ### Limitations
 
 - The LCS algorithm has O(m×n) time complexity. Very large diffs (>10,000 lines) may take several seconds to compute.
-- Word-level diff uses character-level tokens for CJK (Chinese, Japanese, Korean) texts while using word boundaries for Latin scripts.
+- Word-level diff uses character-level tokens for CJK (Chinese, Japanese, Korean), Arabic, Thai, and emoji texts while using word boundaries for Latin/Cyrillic scripts.
 - Character-level diff (showing inline character changes) is not currently supported.
 
 ## Related Documentation
