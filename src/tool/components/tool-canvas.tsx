@@ -95,7 +95,7 @@ function tokenize(text: string): string[] {
   // Cyrillic: U+0400-U+04FF
   return (
     text.match(
-      /[\w\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF\u1E00-\u1EFF']+|\s+|[\u1100-\u11FF\u2E80-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF\u3400-\u4DBF\u3040-\u30FF\u1B000-\u1B0FF]/gu
+      /[\w\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF\u1E00-\u1EFF']+|\s+|[\u1100-\u11FF\u2E80-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF\u3400-\u4DBF\u3040-\u30FF\u{1B000}-\u{1B0FF}]/gu
     ) ?? []
   );
 }
