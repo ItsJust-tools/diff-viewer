@@ -804,12 +804,12 @@ const DiffLineContent = memo(function DiffLineContent({
             ? seg.text.replace(/ /g, '\u00B7').replace(/\t/g, '\u2192   ')
             : seg.text;
           if (seg.type === 'unchanged') {
-            return <span key={i}>{segText}</span>;
+            return <span key={i}>{segText || (showWhitespace ? '\u00B7' : '\u00A0')}</span>;
           }
           const wordClass = seg.type === 'added' ? 'diff-word-added' : 'diff-word-removed';
           return (
             <span key={i} className={wordClass}>
-              {segText || '\u00A0'}
+              {segText || (showWhitespace ? '\u00B7' : '\u00A0')}
             </span>
           );
         })}
@@ -822,7 +822,13 @@ const DiffLineContent = memo(function DiffLineContent({
     ? line.content.replace(/ /g, '\u00B7').replace(/\t/g, '\u2192   ')
     : line.content;
 
-  return <>{displayContent || '\u00A0'}</>;
+  // Use non-breaking space for empty lines to preserve row height,
+  // and apply whitespace visualization to the fallback too
+  if (!displayContent) {
+    return <>{showWhitespace ? '\u00B7' : '\u00A0'}</>;
+  }
+
+  return <>{displayContent}</>;
 });
 
 DiffLineContent.displayName = 'DiffLineContent';
@@ -863,14 +869,25 @@ const DiffLineRow = memo(function DiffLineRow({
 
   const sign = line.type === 'added' ? '+' : line.type === 'removed' ? '-' : isHunk ? '~' : ' ';
 
+  // Build a descriptive label that includes line numbers and content for screen readers.
+  // For hunk headers, show the hunk metadata; for content lines, show the text.
+  const contentPreview = isHunk ? line.content : line.content.slice(0, 120).replace(/\n/g, '\\n');
+  const lineNumInfo =
+    line.oldLineNumber != null && line.newLineNumber != null
+      ? ` (old line ${line.oldLineNumber}, new line ${line.newLineNumber})`
+      : line.oldLineNumber != null
+        ? ` (old line ${line.oldLineNumber})`
+        : line.newLineNumber != null
+          ? ` (new line ${line.newLineNumber})`
+          : '';
   const rowLabel =
     line.type === 'added'
-      ? 'Added line'
+      ? `Added line${lineNumInfo}: ${contentPreview}`
       : line.type === 'removed'
-        ? 'Removed line'
+        ? `Removed line${lineNumInfo}: ${contentPreview}`
         : isHunk
-          ? 'Hunk header'
-          : 'Unchanged line';
+          ? `Hunk header: ${contentPreview}`
+          : `Unchanged line${lineNumInfo}: ${contentPreview}`;
 
   return (
     <div
