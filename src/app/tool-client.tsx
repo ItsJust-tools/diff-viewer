@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState, useEffect, useDeferredValue } from 'react';
-import { ToolShell, useTool, ImportExport } from '@itsjust/core';
+import { ToolShell, useTool, ImportExport, copyTextToClipboard } from '@itsjust/core';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import type { DiffLine } from '@/tool';
 import {
@@ -184,8 +184,11 @@ export default function ToolClient() {
       showToast('Nothing to copy — paste text in both panels first', 'error');
       return;
     }
-    navigator.clipboard.writeText(diff).then(
-      () => showToast('Unified diff copied to clipboard', 'success'),
+    copyTextToClipboard(diff).then(
+      (ok) =>
+        ok
+          ? showToast('Unified diff copied to clipboard', 'success')
+          : showToast('Failed to copy to clipboard', 'error'),
       () => showToast('Failed to copy to clipboard', 'error')
     );
   }, [
@@ -202,8 +205,11 @@ export default function ToolClient() {
       showToast('Nothing to copy — original text is empty', 'error');
       return;
     }
-    navigator.clipboard.writeText(data.original).then(
-      () => showToast('Original text copied to clipboard', 'success'),
+    copyTextToClipboard(data.original).then(
+      (ok) =>
+        ok
+          ? showToast('Original text copied to clipboard', 'success')
+          : showToast('Failed to copy to clipboard', 'error'),
       () => showToast('Failed to copy to clipboard', 'error')
     );
   }, [data.original, showToast]);
@@ -213,16 +219,22 @@ export default function ToolClient() {
       showToast('Nothing to copy — modified text is empty', 'error');
       return;
     }
-    navigator.clipboard.writeText(data.modified).then(
-      () => showToast('Modified text copied to clipboard', 'success'),
+    copyTextToClipboard(data.modified).then(
+      (ok) =>
+        ok
+          ? showToast('Modified text copied to clipboard', 'success')
+          : showToast('Failed to copy to clipboard', 'error'),
       () => showToast('Failed to copy to clipboard', 'error')
     );
   }, [data.modified, showToast]);
 
   const handleCopyJson = useCallback(() => {
     const json = diffViewerTool.serialize(data);
-    navigator.clipboard.writeText(json).then(
-      () => showToast('State copied as JSON to clipboard', 'success'),
+    copyTextToClipboard(json).then(
+      (ok) =>
+        ok
+          ? showToast('State copied as JSON to clipboard', 'success')
+          : showToast('Failed to copy to clipboard', 'error'),
       () => showToast('Failed to copy to clipboard', 'error')
     );
   }, [data, showToast]);
@@ -412,7 +424,8 @@ export default function ToolClient() {
           if (error instanceof Error && error.name === 'AbortError') return;
         }
       }
-      await navigator.clipboard.writeText(shareUrl);
+      const copied = await copyTextToClipboard(shareUrl);
+      if (!copied) throw new Error('Failed to copy share URL to clipboard');
       showToast('Share URL copied to clipboard', 'success');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create share URL';

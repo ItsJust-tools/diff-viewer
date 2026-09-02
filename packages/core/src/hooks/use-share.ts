@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import type { ShareData, ShareResult } from '../types';
+import { copyTextToClipboard } from '../utils/clipboard';
 
 export interface ShareFileResult extends ShareResult {
   isFile: boolean;
@@ -138,7 +139,10 @@ export function useShare() {
       return withShareOperation(async () => {
         const blob = createShareFile(data);
         const text = await blob.text();
-        await navigator.clipboard.writeText(text);
+        const copied = await copyTextToClipboard(text);
+        if (!copied) {
+          throw new Error('Copy failed');
+        }
 
         setShareResult({
           id: 'clipboard',
