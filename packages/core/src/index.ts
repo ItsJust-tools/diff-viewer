@@ -107,3 +107,11 @@ export { ErrorBoundary } from './components/error-boundary/error-boundary';
 // i18n
 /** Minimal i18n string map and helper. */
 export { t } from './i18n/strings';
+
+// Utils
+/**
+ * copyTextToClipboard — Copy text to the clipboard with a graceful fallback
+ * to `document.execCommand('copy')` for insecure origins and permission
+ * rejections. Resolves to `true` on success, `false` when every strategy fails.
+ */
+export { copyTextToClipboard } from './utils/clipboard';
