@@ -44,7 +44,11 @@ export class StorageManager {
       localStorage.setItem(this.key(key), JSON.stringify(entry));
     } catch (error) {
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        console.warn(`[StorageManager] Quota exceeded saving "${key}"`);
+        console.warn(
+          `[StorageManager] Quota exceeded or private browsing restriction saving "${key}"`
+        );
+      } else if (error instanceof DOMException && error.name === 'SecurityError') {
+        console.warn(`[StorageManager] Access denied (private browsing) saving "${key}"`);
       } else {
         console.warn(`[StorageManager] Failed to save "${key}":`, error);
       }

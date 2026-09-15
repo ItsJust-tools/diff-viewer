@@ -21,6 +21,7 @@ export interface AutoSaveOptions {
   };
   historyStorage?: Pick<Storage, 'getItem' | 'setItem'>;
   historyNamespace?: string;
+  onStorageError?: (error: unknown) => void;
 }
 
 export const defaultAutoSaveOptions: AutoSaveOptions = {

@@ -62,7 +62,12 @@ export function Sidebar({ children }: { children?: ReactNode }) {
       document.body.style.userSelect = '';
       try {
         localStorage.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidthRef.current));
-      } catch {}
+      } catch (error) {
+        console.warn(
+          '[ToolShellSidebar] Failed to save sidebar width to localStorage (quota exceeded or private browsing restriction):',
+          error
+        );
+      }
     }
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
