@@ -8,7 +8,7 @@ import { StorageManager } from '../engines/storage-manager';
 const HISTORY_KEY = (key: string) => `itsjust:history:${key}`;
 const NAMESPACE_KEY = 'itsjust:storage-namespace';
 
-function initStorageNamespace(): string {
+function initStorageNamespace(onError?: (error: unknown) => void): string {
   if (typeof window === 'undefined') return 'default';
   try {
     const existing = localStorage.getItem(NAMESPACE_KEY);
@@ -19,7 +19,12 @@ function initStorageNamespace(): string {
         : `ns-${Date.now()}`;
     localStorage.setItem(NAMESPACE_KEY, created);
     return created;
-  } catch {
+  } catch (error) {
+    console.warn(
+      '[useToolState] Failed to initialize storage namespace (quota exceeded or private browsing restriction):',
+      error
+    );
+    onError?.(error);
     return 'default';
   }
 }
@@ -39,7 +44,7 @@ function initStorageNamespace(): string {
  */
 export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = {}): ToolState<T> {
   const opts = useMemo(() => ({ ...defaultAutoSaveOptions, ...options }), [options]);
-  const [storageNamespace] = useState(initStorageNamespace);
+  const [storageNamespace] = useState(() => initStorageNamespace(opts.onStorageError));
   const storage = useMemo(
     () =>
       opts.storageManager ??
@@ -116,12 +121,17 @@ export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = 
     } catch (error) {
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
         console.warn(`[useToolState] Quota exceeded persisting history for "${opts.key}"`);
+      } else if (error instanceof DOMException && error.name === 'SecurityError') {
+        console.warn(
+          `[useToolState] Access denied (private browsing) persisting history for "${opts.key}"`
+        );
       } else {
         console.warn(`[useToolState] Failed to persist history for "${opts.key}"`, error);
       }
+      opts.onStorageError?.(error);
       return false;
     }
-  }, [opts.key, historyPrefix, historyStorage]);
+  }, [opts.key, historyPrefix, historyStorage, opts.onStorageError]);
 
   useEffect(() => {
     if (!opts.enabled) return;
@@ -145,7 +155,14 @@ export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = 
       } catch (error) {
         if (error instanceof DOMException && error.name === 'QuotaExceededError') {
           console.warn(`[useToolState] Quota exceeded saving state for "${opts.key}"`);
+        } else if (error instanceof DOMException && error.name === 'SecurityError') {
+          console.warn(
+            `[useToolState] Access denied (private browsing) saving state for "${opts.key}"`
+          );
+        } else {
+          console.warn(`[useToolState] Failed to save state for "${opts.key}"`, error);
         }
+        opts.onStorageError?.(error);
       } finally {
         setIsSaving(false);
       }

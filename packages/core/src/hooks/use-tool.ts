@@ -64,7 +64,11 @@ export function useTool<TState>(
     }
   }
 
-  const state = useToolState<TState>(tool.initialState, { key: canonicalId });
+  const state = useToolState<TState>(tool.initialState, {
+    key: canonicalId,
+    onStorageError: () =>
+      toast('Storage quota exceeded or private browsing restriction, saving disabled'),
+  });
   const { exportTo, abortExport, supportedFormats, isExporting } = useExport(
     canvasRef,
     tool.config,

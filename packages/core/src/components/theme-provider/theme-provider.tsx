@@ -115,7 +115,10 @@ export function ThemeProvider({
       try {
         localStorage.setItem(STORAGE_KEY, t);
       } catch (error) {
-        console.warn('[ThemeProvider] Failed to save theme to localStorage:', error);
+        console.warn(
+          '[ThemeProvider] Failed to save theme to localStorage (quota exceeded or private browsing restriction):',
+          error
+        );
       }
     },
     [resolveTheme]
@@ -130,7 +133,10 @@ export function ThemeProvider({
       try {
         localStorage.setItem(CONTRAST_STORAGE_KEY, c);
       } catch (error) {
-        console.warn('[ThemeProvider] Failed to save contrast to localStorage:', error);
+        console.warn(
+          '[ThemeProvider] Failed to save contrast to localStorage (quota exceeded or private browsing restriction):',
+          error
+        );
       }
     },
     [resolveContrast]
