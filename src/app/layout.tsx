@@ -41,7 +41,10 @@ export default function RootLayout({
         <ThemeScript toolTheme={toolConfig.theme} />
       </head>
       <body className="min-h-full flex flex-col">
-        <a href="#main-content" className="skip-nav">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-[var(--accent)] focus:text-white focus:rounded-lg focus:p-2"
+        >
           Skip to content
         </a>
         <ThemeProvider toolTheme={toolConfig.theme}>
