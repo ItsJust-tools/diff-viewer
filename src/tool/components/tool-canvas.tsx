@@ -1134,6 +1134,7 @@ export function ToolCanvas({
   return (
     <div
       ref={canvasRef}
+      id="main-content"
       className={`diff-canvas${wrapLines ? ' diff-canvas-wrap' : ''}`}
       role="application"
       aria-label="Diff Viewer"
