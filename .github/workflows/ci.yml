@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main, master]
 
+# Cancel superseded runs on the same branch/PR so rapid pushes don't queue
+# redundant CI jobs and burn Actions minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ─── Fast required checks ───
   lint-and-typecheck:
