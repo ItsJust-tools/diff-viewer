@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Expanded Playwright E2E coverage**: Replaced the single smoke test with a 37-test suite covering state persistence across reloads, undo/redo (buttons and `Ctrl+Z`/`Ctrl+Shift+Z`/`Ctrl+Y`), export payload verification (JSON roundtrip plus PNG/JPEG/WebP magic bytes and PDF print interception), dark/light and high-contrast theme persistence, import from file input and drag-and-drop including corrupted/unsupported files, view-mode and swap/clear shortcuts, sidebar behavior, and site metadata. (Closes #59)
+- **Drag-and-drop file import**: Dropping a file anywhere on the page now imports it, with a drop overlay and error toasts for corrupted or unsupported files.
+- **`Ctrl/Cmd+S` immediate save**: The shell shortcut now calls a new `onSave` toolbar action wired to `saveNow()`, so users can flush the debounced auto-save on demand.
+
 ### Fixed
 
 - **`computeRawDiff` empty-empty edge case**: Moved the `'' && ''` check before the identical-string fast path so `computeRawDiff('', '')` returns `[]` instead of a spurious single unchanged line. This makes the raw diff consistent with `computeDiff` (which already handled this case via `filterDiffLines`) and avoids an unexpected 1-element array when both inputs are empty.
+- **Undo required two clicks under StrictMode**: `useToolState` mutated its history refs inside the `setData` state updater, so React's double-invocation in StrictMode recorded duplicate history entries. History bookkeeping now happens outside the updater against a synchronous `dataRef`, so one undo reverts exactly one change.
 
 ### Added
 

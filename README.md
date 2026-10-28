@@ -80,6 +80,12 @@ Open [http://localhost:3000](http://localhost:3000) to start comparing.
 | `Ctrl+,`                                      | Toggle word-level diff highlighting |
 | `Alt+W`                                       | Toggle line wrapping                |
 | `Ctrl+I`                                      | Toggle ignore whitespace changes    |
+| `Ctrl+S`                                      | Save state immediately              |
+| `Ctrl+B`                                      | Toggle sidebar                      |
+| `Ctrl+Z`                                      | Undo                                |
+| `Ctrl+Shift+Z`<br>`Ctrl+Y`                    | Redo                                |
+
+Files can also be imported by dragging them anywhere onto the page.
 
 ## Project Structure
 

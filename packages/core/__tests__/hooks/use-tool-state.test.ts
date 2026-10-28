@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { useToolState } from '../../src/hooks/use-tool-state';
 
 function getStoredBySuffix(suffix: string): string | null {
@@ -47,6 +48,20 @@ describe('useToolState', () => {
     act(() => result.current.redo());
     expect(result.current.data).toBe(2);
     expect(result.current.canRedo).toBe(false);
+  });
+
+  it('records exactly one history entry per change under StrictMode', () => {
+    const { result } = renderHook(() => useToolState(0), { wrapper: StrictMode });
+
+    act(() => result.current.setData(1));
+
+    act(() => result.current.undo());
+    expect(result.current.data).toBe(0);
+    expect(result.current.canUndo).toBe(false);
+    expect(result.current.canRedo).toBe(true);
+
+    act(() => result.current.redo());
+    expect(result.current.data).toBe(1);
   });
 
   it('tracks dirty state and auto-saves', async () => {

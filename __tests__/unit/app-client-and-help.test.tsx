@@ -36,6 +36,7 @@ vi.mock('@itsjust/core', () => ({
       trigger-share
     </button>
   ),
+  useDragAndDropImport: () => ({ isDragging: false }),
   useTool: () => ({
     state: {
       data: { original: 'Hello', modified: '' },

@@ -42,6 +42,8 @@ interface ToolShellProps {
   /** Declarative plugins for additional toolbar, sidebar, statusBar or canvas content.
    *  Pass a stable array (useMemo or define outside the component) to avoid unnecessary re-renders. */
   plugins?: ToolPlugin[];
+  /** Extra content rendered inside the shell root, e.g. overlays. */
+  children?: ReactNode;
 }
 
 /**
@@ -61,6 +63,7 @@ export function ToolShell({
   statusBar,
   slots,
   plugins = [],
+  children,
 }: ToolShellProps) {
   const toolbarSlot = slots?.toolbar ?? toolbar;
   const sidebarSlot = slots?.sidebar ?? sidebar;
@@ -189,6 +192,7 @@ export function ToolShell({
             />
           </Suspense>
         )}
+        {children}
       </div>
     </ShellContext.Provider>
   );

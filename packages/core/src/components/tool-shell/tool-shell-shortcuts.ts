@@ -37,6 +37,7 @@ export function useKeyboardShortcuts(actions: ToolbarActions, onShowShortcuts: (
             break;
           case 's':
             e.preventDefault();
+            void actions.onSave?.();
             break;
           case 'b':
             e.preventDefault();
