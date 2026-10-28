@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
@@ -59,6 +61,29 @@ describe('app and seo', () => {
     expect(man.name).toBe(templateMetadata.appName);
     expect(rob.sitemap).toBe('http://localhost:3000/sitemap.xml');
     expect(sm[0]?.url).toBe('http://localhost:3000');
+  });
+
+  it('declares maskable icons in the web app manifest', () => {
+    const icons = manifest().icons ?? [];
+    const maskable = icons.filter((icon) => icon.purpose === 'maskable');
+
+    expect(maskable.map((icon) => icon.sizes).sort()).toEqual(['192x192', '512x512']);
+    for (const icon of maskable) {
+      expect(icon.type).toBe('image/png');
+      expect(icon.src).toMatch(/^\/icon-maskable-\d+\.png$/);
+      expect(icon.sizes).toBeDefined();
+    }
+
+    // Every declared icon must ship as a real file, otherwise launchers 404.
+    for (const icon of icons) {
+      const file = join(process.cwd(), 'public', String(icon.src).replace(/^\//, ''));
+      expect(existsSync(file), `missing icon file: ${icon.src}`).toBe(true);
+    }
+
+    // Maskable and any entries must not collide: maskable art is padded separately.
+    const sources = icons.map((icon) => icon.src);
+    expect(new Set(sources).size).toBe(sources.length);
+    expect(icons.some((icon) => icon.purpose === 'any')).toBe(true);
   });
 
   it('renders json-ld script safely', () => {

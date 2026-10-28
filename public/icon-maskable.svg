@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#8b5cf6"/>
+  <g transform="translate(256 250) scale(5.3) translate(-50 -50)">
+    <text x="50" y="40" text-anchor="middle" fill="white" font-size="40" font-family="sans-serif" font-weight="bold">±</text>
+    <text x="50" y="72" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="22" font-family="sans-serif" font-weight="500">Diff</text>
+  </g>
+</svg>

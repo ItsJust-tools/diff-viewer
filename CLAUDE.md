@@ -285,7 +285,7 @@ These files are part of the template infrastructure. They must not be edited whe
 | `next.config.ts`, `vitest.config.ts`, `playwright.config.ts`, `postcss.config.mjs`, `eslint.config.mjs`, `tsconfig.json`   | Build and tooling configs.                                                               |
 | `packages/core/package.json`, `tsconfig.json`, `tsup.config.ts`                                                            | Core build configs.                                                                      |
 | `Dockerfile`, `.github/**/*`, `.husky/**/*`                                                                                | DevOps and CI/CD.                                                                        |
-| `public/apple-touch-icon.svg`, `icon-192.svg`, `icon-512.svg`                                                              | PWA icons.                                                                               |
+| `public/apple-touch-icon.svg`, `icon.svg`, `icon-maskable.svg`, `icon-{192,512}.png`, `icon-maskable-{192,512}.png`        | PWA icons (rasterized by `npm run icons:generate`).                                      |
 
 ### Editable (Tool Customization)
 
