@@ -412,6 +412,17 @@ Replace `public/og.svg` with your tool's Open Graph image (1200x630px).
 
 `src/app/manifest.ts` is auto-generated from `template-metadata.ts`. No manual editing needed.
 
+`template-metadata.ts` exposes two icon sets, both emitted into the manifest with the matching `purpose`:
+
+- `icons.any` — regular launcher/tab icons (`public/icon-192.png`, `public/icon-512.png`).
+- `icons.maskable` — maskable icons (`public/icon-maskable-*.png`) with a full-bleed background and the glyph inside the safe zone, so Android and other launchers can crop them to any mask shape instead of letterboxing the artwork.
+
+Edit `public/icon.svg` and `public/icon-maskable.svg`, then regenerate the raster icons:
+
+```bash
+npm run icons:generate
+```
+
 ---
 
 ## Testing

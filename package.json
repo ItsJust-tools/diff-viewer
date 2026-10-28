@@ -19,7 +19,8 @@
     "test:ui": "vitest --ui",
     "prepare": "husky || true",
     "deps:check": "depcheck",
-    "lint-staged": "lint-staged"
+    "lint-staged": "lint-staged",
+    "icons:generate": "node scripts/generate-pwa-icons.mjs"
   },
   "dependencies": {
     "@itsjust/core": "*",

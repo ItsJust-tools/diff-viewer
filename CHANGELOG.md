@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **PWA manifest missing maskable icons**: The web app manifest declared only a single `purpose: "any"` SVG icon, so Android and other mobile launchers rendered an unpadded square or letterboxed artwork on the home screen. The manifest now also declares 192x192 and 512x512 `purpose: "maskable"` PNGs with a full-bleed background and the glyph inside the 80% safe zone, generated from `public/icon-maskable.svg` via `npm run icons:generate`. (Closes #58)
 - **`computeRawDiff` empty-empty edge case**: Moved the `'' && ''` check before the identical-string fast path so `computeRawDiff('', '')` returns `[]` instead of a spurious single unchanged line. This makes the raw diff consistent with `computeDiff` (which already handled this case via `filterDiffLines`) and avoids an unexpected 1-element array when both inputs are empty.
 - **Undo required two clicks under StrictMode**: `useToolState` mutated its history refs inside the `setData` state updater, so React's double-invocation in StrictMode recorded duplicate history entries. History bookkeeping now happens outside the updater against a synchronous `dataRef`, so one undo reverts exactly one change.
 
