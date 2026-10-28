@@ -89,7 +89,7 @@ Files can also be imported by dragging them anywhere onto the page.
 
 ## Project Structure
 
-```
+```text
 diff-viewer/
 ├── src/
 │   ├── app/               # Next.js App Router (pages, layout, SEO)
