@@ -14,8 +14,8 @@ const toolConfig = {
   exportFormats: ['json', 'png', 'jpeg', 'webp', 'pdf'],
   features: {
     export: true,
-    autoSave: false,
-    undoRedo: false,
+    autoSave: true,
+    undoRedo: true,
     sidebar: true,
     statusBar: true,
     darkMode: true,

@@ -44,6 +44,7 @@ describe('useTool', () => {
   let originalRevokeObjectURL: typeof URL.revokeObjectURL;
 
   beforeEach(() => {
+    localStorage.clear();
     originalCreateObjectURL = URL.createObjectURL;
     originalRevokeObjectURL = URL.revokeObjectURL;
     URL.createObjectURL = vi.fn(() => 'blob:test');
@@ -89,6 +90,22 @@ describe('useTool', () => {
     });
 
     expect(result.current.state.data).toEqual({ title: 'Imported' });
+  });
+
+  it('exposes onSave that persists immediately', async () => {
+    const canvasRef = { current: document.createElement('div') };
+    const { result } = renderHook(() => useTool(mockTool, canvasRef), renderOptions);
+
+    act(() => {
+      result.current.state.setData({ title: 'Dirty' });
+    });
+    expect(result.current.state.isDirty).toBe(true);
+
+    await act(async () => {
+      await result.current.toolbarActions.onSave?.();
+    });
+
+    expect(result.current.state.isDirty).toBe(false);
   });
 
   it('shows toast on import deserialization error', async () => {

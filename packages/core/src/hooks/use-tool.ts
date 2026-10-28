@@ -75,6 +75,7 @@ export function useTool<TState>(
     () => tool.serialize(state.data),
     tool.exporters
   );
+  const { toast } = useToast();
   const { importFromFile, isImporting } = useImport({
     acceptedFormats: tool.config.exportFormats,
     onImport: (result) => {
@@ -87,8 +88,8 @@ export function useTool<TState>(
         }
       }
     },
+    onImportError: (error) => toast(error, 'error'),
   });
-  const { toast } = useToast();
 
   const handleExport = useCallback(
     async (format: ExportFormat) => {
@@ -105,7 +106,11 @@ export function useTool<TState>(
     [exportTo, toast]
   );
 
-  const { canUndo, canRedo, undo, redo, setData } = state;
+  const { canUndo, canRedo, undo, redo, setData, saveNow } = state;
+
+  const handleSave = useCallback(async () => {
+    await saveNow();
+  }, [saveNow]);
 
   const handleReset = useCallback(() => {
     if (typeof window !== 'undefined') {
@@ -119,13 +124,14 @@ export function useTool<TState>(
     () => ({
       onUndo: canUndo ? () => undo() : undefined,
       onRedo: canRedo ? () => redo() : undefined,
+      onSave: handleSave,
       canUndo,
       canRedo,
       onExport: handleExport,
       onReset: handleReset,
       supportedFormats,
     }),
-    [canUndo, canRedo, undo, redo, handleExport, handleReset, supportedFormats]
+    [canUndo, canRedo, undo, redo, handleSave, handleExport, handleReset, supportedFormats]
   );
 
   return {

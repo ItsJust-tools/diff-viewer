@@ -136,6 +136,18 @@ describe('useKeyboardShortcuts', () => {
     expect(preventDefault).toHaveBeenCalled();
   });
 
+  it('calls onSave on Ctrl+S', () => {
+    const onSave = vi.fn();
+    renderHook(() => useKeyboardShortcuts({ onSave }, vi.fn()));
+
+    const handler = vi
+      .mocked(window.addEventListener)
+      .mock.calls.find(([event]) => event === 'keydown')?.[1] as EventListener;
+
+    handler(new KeyboardEvent('keydown', { key: 's', ctrlKey: true }));
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
   it('ignores keys without modifier', () => {
     const onUndo = vi.fn();
     renderHook(() => useKeyboardShortcuts({ onUndo }, vi.fn()));

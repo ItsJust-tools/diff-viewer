@@ -1,7 +1,13 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState, useEffect, useDeferredValue } from 'react';
-import { ToolShell, useTool, ImportExport, copyTextToClipboard } from '@itsjust/core';
+import {
+  ToolShell,
+  useTool,
+  ImportExport,
+  copyTextToClipboard,
+  useDragAndDropImport,
+} from '@itsjust/core';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import type { DiffLine } from '@/tool';
 import {
@@ -435,6 +441,18 @@ export default function ToolClient() {
     }
   }, [showToast, tool.state.data, title]);
 
+  // Drag-and-drop import: dropping a file anywhere on the page imports it.
+  // Import errors are already surfaced as toasts by useTool.
+  const handleDroppedFile = useCallback(
+    (file: File) => tool.importFromFile(file),
+    [tool.importFromFile]
+  );
+
+  const { isDragging } = useDragAndDropImport({
+    onImport: handleDroppedFile,
+    acceptedFormats: toolConfig.exportFormats,
+  });
+
   const toolbarContent = (
     <>
       <ToolToolbar
@@ -542,6 +560,12 @@ export default function ToolClient() {
       sidebar={sidebarContent}
       canvas={canvasContent}
       statusBar={statusBarContent}
-    />
+    >
+      {isDragging && (
+        <div className="drop-overlay" role="status">
+          Drop file to import
+        </div>
+      )}
+    </ToolShell>
   );
 }

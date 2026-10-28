@@ -10,6 +10,8 @@ export interface ToolbarActions {
   onExport?: (format: ExportFormat) => void;
   /** Reset tool state to defaults. */
   onReset?: () => void;
+  /** Persist the current state immediately (Ctrl/Cmd+S). */
+  onSave?: () => void | Promise<void>;
   /** Toggle sidebar visibility. */
   onToggleSidebar?: () => void;
   /** Current undo availability. */
