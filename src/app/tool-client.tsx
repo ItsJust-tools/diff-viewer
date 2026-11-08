@@ -123,6 +123,13 @@ export default function ToolClient() {
     [setToolData]
   );
 
+  const handleIgnoreCaseChange = useCallback(
+    (ignoreCase: boolean) => {
+      setToolData((prev) => ({ ...prev, ignoreCase }));
+    },
+    [setToolData]
+  );
+
   const handleContextLinesChange = useCallback(
     (contextLines: number) => {
       setToolData((prev) => ({ ...prev, contextLines }));
@@ -153,9 +160,9 @@ export default function ToolClient() {
   const rawDiffLines: DiffLine[] = useMemo(
     () =>
       diffOriginal || diffModified
-        ? computeRawDiff(diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace)
+        ? computeRawDiff(diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace, data.ignoreCase)
         : [],
-    [diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace]
+    [diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace, data.ignoreCase]
   );
 
   // Pre-compute filtered diff lines for unified view to avoid redundant LCS in ToolCanvas
@@ -184,7 +191,8 @@ export default function ToolClient() {
       data.modified,
       rawDiffLines,
       data.contextLines,
-      data.ignoreWhitespace
+      data.ignoreWhitespace,
+      data.ignoreCase
     );
     if (!diff) {
       showToast('Nothing to copy — paste text in both panels first', 'error');
@@ -355,6 +363,14 @@ export default function ToolClient() {
           );
           return;
         }
+
+        // Ctrl+L to toggle ignore case
+        if (e.key === 'l') {
+          e.preventDefault();
+          handleIgnoreCaseChange(!data.ignoreCase);
+          showToast(`Ignore case ${data.ignoreCase ? 'disabled' : 'enabled'}`, 'success');
+          return;
+        }
       }
 
       // Alt+W to toggle line wrapping (Ctrl+W universally closes browser tabs)
@@ -380,6 +396,7 @@ export default function ToolClient() {
     handleShowWhitespaceChange,
     handleWordDiffChange,
     handleIgnoreWhitespaceChange,
+    handleIgnoreCaseChange,
     showToast,
     tool,
     data.viewMode,
@@ -387,6 +404,7 @@ export default function ToolClient() {
     data.showWhitespace,
     data.wordDiff,
     data.ignoreWhitespace,
+    data.ignoreCase,
   ]);
 
   useEffect(() => {
@@ -492,6 +510,7 @@ export default function ToolClient() {
       wrapLines={data.wrapLines}
       contextLines={data.contextLines}
       ignoreWhitespace={data.ignoreWhitespace}
+      ignoreCase={data.ignoreCase}
       diffLines={rawDiffLines}
       diffStats={diffStats}
       onShowWhitespaceChange={handleShowWhitespaceChange}
@@ -499,6 +518,7 @@ export default function ToolClient() {
       onWrapLinesChange={handleWrapLinesChange}
       onContextLinesChange={handleContextLinesChange}
       onIgnoreWhitespaceChange={handleIgnoreWhitespaceChange}
+      onIgnoreCaseChange={handleIgnoreCaseChange}
       onSwap={handleSwap}
       onClear={handleClear}
       onCopyDiff={handleCopyDiff}

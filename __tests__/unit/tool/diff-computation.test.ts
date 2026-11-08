@@ -565,3 +565,32 @@ describe('generateUnifiedDiffString', () => {
     expect(contentLines).toContain(' a');
   });
 });
+
+describe('computeRawDiff — ignoreCase', () => {
+  it('treats case-only line differences as unchanged', () => {
+    const result = computeRawDiff('Hello\nWorld', 'hello\nWORLD', true, false, true);
+    expect(result.every((l) => l.type === 'unchanged')).toBe(true);
+  });
+
+  it('still detects real content changes when ignoreCase is on', () => {
+    const result = computeRawDiff('Hello', 'Hello there', true, false, true);
+    expect(result[0]!.type).toBe('removed');
+    expect(result[1]!.type).toBe('added');
+  });
+
+  it('preserves original casing in displayed content', () => {
+    const result = computeRawDiff('Hello', 'HELLO x', true, false, true);
+    expect(result.find((l) => l.type === 'removed')!.content).toBe('Hello');
+    expect(result.find((l) => l.type === 'added')!.content).toBe('HELLO x');
+  });
+
+  it('combines ignoreWhitespace and ignoreCase', () => {
+    const result = computeRawDiff('  Foo  ', 'fOo', true, true, true);
+    expect(result.every((l) => l.type === 'unchanged')).toBe(true);
+  });
+
+  it('case differences are visible when ignoreCase is off', () => {
+    const result = computeRawDiff('Hello', 'HELLO');
+    expect(result.some((l) => l.type === 'added' || l.type === 'removed')).toBe(true);
+  });
+});

@@ -21,6 +21,12 @@ export interface DiffViewerState {
    * displayed as-is.
    */
   ignoreWhitespace: boolean;
+  /**
+   * When enabled, case differences between lines are ignored in the LCS
+   * comparison. Lines that differ only in letter casing are treated as
+   * unchanged. The original text is still displayed as-is.
+   */
+  ignoreCase: boolean;
 }
 
 /** A single line in the computed diff output. */

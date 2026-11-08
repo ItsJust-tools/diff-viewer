@@ -125,12 +125,13 @@ describe('app and seo', () => {
         wordDiff: true,
         wrapLines: false,
         ignoreWhitespace: false,
+        ignoreCase: false,
       },
     });
     expect(diffViewerTool.deserialize({ nope: true })).toEqual({
       success: false,
       error:
-        'Invalid data format: expected { original: string, modified: string, viewMode?: string, showWhitespace?: boolean, contextLines?: number, wordDiff?: boolean, wrapLines?: boolean, ignoreWhitespace?: boolean }',
+        'Invalid data format: expected { original: string, modified: string, viewMode?: string, showWhitespace?: boolean, contextLines?: number, wordDiff?: boolean, wrapLines?: boolean, ignoreWhitespace?: boolean, ignoreCase?: boolean }',
     });
     expect(
       diffViewerTool.serialize({
@@ -142,6 +143,7 @@ describe('app and seo', () => {
         wordDiff: true,
         wrapLines: false,
         ignoreWhitespace: false,
+        ignoreCase: false,
       })
     ).toContain('"original"');
     expect(
@@ -165,6 +167,7 @@ describe('app and seo', () => {
         wordDiff: true,
         wrapLines: false,
         ignoreWhitespace: false,
+        ignoreCase: false,
       },
     });
     const exporters = diffViewerTool.exporters ?? [];

@@ -13,6 +13,8 @@ interface ToolSidebarProps {
   wrapLines: boolean;
   contextLines: number;
   ignoreWhitespace: boolean;
+  /** Whether case-only changes are ignored in the diff. */
+  ignoreCase: boolean;
   /** Pre-computed full diff lines (without context filtering). */
   diffLines: DiffLine[];
   /** Optional pre-computed diff stats to avoid re-computing from diffLines. */
@@ -22,6 +24,7 @@ interface ToolSidebarProps {
   onWrapLinesChange?: (enabled: boolean) => void;
   onContextLinesChange?: (lines: number) => void;
   onIgnoreWhitespaceChange?: (enabled: boolean) => void;
+  onIgnoreCaseChange?: (enabled: boolean) => void;
   onSwap?: () => void;
   onClear?: () => void;
   onCopyDiff?: () => void;
@@ -39,6 +42,7 @@ export function ToolSidebar({
   wrapLines,
   contextLines,
   ignoreWhitespace,
+  ignoreCase,
   diffLines,
   diffStats: precomputedStats,
   onShowWhitespaceChange,
@@ -46,6 +50,7 @@ export function ToolSidebar({
   onWrapLinesChange,
   onContextLinesChange,
   onIgnoreWhitespaceChange,
+  onIgnoreCaseChange,
   onSwap,
   onClear,
   onCopyDiff,
@@ -183,6 +188,23 @@ export function ToolSidebar({
             </span>
             <span className="sidebar-checkbox-desc">
               Skip indentation and trailing space changes
+            </span>
+          </label>
+        </div>
+
+        <div className="sidebar-option-row">
+          <label className="sidebar-checkbox-label">
+            <span className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={ignoreCase}
+                onChange={(e) => onIgnoreCaseChange?.(e.target.checked)}
+                aria-label="Ignore case-only changes when computing diff"
+              />
+              <span>Ignore Case</span>
+            </span>
+            <span className="sidebar-checkbox-desc">
+              Treat lines differing only in letter casing as unchanged
             </span>
           </label>
         </div>

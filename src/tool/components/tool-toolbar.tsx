@@ -17,6 +17,8 @@ interface ToolToolbarProps {
   wrapLines?: boolean;
   /** Whether whitespace-only changes are ignored in the diff. */
   ignoreWhitespace?: boolean;
+  /** Whether case-only changes are ignored in the diff. */
+  ignoreCase?: boolean;
 }
 
 export function ToolToolbar({
@@ -29,6 +31,7 @@ export function ToolToolbar({
   showWhitespace = false,
   wrapLines = false,
   ignoreWhitespace = false,
+  ignoreCase = false,
 }: ToolToolbarProps) {
   const origLines = original ? original.split('\n').length : 0;
   const modLines = modified ? modified.split('\n').length : 0;
@@ -48,6 +51,7 @@ export function ToolToolbar({
   if (wordDiff) activeFlags.push('WD');
   if (wrapLines) activeFlags.push('WR');
   if (ignoreWhitespace) activeFlags.push('IW');
+  if (ignoreCase) activeFlags.push('IC');
 
   return (
     <div className="diff-toolbar">
@@ -78,7 +82,7 @@ export function ToolToolbar({
                 <span className="toolbar-separator">|</span>
                 <span
                   className="toolbar-active-flags"
-                  title="Active settings: WS=Whitespace, WD=Word Diff, WR=Wrap, IW=Ignore Whitespace"
+                  title="Active settings: WS=Whitespace, WD=Word Diff, WR=Wrap, IW=Ignore Whitespace, IC=Ignore Case"
                 >
                   {activeFlags.join(', ')}
                 </span>
