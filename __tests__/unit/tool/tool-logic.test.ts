@@ -192,6 +192,7 @@ describe('DiffViewer serialize', () => {
       wordDiff: true,
       wrapLines: false,
       ignoreWhitespace: false,
+      ignoreCase: false,
     };
     const json = diffViewerTool.serialize(state);
     expect(() => JSON.parse(json)).not.toThrow();
@@ -213,6 +214,7 @@ describe('DiffViewer serialize', () => {
       wordDiff: true,
       wrapLines: false,
       ignoreWhitespace: false,
+      ignoreCase: false,
     });
     const parsed = JSON.parse(json);
     expect(parsed.original).toBe('');
@@ -229,6 +231,7 @@ describe('DiffViewer serialize', () => {
       wordDiff: true,
       wrapLines: false,
       ignoreWhitespace: false,
+      ignoreCase: false,
     });
     // Should not be on a single line
     expect(json).toContain('\n  ');
@@ -245,6 +248,7 @@ describe('DiffViewer initialState', () => {
     expect(state.contextLines).toBe(3);
     expect(state.wordDiff).toBe(true);
     expect(state.wrapLines).toBe(false);
+    expect(state.ignoreCase).toBe(false);
   });
 
   it('is deeply frozen or safely immutable', () => {

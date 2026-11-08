@@ -387,6 +387,7 @@ function filterContextLines(result: DiffLine[], contextLines: number): DiffLine[
  * @param contextLines - Context lines for filtering (-1 for no filtering)
  * @param enableWordDiff - When true, compute word-level diff highlighting for changed lines
  * @param ignoreWhitespace - When true, trim lines before LCS comparison
+ * @param ignoreCase - When true, compare lines case-insensitively
  * @returns Array of DiffLine objects
  */
 function computeDiffChunked(
@@ -394,7 +395,8 @@ function computeDiffChunked(
   modLines: string[],
   contextLines: number,
   enableWordDiff = true,
-  ignoreWhitespace = false
+  ignoreWhitespace = false,
+  ignoreCase = false
 ): DiffLine[] {
   const CHUNK_SIZE = 2000; // 2000×2000 = 4M cells, well under 10M limit
   const OVERLAP = 50; // overlap between chunks to catch boundary matches
@@ -437,8 +439,18 @@ function computeDiffChunked(
     // When ignoring whitespace, compute LCS on trimmed lines but display
     // the original (untrimmed) content. This way whitespace-only changes
     // are hidden from the diff while preserving actual text for display.
-    const compareChunkOrig = ignoreWhitespace ? chunkOrig.map((l) => l.trim()) : chunkOrig;
-    const compareChunkMod = ignoreWhitespace ? chunkMod.map((l) => l.trim()) : chunkMod;
+    // When ignoring whitespace or case, compute LCS on normalized lines but
+    // display the original (unnormalized) content — whitespace-only or
+    // case-only changes are hidden from the diff while preserving the
+    // actual text for display.
+    const normalize = (l: string) => {
+      let norm = l;
+      if (ignoreWhitespace) norm = norm.trim();
+      if (ignoreCase) norm = norm.toLowerCase();
+      return norm;
+    };
+    const compareChunkOrig = ignoreWhitespace || ignoreCase ? chunkOrig.map(normalize) : chunkOrig;
+    const compareChunkMod = ignoreWhitespace || ignoreCase ? chunkMod.map(normalize) : chunkMod;
 
     const dp = computeLCSTable(compareChunkOrig, compareChunkMod);
     const chunkOps = backtrackDiff(compareChunkOrig, compareChunkMod, dp);
@@ -513,6 +525,10 @@ export function filterDiffLines(diffLines: DiffLine[], contextLines: number): Di
  * trailing spaces are treated as unchanged. The original text is always
  * preserved for display.
  *
+ * When `ignoreCase` is true, lines differing only in letter casing are
+ * treated as unchanged during comparison; the original text is preserved
+ * for display.
+ *
  * To get a context-filtered view, pass the result through {@link filterDiffLines}
  * instead of calling this function again with different contextLines.
  * This avoids redundant LCS computation.
@@ -521,7 +537,8 @@ export function computeRawDiff(
   original: string,
   modified: string,
   enableWordDiff = true,
-  ignoreWhitespace = false
+  ignoreWhitespace = false,
+  ignoreCase = false
 ): DiffLine[] {
   // Fast path: if both inputs are empty, return an empty diff immediately.
   // This is checked before the identical-string fast path because
@@ -545,7 +562,11 @@ export function computeRawDiff(
 
   // Fast path: when ignoring whitespace, if the trimmed texts are identical,
   // all lines are unchanged (only whitespace differs).
-  if (ignoreWhitespace && original.trim() === modified.trim()) {
+  if (
+    ignoreWhitespace &&
+    !ignoreCase &&
+    original.trim() === modified.trim()
+  ) {
     const origLines = original.split('\n');
     return origLines.map((line, i) => ({
       type: 'unchanged' as const,
@@ -578,8 +599,16 @@ export function computeRawDiff(
   // When ignoring whitespace, compute LCS on trimmed lines but display
   // the original (untrimmed) content. This way whitespace-only changes
   // are hidden from the diff while preserving actual text for display.
-  const compareOrig: string[] = ignoreWhitespace ? origLines.map((l) => l.trim()) : origLines;
-  const compareMod: string[] = ignoreWhitespace ? modLines.map((l) => l.trim()) : modLines;
+  // Whitespace-only or case-only changes are hidden from the diff while
+  // preserving the actual text for display.
+  const normalize = (l: string) => {
+    let norm = l;
+    if (ignoreWhitespace) norm = norm.trim();
+    if (ignoreCase) norm = norm.toLowerCase();
+    return norm;
+  };
+  const compareOrig: string[] = ignoreWhitespace || ignoreCase ? origLines.map(normalize) : origLines;
+  const compareMod: string[] = ignoreWhitespace || ignoreCase ? modLines.map(normalize) : modLines;
 
   // Simple LCS — guard against very large inputs to avoid OOM
   const m = compareOrig.length;
@@ -588,7 +617,7 @@ export function computeRawDiff(
   const LCS_MAX_CELLS = 20_000_000;
   if (m * n > LCS_MAX_CELLS) {
     // Chunked path always produces the full unfiltered diff
-    return computeDiffChunked(origLines, modLines, -1, enableWordDiff, ignoreWhitespace);
+    return computeDiffChunked(origLines, modLines, -1, enableWordDiff, ignoreWhitespace, ignoreCase);
   }
 
   const dp = computeLCSTable(compareOrig, compareMod);
@@ -626,9 +655,10 @@ export function computeDiff(
   modified: string,
   contextLines: number,
   enableWordDiff = true,
-  ignoreWhitespace = false
+  ignoreWhitespace = false,
+  ignoreCase = false
 ): DiffLine[] {
-  const raw = computeRawDiff(original, modified, enableWordDiff, ignoreWhitespace);
+  const raw = computeRawDiff(original, modified, enableWordDiff, ignoreWhitespace, ignoreCase);
   return filterDiffLines(raw, contextLines);
 }
 
@@ -656,7 +686,8 @@ export function generateUnifiedDiffString(
   modified: string,
   diffLines?: DiffLine[],
   contextLines: number = 3,
-  ignoreWhitespace = false
+  ignoreWhitespace = false,
+  ignoreCase = false
 ): string {
   if (!original && !modified) return '';
   if (!original) {
@@ -674,7 +705,7 @@ export function generateUnifiedDiffString(
 
   // Use pre-computed diff lines when available to avoid re-computing LCS.
   // We need the full unfiltered diff so we can build hunks ourselves.
-  const diffLines_ = diffLines ?? computeRawDiff(original, modified, false, ignoreWhitespace);
+  const diffLines_ = diffLines ?? computeRawDiff(original, modified, false, ignoreWhitespace, ignoreCase);
 
   const result: string[] = [];
   result.push(`--- original`);
