@@ -8,6 +8,8 @@ export {
   computeRawDiff,
   filterDiffLines,
   generateUnifiedDiffString,
+  MAX_CHAR_DIFF_LINE_LENGTH,
+  VIRTUALIZATION_MIN_LINES,
 } from './components/tool-canvas';
 export { ToolToolbar } from './components/tool-toolbar';
 export { ToolSidebar } from './components/tool-sidebar';
