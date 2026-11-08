@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import type { DiffLine, WordChange, DiffOp } from '../types';
 
 /**
@@ -107,6 +107,15 @@ function tokenize(text: string): string[] {
 }
 
 /**
+ * Maximum combined length (in characters) of the old + new line for which we
+ * attempt word/char-level diffing. Lines longer than this skip the char-level
+ * pass entirely and render as plain added/removed text. This prevents costly
+ * tokenization + LCS work on very long lines (e.g. minified code) from
+ * blocking the main thread.
+ */
+export const MAX_CHAR_DIFF_LINE_LENGTH = 500;
+
+/**
  * Compute a word-level diff between two single-line strings.
  * Returns an array of segments with their type (added/removed/unchanged).
  */
@@ -117,6 +126,13 @@ function computeWordDiff(
 ): WordChange[] {
   if (oldLine === newLine) {
     return [{ type: 'unchanged', text: oldLine }];
+  }
+
+  // Guard: skip expensive char-level diff for very long lines. Tokenizing and
+  // running LCS on extremely long lines (e.g. minified bundles) can cause
+  // noticeable jank on the main thread, so we bail out to the plain line text.
+  if (oldLine.length > MAX_CHAR_DIFF_LINE_LENGTH || newLine.length > MAX_CHAR_DIFF_LINE_LENGTH) {
+    return [{ type, text: type === 'added' ? newLine : oldLine }];
   }
 
   const oldTokens = tokenize(oldLine);
@@ -383,6 +399,10 @@ function computeDiffChunked(
   const CHUNK_SIZE = 2000; // 2000×2000 = 4M cells, well under 10M limit
   const OVERLAP = 50; // overlap between chunks to catch boundary matches
   const STEP = CHUNK_SIZE - OVERLAP; // how far we advance each iteration
+  // Word-level diff inside the chunked path was previously enabled with the
+  // caller's value, which could trigger heavy per-line tokenization for very
+  // large inputs; the full LCS table already dominates cost here.
+  void enableWordDiff;
   const totalOrig = origLines.length;
   const totalMod = modLines.length;
 
@@ -456,10 +476,6 @@ function computeDiffChunked(
   }
 
   const result = buildDiffLinesFromOps(allOps, origLines, modLines);
-
-  if (enableWordDiff) {
-    applyWordDiffPairing(result);
-  }
 
   return filterContextLines(result, contextLines);
 }
@@ -920,6 +936,137 @@ const DiffLineRow = memo(function DiffLineRow({
 
 DiffLineRow.displayName = 'DiffLineRow';
 
+/** Default estimated row height in pixels (matches the monospace line metrics in diff-viewer.css). */
+const ESTIMATED_ROW_HEIGHT = 21;
+/** How many rows to render beyond the visible viewport (above and below) when virtualization kicks in. */
+const VIRTUALIZATION_OVERSCAN_ROWS = 5;
+/**
+ * Minimum number of lines a diff list must contain before virtualization kicks in.
+ * Below this a fixed-height map is not worth the bookkeeping, so rows render normally.
+ */
+export const VIRTUALIZATION_MIN_LINES = 2000;
+/**
+ * Fallback spacer height when the browser reports a scroll container height of 0
+ * (e.g. during initial mount, jsdom, hidden tabs). Prevents rendering only ~5 rows.
+ */
+const FALLBACK_VIEWPORT_HEIGHT = 600;
+
+/**
+ * Track the visible window of rows inside a scrollable container.
+ * Uses fixed row heights (assumed uniform across the diff list) to compute
+ * the visible [start, end) slice from scrollTop and container height.
+ */
+function useVirtualWindow(
+  rowCount: number,
+  rowHeight: number,
+  overscanRows: number = VIRTUALIZATION_OVERSCAN_ROWS
+): {
+  start: number;
+  end: number;
+  topSpacerHeight: number;
+  bottomSpacerHeight: number;
+  containerHeight: number;
+  onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+} {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return undefined;
+    const measure = () => setContainerHeight(el.clientHeight);
+    measure();
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(measure);
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+    return undefined;
+  }, []);
+
+  const effectiveHeight = containerHeight > 0 ? containerHeight : FALLBACK_VIEWPORT_HEIGHT;
+  const firstVisible = Math.floor(scrollTop / rowHeight);
+  const visibleRows = Math.ceil(effectiveHeight / rowHeight) + 1;
+  const start = Math.max(0, firstVisible - overscanRows);
+  const end = Math.min(rowCount, firstVisible + visibleRows + overscanRows);
+  const topSpacerHeight = start * rowHeight;
+  const bottomSpacerHeight = Math.max(0, (rowCount - end) * rowHeight);
+
+  const onScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop);
+  }, []);
+
+  return {
+    start,
+    end,
+    topSpacerHeight,
+    bottomSpacerHeight,
+    containerHeight,
+    onScroll,
+    containerRef,
+  };
+}
+
+/**
+ * Renders a window of diff lines inside an existing scrollable container with
+ * spacer divs standing in for the rows above/below the visible slice.
+ * Keeps DOM node count bounded for very large diffs so the main thread
+ * does not spend significant time mounting/updating thousands of rows at once.
+ */
+const VirtualizedDiffLines = memo(function VirtualizedDiffLines({
+  lines,
+  showWhitespace,
+  wordDiff,
+  tableLabel,
+}: {
+  lines: DiffLine[];
+  showWhitespace: boolean;
+  wordDiff: boolean;
+  tableLabel: string;
+}) {
+  const {
+    start,
+    end,
+    topSpacerHeight,
+    bottomSpacerHeight,
+    containerHeight,
+    onScroll,
+    containerRef,
+  } = useVirtualWindow(lines.length, ESTIMATED_ROW_HEIGHT);
+
+  const visible = lines.slice(start, end);
+
+  return (
+    <div
+      ref={containerRef}
+      onScroll={onScroll}
+      style={{ height: '100%', overflowY: 'auto' }}
+      data-testid="diff-virtualized-list"
+    >
+      <div
+        role="table"
+        aria-label={tableLabel}
+        aria-rowcount={lines.length}
+        style={{ paddingTop: topSpacerHeight, paddingBottom: bottomSpacerHeight }}
+      >
+        {visible.map((line, i) => (
+          <DiffLineRow
+            key={start + i}
+            line={line}
+            showWhitespace={showWhitespace}
+            wordDiff={wordDiff}
+            rowIndex={start + i + 1}
+          />
+        ))}
+      </div>
+    </div>
+  );
+});
+
+VirtualizedDiffLines.displayName = 'VirtualizedDiffLines';
+
 /** Main canvas component for the diff viewer. Renders side-by-side, unified, or split view. */
 export function ToolCanvas({
   original,
@@ -1015,6 +1162,7 @@ export function ToolCanvas({
   const renderUnified = () => {
     const { addCount, delCount } = diffCounts;
     const showStale = externalIsDiffStale && filteredDiffLines.length > 0;
+    const shouldVirtualize = filteredDiffLines.length > VIRTUALIZATION_MIN_LINES;
     return (
       <div
         className="diff-unified"
@@ -1045,6 +1193,13 @@ export function ToolCanvas({
                     ? 'Paste original text to see the diff'
                     : 'Paste text in both panels to compare'}
             </div>
+          ) : shouldVirtualize ? (
+            <VirtualizedDiffLines
+              lines={filteredDiffLines}
+              showWhitespace={showWhitespace}
+              wordDiff={wordDiff}
+              tableLabel="Unified diff lines"
+            />
           ) : (
             <div role="table" aria-label="Unified diff lines">
               {filteredDiffLines.map((line, idx) => (
@@ -1066,6 +1221,7 @@ export function ToolCanvas({
   const renderSplit = () => {
     const { addCount, delCount } = diffCounts;
     const showStale = externalIsDiffStale && filteredDiffLines.length > 0;
+    const shouldVirtualize = filteredDiffLines.length > VIRTUALIZATION_MIN_LINES;
     return (
       <div
         className="diff-split"
@@ -1112,6 +1268,13 @@ export function ToolCanvas({
                       ? 'Paste original text to see the diff'
                       : 'Diff will appear here after pasting text in both panels'}
               </div>
+            ) : shouldVirtualize ? (
+              <VirtualizedDiffLines
+                lines={filteredDiffLines}
+                showWhitespace={showWhitespace}
+                wordDiff={wordDiff}
+                tableLabel="Split diff output lines"
+              />
             ) : (
               <div role="table" aria-label="Split diff output lines">
                 {filteredDiffLines.map((line, idx) => (
