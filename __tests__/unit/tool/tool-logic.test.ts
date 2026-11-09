@@ -73,6 +73,24 @@ describe('DiffViewerState validation (deserialize)', () => {
     if (!result.success) expect(result.error).toContain('Invalid data');
   });
 
+  it('never throws on hostile/pathological data and returns a failure result', () => {
+    const hostile: unknown[] = [
+      undefined,
+      NaN,
+      Infinity,
+      new Date('invalid'),
+      Symbol('nope'),
+      new Proxy({}, { get: () => { throw new Error('boom'); } }),
+      { original: 'x', modified: 'y', get viewMode() { throw new Error('boom'); } },
+    ];
+    for (const input of hostile) {
+      let result: ReturnType<typeof diffViewerTool.deserialize> | undefined;
+      expect(() => { result = diffViewerTool.deserialize(input); }).not.toThrow();
+      expect(result!.success).toBe(false);
+      if (!result!.success) expect(result!.error.length).toBeGreaterThan(0);
+    }
+  });
+
   it('rejects object with non-string original', () => {
     const result = diffViewerTool.deserialize({ original: 123, modified: 'x' });
     expect(result.success).toBe(false);

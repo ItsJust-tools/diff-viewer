@@ -43,27 +43,34 @@ export const diffViewerTool: Tool<DiffViewerState> = {
   },
   serialize: (state) => JSON.stringify(state, null, 2),
   deserialize: (data) => {
-    if (isDiffViewerState(data)) {
+    try {
+      if (isDiffViewerState(data)) {
+        return {
+          success: true,
+          data: {
+            original: data.original,
+            modified: data.modified,
+            viewMode: data.viewMode ?? 'side-by-side',
+            showWhitespace: data.showWhitespace ?? true,
+            contextLines: data.contextLines ?? 3,
+            wordDiff: data.wordDiff ?? true,
+            wrapLines: data.wrapLines ?? false,
+            ignoreWhitespace: data.ignoreWhitespace ?? false,
+            ignoreCase: data.ignoreCase ?? false,
+          },
+        };
+      }
       return {
-        success: true,
-        data: {
-          original: data.original,
-          modified: data.modified,
-          viewMode: data.viewMode ?? 'side-by-side',
-          showWhitespace: data.showWhitespace ?? true,
-          contextLines: data.contextLines ?? 3,
-          wordDiff: data.wordDiff ?? true,
-          wrapLines: data.wrapLines ?? false,
-          ignoreWhitespace: data.ignoreWhitespace ?? false,
-          ignoreCase: data.ignoreCase ?? false,
-        },
+        success: false,
+        error:
+          'Invalid data format: expected { original: string, modified: string, viewMode?: string, showWhitespace?: boolean, contextLines?: number, wordDiff?: boolean, wrapLines?: boolean, ignoreWhitespace?: boolean, ignoreCase?: boolean }',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Deserialization failed: ${error instanceof Error ? error.message : 'Unknown error while parsing state'}`,
       };
     }
-    return {
-      success: false,
-      error:
-          'Invalid data format: expected { original: string, modified: string, viewMode?: string, showWhitespace?: boolean, contextLines?: number, wordDiff?: boolean, wrapLines?: boolean, ignoreWhitespace?: boolean, ignoreCase?: boolean }',
-    };
   },
   exporters: [
     { format: 'png', loader: () => import('./exporters/png') },
