@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { diffViewerTool } from '@/tool/tool-definition';
 import type { DiffViewerState } from '@/tool/types';
+import type { DeserializeResult } from '@itsjust/core';
 
 describe('DiffViewerState validation (deserialize)', () => {
   it('accepts valid minimal state', () => {
@@ -308,5 +309,25 @@ describe('DiffViewer config metadata', () => {
     for (const exporter of exporters) {
       expect(typeof exporter.loader).toBe('function');
     }
+  });
+
+  it('deserialize satisfies the DeserializeResult<TState> contract', async () => {
+    // The declared signature must be DeserializeResult<DiffViewerState>.
+    type Expected = DeserializeResult<DiffViewerState>;
+    const expectedType: Expected = diffViewerTool.deserialize({ original: 'a', modified: 'b' });
+    expect(expectedType.success).toBe(true);
+    if (expectedType.success) {
+      expect(expectedType.data.original).toBe('a');
+      expect(expectedType.data.modified).toBe('b');
+    }
+
+    const failure = diffViewerTool.deserialize(null);
+    expect(failure).toEqual({ success: false, error: expect.any(String) });
+
+    // Runtime shape check: exactly the canonical discriminated union.
+    const ok = diffViewerTool.deserialize({ original: 'x', modified: 'y' });
+    expect(Object.keys(ok).sort()).toEqual(['data', 'success']);
+    const err = diffViewerTool.deserialize(42);
+    expect(Object.keys(err).sort()).toEqual(['error', 'success']);
   });
 });
