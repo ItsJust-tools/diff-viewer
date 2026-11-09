@@ -1,4 +1,4 @@
-import type { Tool } from '@itsjust/core';
+import type { DeserializeResult, Tool } from '@itsjust/core';
 import toolConfig from './tool.config';
 import type { DiffViewerState } from './types';
 
@@ -42,7 +42,7 @@ export const diffViewerTool: Tool<DiffViewerState> = {
     ignoreCase: false,
   },
   serialize: (state) => JSON.stringify(state, null, 2),
-  deserialize: (data) => {
+  deserialize: (data): DeserializeResult<DiffViewerState> => {
     try {
       if (isDiffViewerState(data)) {
         return {
