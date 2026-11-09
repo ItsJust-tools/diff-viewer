@@ -5,9 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.8.0] - 2026-06-07
 
 ### Added
+
+- **Ignore Case diff option**: New sidebar checkbox (toolbar flag `IC`, `Ctrl+L` shortcut) to compare text case-insensitively; the setting is included in state serialization and verified with tests. (Closes #52)
+- **Skip-to-content bypass link**: Added a "Skip to Main Content" link for keyboard and screen reader users per WCAG 2.2. (Closes #65)
+- **`noImplicitReturns` TypeScript config**: Prevents accidental undefined return paths across the codebase. (Closes #60)
+- **CI concurrency group**: The `ci.yml` workflow now cancels redundant in-progress runs for the same ref. (Closes #54)
+- **npm cache configuration**: `actions/setup-node` now caches npm dependencies to speed up CI installs. (Closes #55)
+- **Docker HEALTHCHECK**: The production container declares a `HEALTHCHECK` instruction. (Closes #57)
+- **Maskable PWA icons**: The manifest now includes 192x192 and 512x512 `purpose: "maskable"` icons rendered with a full-bleed safe-zone design. (Closes #58)
+- **Expanded Playwright E2E coverage**: Replaced the single smoke test with a 37-test suite covering persistence reloads, undo/redo, export payloads, themes, import (including drag-and-drop), shortcuts, sidebar, and metadata. (Closes #59)
+
+### Changed
+
+- **Performance on large files (>5000 lines)**: Optimized diff computation paths so large inputs render without UI degradation. (Closes #53)
+- **Unified vs Split view improvements**: View toggle behavior and whitespace-ignoring comparison options were reworked, with serialization support and tests. (Closes #52)
+- **CSS performance**: Replaced generic `transition-all` rules with specific composite properties to reduce style recalculation costs. (Closes #66)
+- **Version sync**: `tool.config.ts` now derives its `version` from `package.json` (`packageJson.version`), eliminating drift between the tool config and package version; `toolVersion` added to the barrel export.
+
+### Fixed
+
+- **`DeserializeResult` architectural contract**: `deserialize` now returns `DeserializeResult<TState>` per architecture rules. (Closes #50)
+- **Defensive state deserialization**: `deserialize` wraps parsing in try/catch so corrupted state fails gracefully. (Closes #51)
+- **Container ran as root**: The Dockerfile `runner` stage now creates and switches to a dedicated non-root `nextjs` user (UID 1001); the dev stage runs as the unprivileged `node` user. (Closes #56)
+- **LocalStorage persistence**: Handle `QuotaExceededError` and private browsing storage restrictions defensively. (Closes #61)
+- **Clipboard API fallbacks**: Graceful fallback for insecure origins and permission rejections. (Closes #62)
+- **Web Share API**: Catch and suppress user abort `AbortError`. (Closes #63)
 
 - **Expanded Playwright E2E coverage**: Replaced the single smoke test with a 37-test suite covering state persistence across reloads, undo/redo (buttons and `Ctrl+Z`/`Ctrl+Shift+Z`/`Ctrl+Y`), export payload verification (JSON roundtrip plus PNG/JPEG/WebP magic bytes and PDF print interception), dark/light and high-contrast theme persistence, import from file input and drag-and-drop including corrupted/unsupported files, view-mode and swap/clear shortcuts, sidebar behavior, and site metadata. (Closes #59)
 - **Drag-and-drop file import**: Dropping a file anywhere on the page now imports it, with a drop overlay and error toasts for corrupted or unsupported files.
