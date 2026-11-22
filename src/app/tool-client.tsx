@@ -160,7 +160,13 @@ export default function ToolClient() {
   const rawDiffLines: DiffLine[] = useMemo(
     () =>
       diffOriginal || diffModified
-        ? computeRawDiff(diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace, data.ignoreCase)
+        ? computeRawDiff(
+            diffOriginal,
+            diffModified,
+            data.wordDiff,
+            data.ignoreWhitespace,
+            data.ignoreCase
+          )
         : [],
     [diffOriginal, diffModified, data.wordDiff, data.ignoreWhitespace, data.ignoreCase]
   );

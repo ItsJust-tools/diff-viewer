@@ -329,9 +329,7 @@ The share format is automatically handled by `useTool`. Users can import `.itsju
   "$schema": "itsjust-tool",
   "toolId": "your-tool-id",
   "version": "1.0",
-  "content": {
-    /* your state shape */
-  },
+  "content": {/* your state shape */},
   "createdAt": "2026-04-22T12:00:00Z",
   "metadata": { "schemaVersion": "1.0" }
 }

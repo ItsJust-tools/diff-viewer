@@ -81,12 +81,27 @@ describe('DiffViewerState validation (deserialize)', () => {
       Infinity,
       new Date('invalid'),
       Symbol('nope'),
-      new Proxy({}, { get: () => { throw new Error('boom'); } }),
-      { original: 'x', modified: 'y', get viewMode() { throw new Error('boom'); } },
+      new Proxy(
+        {},
+        {
+          get: () => {
+            throw new Error('boom');
+          },
+        }
+      ),
+      {
+        original: 'x',
+        modified: 'y',
+        get viewMode() {
+          throw new Error('boom');
+        },
+      },
     ];
     for (const input of hostile) {
       let result: ReturnType<typeof diffViewerTool.deserialize> | undefined;
-      expect(() => { result = diffViewerTool.deserialize(input); }).not.toThrow();
+      expect(() => {
+        result = diffViewerTool.deserialize(input);
+      }).not.toThrow();
       expect(result!.success).toBe(false);
       if (!result!.success) expect(result!.error.length).toBeGreaterThan(0);
     }

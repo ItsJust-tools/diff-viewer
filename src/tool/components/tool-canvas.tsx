@@ -562,11 +562,7 @@ export function computeRawDiff(
 
   // Fast path: when ignoring whitespace, if the trimmed texts are identical,
   // all lines are unchanged (only whitespace differs).
-  if (
-    ignoreWhitespace &&
-    !ignoreCase &&
-    original.trim() === modified.trim()
-  ) {
+  if (ignoreWhitespace && !ignoreCase && original.trim() === modified.trim()) {
     const origLines = original.split('\n');
     return origLines.map((line, i) => ({
       type: 'unchanged' as const,
@@ -607,7 +603,8 @@ export function computeRawDiff(
     if (ignoreCase) norm = norm.toLowerCase();
     return norm;
   };
-  const compareOrig: string[] = ignoreWhitespace || ignoreCase ? origLines.map(normalize) : origLines;
+  const compareOrig: string[] =
+    ignoreWhitespace || ignoreCase ? origLines.map(normalize) : origLines;
   const compareMod: string[] = ignoreWhitespace || ignoreCase ? modLines.map(normalize) : modLines;
 
   // Simple LCS — guard against very large inputs to avoid OOM
@@ -617,7 +614,14 @@ export function computeRawDiff(
   const LCS_MAX_CELLS = 20_000_000;
   if (m * n > LCS_MAX_CELLS) {
     // Chunked path always produces the full unfiltered diff
-    return computeDiffChunked(origLines, modLines, -1, enableWordDiff, ignoreWhitespace, ignoreCase);
+    return computeDiffChunked(
+      origLines,
+      modLines,
+      -1,
+      enableWordDiff,
+      ignoreWhitespace,
+      ignoreCase
+    );
   }
 
   const dp = computeLCSTable(compareOrig, compareMod);
@@ -705,7 +709,8 @@ export function generateUnifiedDiffString(
 
   // Use pre-computed diff lines when available to avoid re-computing LCS.
   // We need the full unfiltered diff so we can build hunks ourselves.
-  const diffLines_ = diffLines ?? computeRawDiff(original, modified, false, ignoreWhitespace, ignoreCase);
+  const diffLines_ =
+    diffLines ?? computeRawDiff(original, modified, false, ignoreWhitespace, ignoreCase);
 
   const result: string[] = [];
   result.push(`--- original`);
