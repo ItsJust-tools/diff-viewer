@@ -796,7 +796,7 @@ export function generateUnifiedDiffString(
 }
 
 /** Props for the main diff viewer canvas component. */
-interface ToolCanvasProps {
+export interface ToolCanvasProps {
   original: string;
   modified: string;
   viewMode: 'side-by-side' | 'unified' | 'split';
